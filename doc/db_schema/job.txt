@@ -1,0 +1,91 @@
+create table jobs (
+	job_id bigserial primary key,
+	job_env text,							-- JOB実行環境名 (Fuel::DEVELOPMENT, TEST, STAGE, PRODUCTION)
+	job_title text,							-- タイトル
+	job_schedule_name text,					-- スケジューラ管理用 登録名
+	
+	job_seq text,							-- ジョブのかたまりごとのシーケンス
+	job_seq_title text,						-- シーケンスの説明
+	
+	job_class text,							-- 種類(SYSTEM / APP 等) バックアップなども制御するため
+	job_priority integer default 5,			-- 優先度
+	job_timeout integer,					-- 指定タイムアウト時間(この時間経過しても実行中の場合はfail)
+	
+	-- job_wait_idの指すjobが終了するまで待機する。
+	job_wait_id bigint references jobs(job_id) on delete set null,
+	-- job_wait_seqの指すseqをもつjobが全て終了するまで待機する。
+	job_wait_seq text,						-- 
+	
+	job_task_name text not null,			-- 
+	job_method_name text not null,			-- 
+	
+	job_key text,							-- 処理対象データ
+	job_value_text text,
+	job_value_numeric numeric,
+	job_value_serialized text,
+	
+	job_created_at timestamp default now(),	-- 登録
+	job_start_at timestamp default now(),	-- 開始時間
+	job_ready_at timestamp,					-- 実行可能
+	job_fetched_at timestamp,				-- fetch
+	job_doing_at timestamp,					-- 実行中
+	job_done_at timestamp,					-- 終了
+	
+	job_result_status text,					-- 結果(success / fail)
+	job_result_code numeric,				-- 結果コード(成功は0)
+	job_success_notice boolean,				-- 成功時も通知を行うか
+	job_success_autodelete boolean,			-- success時に自動削除
+	job_fail_retry_interval integer,		-- fail時のリトライ待ち時間 (NULLでリトライなし)
+	job_fail_retry_max integer,				-- fail時のリトライ最大回数 (NULLで無制限)
+	job_hostname text,						-- fetchしたサーバのホスト名
+	job_process_id integer,					-- 実行時のプロセスID
+	job_fail_counter integer default 0,		-- 失敗回数
+	job_task_log text,						-- JOB実行プロセスからのメッセージ
+	job_log text							-- JOBランナーからのメッセージ
+);
+create index job_seq on jobs(job_seq);
+create index job_priority on jobs(job_priority);
+create index job_start_at on jobs(job_start_at);
+create index job_ready_at on jobs(job_ready_at);
+create index job_fetched_at on jobs(job_fetched_at);
+create index job_done_at on jobs(job_done_at);
+create index job_wait_id on jobs(job_wait_id);
+create index job_wait_seq on jobs(job_wait_seq);
+create index job_result_status on jobs(job_result_status);
+create index job_success_autodelete on jobs(job_success_autodelete);
+
+CREATE OR REPLACE FUNCTION update_job_ready() RETURNS boolean AS $$
+BEGIN
+	-- job_ready制御
+	update jobs set job_ready_at=now()
+	from (
+		select job_id,wait_id_result_status,wait_seq_total_count,wait_seq_done_count
+		from jobs
+		-- 待ちjob id
+		left join (select job_id as wait_id,job_result_status as wait_id_result_status from jobs) as wait on job_wait_id=wait_id
+		-- 待ちjob seqトータル
+		left join (select job_seq as wait_seq_total,count(*) as wait_seq_total_count from jobs group by job_seq) as seq_total on job_wait_seq=wait_seq_total
+		-- 待ちjob seq完了済み
+		left join (select job_seq as wait_seq,count(*) as wait_seq_done_count from jobs where job_result_status='success' group by job_seq) as seq on job_wait_seq=wait_seq
+	) as conditions
+	where jobs.job_id=conditions.job_id and job_ready_at is null and job_start_at <= now()
+	and (
+		(job_wait_id is null and job_wait_seq is null)
+		or (job_wait_id is not null and wait_id_result_status='success')
+		or (job_wait_seq is not null and wait_seq_total_count=wait_seq_done_count)
+	);
+	
+	return FOUND;
+END;
+$$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION trigger_update_job_ready() RETURNS trigger AS $$
+BEGIN
+	if TG_OP='INSERT' or (TG_OP='UPDATE' and OLD.job_done_at is distinct from NEW.job_done_at) then
+		perform update_job_ready();
+	end if;
+	
+	return NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER trigger_update_job_ready AFTER UPDATE OR INSERT ON jobs
+    FOR EACH ROW EXECUTE PROCEDURE trigger_update_job_ready();
