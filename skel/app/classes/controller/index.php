@@ -1,5 +1,5 @@
 <?
-class Controller_Index
+class Controller_Index extends Controller
 {
 	function action_index()
 	{
