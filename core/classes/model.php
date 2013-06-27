@@ -168,12 +168,25 @@ class Model implements Iterator,Countable,ArrayAccess
 	}
 	static function primary_key()
 	{
-		if(empty(static::$_primary_key))
-			return NULL;
-		if(is_array(static::$_primary_key))
-			return reset(static::$_primary_key);
-		else
-			return static::$_primary_key;
+		if(empty(static::$_primary_key)){
+			//スキーマからプライマリキーを取得
+			$schema = Database_Schema::get(static::table());
+			if(Arr::get($schema,'has_pkey'))
+				static::$_primary_key = Arr::get($schema,'primary_key',array());
+			else
+				throw new MkException('empty primary key');
+		}
+		
+		if(is_array(static::$_primary_key)){
+			if(count(static::$_primary_key) == 0)
+				throw new MkException('empty primary key');
+			if(count(static::$_primary_key) != 1)
+				throw new MkException('too many primary keys');
+			
+			static::$_primary_key = reset(static::$_primary_key);
+		}
+		
+		return static::$_primary_key;
 	}
 	static function find($id = NULL)
 	{

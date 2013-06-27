@@ -18,6 +18,7 @@ class Database_Type
 		foreach($r as $type){
 			$type_list[$type['typname']] = $type;
 		}
+		unset($r);
 		return $type_list;
 	}
 }
