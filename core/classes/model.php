@@ -14,7 +14,9 @@ class Model implements Iterator,Countable,ArrayAccess
 	protected static $_views;
 	protected static $_to_array_exclude = array();
 	*/
-
+	
+	protected static $_primary_keys = array();
+	
 	protected $_is_new = true;
 	protected $_original = array();
 	protected $_iter_keylist = array();
@@ -152,9 +154,13 @@ class Model implements Iterator,Countable,ArrayAccess
 		if( ! $this->get($primary_key) )
 			throw new MkException('empty primary key');
 		
+		$this->before_delete();
 		$r = DB::delete()->from($this->table())->where($primary_key,$this->get($primary_key))->execute();
+		$this->after_delete();
 		return $r->get_affected_rows();
 	}
+	protected function before_delete() {}
+	protected function after_delete() {}
 	
 	function __construct()
 	{
@@ -172,21 +178,25 @@ class Model implements Iterator,Countable,ArrayAccess
 			//スキーマからプライマリキーを取得
 			$schema = Database_Schema::get(static::table());
 			if(Arr::get($schema,'has_pkey'))
-				static::$_primary_key = Arr::get($schema,'primary_key',array());
+				$primary_key = Arr::get($schema,'primary_key',array());
 			else
 				throw new MkException('empty primary key');
 		}
+		else
+			$primary_key = static::$_primary_key;
 		
-		if(is_array(static::$_primary_key)){
-			if(count(static::$_primary_key) == 0)
+		if(is_array($primary_key)){
+			if(count($primary_key) == 0)
 				throw new MkException('empty primary key');
-			if(count(static::$_primary_key) != 1)
+			if(count($primary_key) != 1)
 				throw new MkException('too many primary keys');
 			
-			static::$_primary_key = reset(static::$_primary_key);
+			$primary_key = reset($primary_key);
 		}
 		
-		return static::$_primary_key;
+		static::$_primary_keys[get_called_class()] = $primary_key;
+		
+		return $primary_key;
 	}
 	static function find($id = NULL)
 	{

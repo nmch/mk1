@@ -30,8 +30,8 @@ class Route
 				$controller_name_candidate = 'Controller_'.$controller_name_candidate;
 				
 				$controller_method_name_candidate = count($tmp_uri_exploded) ? strtolower(array_shift($tmp_uri_exploded)) : 'index';
-//				Log::coredebug("[route] controller_name_candidate=$controller_name_candidate");
-//				Log::coredebug("[route] controller_method_name_candidate=$controller_method_name_candidate");
+				//Log::coredebug("[route] controller_name_candidate=$controller_name_candidate");
+				//Log::coredebug("[route] controller_method_name_candidate=$controller_method_name_candidate");
 				
 				
 				if(class_exists($controller_name_candidate)){
