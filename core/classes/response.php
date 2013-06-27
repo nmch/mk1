@@ -22,7 +22,12 @@ class Response
 		foreach($this->headers as $key => $header)
 			header($key.':'.$header);
 		
-		echo $this->body;
+		if($this->body instanceof View)
+			$body = $this->body->render();
+		else
+			$body = $this->body;
+		
+		echo $body;
 	}
 	function set_header($name,$value)
 	{

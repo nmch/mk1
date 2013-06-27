@@ -17,7 +17,8 @@ class Error
 	{
 		$last_error = error_get_last();
 		if($last_error){
-			Log::error($last_error);
+			$e = new Exception();
+			Log::error($last_error,"\n".$e->getTraceAsString());
 			foreach(Arr::merge(static::$shutdown_handler,static::$error_handler) as $function)
 				$function($last_error);
 		}
