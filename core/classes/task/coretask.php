@@ -160,4 +160,9 @@ class Task_Coretask extends Task
 			exit;
 		}
 	}
+	
+	public static function migration($name)
+	{
+		echo "マイグレーションファイルを生成しました\n";
+	}
 }

@@ -11,7 +11,9 @@ class Error
 		foreach(Arr::merge(static::$exception_handler,static::$error_handler) as $function)
 			$function($e);
 		
-		//throw $e;
+		if(Mk::$env != Mk::PRODUCTION){
+			echo (string)$e;
+		}
 	}
 	static function shutdown_handler()
 	{

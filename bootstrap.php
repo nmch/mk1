@@ -7,12 +7,13 @@ class DatabaseQueryError extends MkException {}
 class HttpNotFoundException extends MkException {}
 
 set_error_handler(function($errno, $errstr, $errfile, $errline ){
-	if(error_reporting() & $errno){
-	    throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
-	}
+	//if(error_reporting() & $errno){
+	throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
+	exit;
 });
 set_exception_handler(function($e){
 	Error::exception_handler($e);
+	exit;
 });
 register_shutdown_function(function(){
 	Error::shutdown_handler();
