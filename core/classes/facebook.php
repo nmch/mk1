@@ -71,6 +71,7 @@ class Facebook
 		$opts[CURLOPT_POST] = true;
 		$opts[CURLOPT_POSTFIELDS] = $params;
 		$opts[CURLOPT_URL] = $url;
+		$opts[CURLOPT_CAINFO] = __DIR__.'/fb_ca_chain_bundle.crt';
 		curl_setopt_array($ch, $opts);
 		
 		$result = curl_exec($ch);
