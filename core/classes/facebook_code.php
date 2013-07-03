@@ -1,0 +1,54 @@
+<?php
+class Facebook_Code
+{
+	protected $code;
+	protected $token;
+	
+	function __construct($code = NULL,$state = NULL)
+	{
+		/*
+		if( ! $code ){
+			$code = Actionform::get('code');
+			$state = Actionform::get('state');
+			Log::coredebug("code=$code / state=$state",Facebook::getCSRFTokenState());
+		}
+		*/
+		if( ! $code || ! $state )
+			throw new FacebookException('empty code');
+		//Log::coredebug("code=$code / state=$state",Facebook::getCSRFTokenState());
+		if($state != Facebook::getCSRFTokenState())
+			throw new FacebookException('invalid state');
+		
+		$this->code = $code;
+		
+	}
+	function code()
+	{
+		return $this->code;
+	}
+	function get_access_token()
+	{
+		if($this->token)
+			return $this->token;
+		
+		$response_params = Session::get('facebook_code2token_'.$this->code);
+		if( ! $response_params ){
+			$params = array(
+				'client_id' => Facebook_Config::getAppId(),
+				'client_secret' => Facebook_Config::getAppSecret(),
+				'redirect_uri' => Facebook_Config::getRedirectUrl(),
+				'code' => $this->code
+			);
+			$access_token_response = Facebook::_oauthRequest(Facebook::getUrl('graph', '/oauth/access_token'),$params);
+
+			if ( ! $access_token_response )
+				throw new FacebookException('empty result');
+
+			$response_params = array();
+			parse_str($access_token_response, $response_params);
+			// code→tokenの変換は一度きりなので、セッションにキャッシュする
+			Session::set('facebook_code2token_'.$this->code,$response_params);
+		}
+		return new Facebook_Accesstoken($response_params);
+	}
+}

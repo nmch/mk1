@@ -163,6 +163,38 @@ class Task_Coretask extends Task
 	
 	public static function migration($name)
 	{
-		echo "マイグレーションファイルを生成しました\n";
+		$migration_dir = PROJECTPATH."migration/";
+		
+		if( ! file_exists($migration_dir) ){
+			if(mkdir($migration_dir) === false){
+				echo "ディレクトリ $migration_dir が作成できませんでした\n";
+				exit;
+			}
+		}
+		
+		$new_migration_seq = 1;
+		
+		$existing_files = glob($migration_dir.'[0-9][0-9][0-9]_*');
+		if($existing_files){
+			foreach($existing_files as $filename){
+				list($number) = explode('_', pathinfo($filename,PATHINFO_BASENAME) ,2);
+				$number = (int)$number;
+				if($number >= $new_migration_seq)
+					$new_migration_seq = $number + 1;
+			}
+		}
+		
+		$migration_filename = sprintf("%03d_%s",$new_migration_seq,$name);
+		
+		$filebody = "";
+		
+		$migration_filepath = $migration_dir.$migration_filename;
+		$r = file_put_contents($migration_filepath,$filebody);
+		if($r === false){
+			echo "ファイル $migration_filepath の書き込みに失敗しました\n";
+		}
+		else{
+			echo "マイグレーションファイル $migration_filepath を生成しました\n";
+		}
 	}
 }
