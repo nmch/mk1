@@ -29,6 +29,9 @@ class Mk
 			error_reporting(0);
 			ini_set('display_errors', 0);
 		}
+		else{
+			error_reporting(E_ALL);
+		}
 		
 		$locale = setlocale(LC_ALL,Config::get('locale','en_US'));
 		//Log::debug("locale=$locale");
