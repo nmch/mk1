@@ -41,7 +41,11 @@ class Database_Connection
 	function query($sql,$parameters = array())
 	{
 		Log::coredebug("[dbconn] SQL {$this->connection} = ".$sql, $parameters);
-		$r = pg_query_params($this->connection,$sql,$parameters);
+		if($parameters)
+			$r = pg_query_params($this->connection,$sql,$parameters);
+		else
+			$r = pg_query($this->connection,$sql);
+		
 		if($r === false)
 			throw new DatabaseQueryError(pg_last_error($this->connection));
 		return new Database_Resultset($r);
