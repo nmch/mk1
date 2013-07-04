@@ -152,7 +152,7 @@ class Task_Coretask extends Task
 		// Git 初期化
 		passthru("git init");
 		// フレームワークをサブモジュールとして追加
-		passthru("git submodule add ~/repo/mk1.git mk1");
+		passthru("git submodule add g3@redmine.feedbackagent.biz:repo/mk1.git mk1");
 		
 		// mkコマンドのリンク
 		if(symlink('./mk1/mk.php', 'mk') === false){
