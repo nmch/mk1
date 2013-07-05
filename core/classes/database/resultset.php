@@ -110,7 +110,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 		if( ! $type )
 			throw new MkException('invalid type');
 		
-		Log::coredebug("correct_value : $value",$type);
+		//Log::coredebug("correct_value : $value",$type);
 		switch($type['typcategory']){
 			case 'B':
 				if( ! $value )
