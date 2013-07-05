@@ -24,6 +24,7 @@ class DB
 			if(is_array($value))
 				$data[$key] = static::array_to_pgarraystr($value,$delimiter);
 		}
+		$data = array_map(function($str){ return '"'.addslashes($str).'"'; }, $data);
 		$str = '{'.implode($delimiter,$data).'}';
 		return $str;
 	}

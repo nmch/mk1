@@ -110,7 +110,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 		if( ! $type )
 			throw new MkException('invalid type');
 		
-		//Log::coredebug("correct_value : $value",$type);
+		Log::coredebug("correct_value : $value",$type);
 		switch($type['typcategory']){
 			case 'B':
 				if( ! $value )
@@ -124,8 +124,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 				break;
 			case 'A':
 				$delimiter = $type['typdelim'];
-				$value = explode($delimiter,trim($value,'{}'));
-				//Log::coredebug($type);
+				$value = array_map(function($str){ return stripslashes($str); },str_getcsv(trim($value,'{}'), $delimiter, '"', '\\'));
 				break;
 		}
 		//Log::coredebug("correct value [$value] as $type");
