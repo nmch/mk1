@@ -1,6 +1,4 @@
 nbproject/
-#tmp/
-#!tmp/.gitkeep
-#logs/
-#!logs/.gitkeep
+tmp/*
+logs/*
 .AppleDouble
