@@ -153,12 +153,14 @@ class Task_Coretask extends Task
 		passthru("git init");
 		// フレームワークをサブモジュールとして追加
 		passthru("git submodule add g3@redmine.feedbackagent.biz:repo/mk1.git mk1");
-		
+		passthru("git submodule update --init");
+		/*
 		// mkコマンドのリンク
 		if(symlink('./mk1/mk.php', 'mk') === false){
 			echo "mkコマンドのシンボリックリンクが作成できませんでした\n";
 			exit;
 		}
+		*/
 	}
 	
 	public static function migration($name)
