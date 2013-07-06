@@ -4,6 +4,7 @@ ini_set('display_errors', 0);
 class MkException extends Exception {}
 class AppException extends MkException {}
 class DatabaseQueryError extends MkException {}
+class RecordNotFoundException extends MkException {}
 class HttpNotFoundException extends MkException {}
 
 set_error_handler(function($errno, $errstr, $errfile, $errline ){

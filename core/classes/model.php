@@ -27,7 +27,7 @@ class Model implements Iterator,Countable,ArrayAccess
 	{
 		if(preg_match('/^find_by_(.+)$/',$name,$match) && count($arguments) >= 1){
 			$column_name = $match[1];
-			return static::find()->where($column_name,reset($arguments))->get_one();
+			return static::find(reset($arguments),$column_name);
 		}
 	}
 	function __set($name,$arg)
@@ -198,15 +198,22 @@ class Model implements Iterator,Countable,ArrayAccess
 		
 		return $primary_key;
 	}
-	static function find($id = NULL)
+	static function find($id = NULL, $id_field = NULL)
 	{
 		$query = new Model_Query(get_called_class());
 		
 		if($id){
-			if($id == 'all')
+			if($id == 'all'){
 				return $query->get();
-			else
-				return $query->where(static::primary_key(),$id)->get_one();
+			}
+			else{
+				if( ! $id_field )
+					$id_field = static::primary_key();
+				$r = $query->where($id_field,$id)->get_one();
+				if( $r === NULL )
+					throw new RecordNotFoundException;
+				return $r;
+			}
 		}
 		else{
 			return $query;
