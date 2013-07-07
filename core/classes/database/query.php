@@ -12,6 +12,7 @@ class Database_Query
 	protected $_query_columns = array();
 	protected $_query_where = array();
 	protected $_query_from = array();
+	protected $_query_join= array();
 	protected $_query_values = array();
 	protected $_query_orderby = array();
 	protected $_query_limit = NULL;
@@ -136,6 +137,8 @@ class Database_Query
 		$sql .= $this->_query_columns ? implode(',',$this->_query_columns) : '*';
 		$sql .= " FROM ".implode(',',$this->_query_from);
 		$where = $this->build_where();
+		if($this->_query_join)
+			$sql .= ' '.implode(' ',$this->_query_join);
 		if($where)
 			$sql .= " WHERE $where";
 		if($this->_query_orderby)
@@ -459,6 +462,11 @@ class Database_Query
 		else
 			$this->_query_returning[] = $column;
 		
+		return $this;
+	}
+	function join($join_str)
+	{
+		$this->_query_join[] = $join_str;
 		return $this;
 	}
 	function limit($limit)

@@ -19,6 +19,11 @@ class Model_Query
 		return $this->get()->get();
 	}
 	
+	function join()
+	{
+		call_user_func_array(array($this->query,'join'),func_get_args());
+		return $this;
+	}
 	function limit()
 	{
 		call_user_func_array(array($this->query,'limit'),func_get_args());

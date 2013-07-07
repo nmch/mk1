@@ -28,7 +28,7 @@ class Cache
 		$filepath = $cache_dir . static::key($key,$group);
 		
 		if(file_exists($filepath)){
-			Log::coredebug("[cache] hit $key($group)");
+			//Log::coredebug("[cache] hit $key($group)");
 			return unserialize(file_get_contents($filepath));
 		}
 		else

@@ -74,11 +74,25 @@ class Model implements Iterator,Countable,ArrayAccess
 	function get_related($relation_type,$options)
 	{
 		//Log::coredebug("rel : $relation_type",$options);
+		$query = NULL;
+		
+		if($relation_type == 'belongs_to' || $relation_type == 'has_many'){
+			$query = forward_static_call_array(array($options['model_to'],'find'),array())->where($options['key_to'],$this->$options['key_from']);
+			if(isset($options['condition']) && is_array($options['condition'])){
+				foreach($options['condition'] as $condition){
+					if(isset($condition['method']) && isset($condition['args'])){
+						Log::coredebug("[model rel] call {$condition['method']}",$condition['args']);
+						call_user_func_array(array($query,$condition['method']),$condition['args']);
+					}
+				}
+			}
+		}
+		
 		switch($relation_type){
 			case 'belongs_to':
-				return forward_static_call_array(array($options['model_to'],'find'),array())->where($options['key_to'],$this->$options['key_from'])->get_one();
+				return $query->get_one();
 			case 'has_many':
-				return forward_static_call_array(array($options['model_to'],'find'),array())->where($options['key_to'],$this->$options['key_from'])->get();
+				return $query->get();
 			default:
 				throw new MkException('invalid relation type');
 		}
