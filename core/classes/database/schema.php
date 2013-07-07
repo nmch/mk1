@@ -6,8 +6,14 @@ class Database_Schema
 	
 	static function get($name = NULL,$default = NULL)
 	{
-		if( ! static::$schema )
-			static::$schema = static::retrieve();
+		if( ! static::$schema ){
+			// キャッシュからの読み込みを試す
+			static::$schema = Cache::get('schema','core_db');
+			if( ! static::$schema ){
+				static::$schema = static::retrieve();
+				Cache::set('schema','core_db',static::$schema);
+			}
+		}
 		
 		return $name ? Arr::get(static::$schema,$name,$default) : static::$schema;
 	}

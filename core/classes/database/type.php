@@ -5,8 +5,14 @@ class Database_Type
 	
 	static function get($name = NULL,$default = NULL)
 	{
-		if( ! static::$type )
-			static::$type = static::retrieve();
+		if( ! static::$type ){
+			// キャッシュからの読み込みを試す
+			static::$type = Cache::get('type','core_db');
+			if( ! static::$type ){
+				static::$type = static::retrieve();
+				Cache::set('type','core_db',static::$type);
+			}
+		}
 		
 		return $name ? Arr::get(static::$type,$name,$default) : static::$type;
 	}
