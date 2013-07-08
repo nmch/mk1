@@ -216,6 +216,13 @@ class Model implements Iterator,Countable,ArrayAccess
 	{
 		$query = new Model_Query(get_called_class());
 		
+		if(isset(static::$_join)){
+			$join = static::$_join;
+			if(is_array(static::$_join))
+				$join = implode(" ",static::$_join);
+			$query->join($join);
+		}
+		
 		if($id){
 			if($id == 'all'){
 				return $query->get();
