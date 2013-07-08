@@ -1,16 +1,14 @@
 <?
 class Cache
 {
-	protected static function cache_dir()
+	protected static function cache_dir($key,$group = NULL)
 	{
 		$cache_dir = Config::get('cache.cache_dir');
 		if( ! $cache_dir  )
 			throw new Exception('invalid cache dir');
-		if( ! file_exists($cache_dir) ){
-			$r = mkdir($cache_dir,0777,true);
-			if( $r === false )
-				throw new Exception('cannot make cache dir');
-		}
+		if($group)
+			$cache_dir .= sha1($group).'/';
+		$cache_dir .= substr(sha1($key),0,3).'/';
 		
 		return $cache_dir;
 	}
@@ -24,7 +22,7 @@ class Cache
 	}
 	public static function get($key,$group = NULL)
 	{
-		$cache_dir = static::cache_dir();
+		$cache_dir = static::cache_dir($key,$group);
 		$filepath = $cache_dir . static::key($key,$group);
 		
 		if(file_exists($filepath)){
@@ -50,9 +48,14 @@ class Cache
 		else
 			throw new Exception('invalid parameters');
 			
-		$cache_dir = static::cache_dir();
-		$filepath = $cache_dir . static::key($key,$group);
+		$cache_dir = static::cache_dir($key,$group);
+		if( ! file_exists($cache_dir) ){
+			$r = mkdir($cache_dir,0777,true);
+			if( $r === false )
+				throw new Exception('cannot make cache dir');
+		}
 		
+		$filepath = $cache_dir . static::key($key,$group);
 		$r = file_put_contents($filepath,serialize($value));
 		if($r === false)
 			throw new Exception('cannot write cache file');
