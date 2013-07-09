@@ -271,7 +271,8 @@ class Database_Query
 		if( ! is_array($columns) )
 			$columns = func_get_args();
 		$this->_query_type = 'SELECT';
-		$this->_query_columns = $columns;
+		//$this->_query_columns = $columns;
+		$this->_query_columns = array_merge($this->_query_columns,$columns);
 		
 		return $this;
 	}

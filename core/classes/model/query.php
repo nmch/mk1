@@ -12,7 +12,7 @@ class Model_Query
 	}
 	function get()
 	{
-		return $this->query->select()->execute();
+		return $this->query->select('*')->execute();
 	}
 	function get_one()
 	{
@@ -37,6 +37,11 @@ class Model_Query
 	function where()
 	{
 		call_user_func_array(array($this->query,'where'),func_get_args());
+		return $this;
+	}
+	function add_column()
+	{
+		call_user_func_array(array($this->query,'select'),func_get_args());
 		return $this;
 	}
 }

@@ -223,6 +223,10 @@ class Model implements Iterator,Countable,ArrayAccess
 			$query->join($join);
 		}
 		
+		if(isset(static::$_add_field)){
+			$query->add_column(static::$_add_field);
+		}
+		
 		if($id){
 			if($id == 'all'){
 				return $query->get();
