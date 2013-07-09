@@ -1,14 +1,17 @@
 <?
 class Cache
 {
-	protected static function cache_dir($key,$group = NULL)
+	public static function cache_dir($key,$group = NULL)
 	{
 		$cache_dir = Config::get('cache.cache_dir');
 		if( ! $cache_dir  )
 			throw new Exception('invalid cache dir');
 		if($group)
 			$cache_dir .= sha1($group).'/';
-		$cache_dir .= substr(sha1($key),0,3).'/';
+		if($key){
+			// ここでkeyが必須ではないのは、migration時等にディレクトリだけ特定して全部消す用途でも使われるから。
+			$cache_dir .= substr(sha1($key),0,3).'/';
+		}
 		
 		return $cache_dir;
 	}
