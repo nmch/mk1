@@ -244,6 +244,10 @@ class Model implements Iterator,Countable,ArrayAccess
 			return $query;
 		}
 	}
+	static function get_all()
+	{
+		return static::find('all');
+	}
 	
 	protected function _typecheck($throw = NULL, $skip_unchanged_item = true)
 	{
