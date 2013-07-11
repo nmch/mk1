@@ -212,8 +212,14 @@ class Model implements Iterator,Countable,ArrayAccess
 		
 		return $primary_key;
 	}
-	static function find($id = NULL, $id_field = NULL)
+	static function find()
 	{
+		$argc = func_num_args();
+		$args = func_get_args();
+		Log::coredebug("[model] find $argc",$args);
+		$id = isset($args[0]) ? $args[0] : NULL;
+		$id_field = isset($args[1]) ? $args[1] : NULL;
+			
 		$query = new Model_Query(get_called_class());
 		
 		if(isset(static::$_join)){
@@ -227,8 +233,8 @@ class Model implements Iterator,Countable,ArrayAccess
 			$query->add_column(static::$_add_field);
 		}
 		
-		if($id){
-			if($id == 'all'){
+		if( $argc ){
+			if($id === 'all'){	// 型判定なし(==)で比較すると文字列を比較する際に文字列が数値にキャストされてしまう。そのため$idに0が入っているとtrueになるので注意。
 				return $query->get();
 			}
 			else{
