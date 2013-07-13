@@ -216,7 +216,6 @@ class Model implements Iterator,Countable,ArrayAccess
 	{
 		$argc = func_num_args();
 		$args = func_get_args();
-		Log::coredebug("[model] find $argc",$args);
 		$id = isset($args[0]) ? $args[0] : NULL;
 		$id_field = isset($args[1]) ? $args[1] : NULL;
 			
@@ -292,15 +291,9 @@ class Model implements Iterator,Countable,ArrayAccess
 //					if(is_numeric($value) && -2147483648 <= $value && $value <= 2147483647){
 //					if(is_numeric($value) && -9223372036854775808 <= $value && $value <= 9223372036854775807){
 				case 'D':
-					/*
-					if( ! is_numeric($value) )
-						$value = strtotime($value);
-					if($value)
+					// UNIXタイムスタンプだった場合は変換する
+					if(is_numeric($value))
 						$value = date(DATE_ATOM,$value);
-					else
-						$value = NULL;
-					 
-					 */
 					break;
 				case 'B':
 					if(is_numeric($value)){
