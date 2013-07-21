@@ -83,7 +83,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 			$data = pg_fetch_assoc($this->result_resource,$position);
 		if($forward)
 			$this->next();
-		Log::coredebug("[db] fetch position:{$position}");
+		//Log::coredebug("[db] fetch position:{$position}");
 		$data = $this->correct_data($data);
 		return $data;
 	}

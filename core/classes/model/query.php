@@ -8,10 +8,14 @@ class Model_Query
 	{
 		$this->model = $model;
 		$this->query = new Database_Query;
-		$this->query->from($model::table())->set_fetch_as($model);
+		return $this->query->from($model::table())->set_fetch_as($model);
 	}
 	function get()
 	{
+		$conditions = forward_static_call(array($this->model,'conditions'));
+
+		$this->query->order_by(Arr::get($conditions,'order_by',array()));
+		
 		return $this->query->select('*')->execute();
 	}
 	function get_one()

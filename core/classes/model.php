@@ -81,7 +81,7 @@ class Model implements Iterator,Countable,ArrayAccess
 			if(isset($options['condition']) && is_array($options['condition'])){
 				foreach($options['condition'] as $condition){
 					if(isset($condition['method']) && isset($condition['args'])){
-						Log::coredebug("[model rel] call {$condition['method']}",$condition['args']);
+						//Log::coredebug("[model rel] call {$condition['method']}",$condition['args']);
 						call_user_func_array(array($query,$condition['method']),$condition['args']);
 					}
 				}
@@ -185,6 +185,10 @@ class Model implements Iterator,Countable,ArrayAccess
 	static function table()
 	{
 		return isset(static::$_table_name) ? static::$_table_name : Inflector::tableize(get_called_class());
+	}
+	static function conditions()
+	{
+		return isset(static::$_conditions) ? static::$_conditions : array();
 	}
 	static function primary_key()
 	{

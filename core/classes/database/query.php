@@ -453,7 +453,16 @@ class Database_Query
 	*/
 	function order_by($column, $direction = null)
 	{
-		$this->_query_orderby[] = array($column, $direction);
+		if($column){
+			if( ! is_array($column) ){
+				$this->order_by(array($column => $direction));
+			}
+			else{
+				foreach($column as $_column => $_direction){
+					$this->_query_orderby[] = array($_column, $_direction);
+				}
+			}
+		}
 		return $this;
 	}
 	function returning($column)
