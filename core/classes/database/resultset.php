@@ -67,7 +67,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 		return $this;
 	}
 	
-	function fetch($fetch_as = NULL,$position = NULL)
+	function fetch($fetch_as = NULL,$position = NULL,$forward = false)
 	{
 		if($this->rows == 0)
 			return NULL;
@@ -81,6 +81,9 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 			$data = pg_fetch_object($this->result_resource,$position,$fetch_as);
 		else
 			$data = pg_fetch_assoc($this->result_resource,$position);
+		if($forward)
+			$this->next();
+		Log::coredebug("[db] fetch position:{$position}");
 		$data = $this->correct_data($data);
 		return $data;
 	}
@@ -143,6 +146,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 	}
 	function next() {
 		$this->position++;
+		return $this;
 	}
 	function valid() {
 		return $this->offsetExists($this->position);
@@ -150,6 +154,12 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 	function count()
 	{
 		return $this->rows;
+	}
+	function seek($position)
+	{
+		if($this->offsetExists($position))
+			$this->position = $position;
+		return $this;
 	}
     public function offsetSet($offset, $value) {
 		// nop

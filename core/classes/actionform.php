@@ -143,6 +143,10 @@ class Actionform
 	{
 		return Arr::get($_SERVER,'REQUEST_METHOD','');
 	}
+	public static function request_uri()
+	{
+		return Arr::get($_SERVER,'REQUEST_URI','');
+	}
 	function __set($name,$value)
 	{
 		$this->set($name,$value);
