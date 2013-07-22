@@ -30,8 +30,8 @@ class Route
 				$controller_name_candidate = 'Controller_'.$controller_name_candidate;
 				
 				$controller_method_name_candidate = count($tmp_uri_exploded) ? strtolower(array_shift($tmp_uri_exploded)) : 'index';
-				//Log::coredebug("[route] controller_name_candidate=$controller_name_candidate");
-				//Log::coredebug("[route] controller_method_name_candidate=$controller_method_name_candidate");
+//				Log::coredebug("[route] controller_name_candidate=$controller_name_candidate");
+//				Log::coredebug("[route] controller_method_name_candidate=$controller_method_name_candidate");
 				
 				
 				if(class_exists($controller_name_candidate)){
@@ -50,7 +50,7 @@ class Route
 		//Log::coredebug("[route] controller_name=$controller_name");
 		//Log::coredebug("[route] controller_method_name=$controller_method_name");
 		if( ! class_exists($controller_name) || ! method_exists($controller_name,$controller_method_name) ){
-			Log::coredebug("Not Found $controller_name / $controller_method_name");
+			//Log::coredebug("Not Found $controller_name / $controller_method_name");
 			throw new HttpNotFoundException();
 		}
 //		$controller = new $controller_name;
@@ -67,10 +67,19 @@ class Route
 			return false;
 		
 		$controller_method_name = false;
+		
+		// 実行するメソッドをコントローラー自身が判断できるfind_method()メソッドを実装している場合は処理をそちらに任せる
+		if( method_exists($controller_name,'find_method') ){
+			//Log::coredebug("[route] delegate to $controller_name::find_method()");
+			return $controller_name::find_method($controller_method_name_candidate,$request_method);
+		}
+		
 		if( $request_method && method_exists($controller_name,$request_method.'_'.$controller_method_name_candidate )){
+			// リクエストメソッドを冠したget_XXX()やpost_XXX()が定義されている場合はそれを採用
 			$controller_method_name = $request_method.'_'.$controller_method_name_candidate;
 		}
 		else if( method_exists($controller_name,'action_'.$controller_method_name_candidate) ){
+			// 上記が無い場合はaction_XXXを採用
 			$controller_method_name = 'action_'.$controller_method_name_candidate;
 		}
 		

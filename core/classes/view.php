@@ -14,7 +14,7 @@ class View
 			$template_filename = implode('/',array_slice(explode('_',strtolower(get_called_class())),1));
 		}
 		$this->template_filename = $template_filename.'.'.Config::get('smarty.extension');
-		;
+		
 		$this->smarty = new Smarty();
 		
 		$this->smarty->template_dir = APPPATH.'views/';
@@ -43,6 +43,9 @@ class View
 	function render()
 	{
 		$this->view();
+		
+		if( ! $this->smarty->templateExists($this->template_filename) )
+			throw new HttpNotFoundException();
 		
 		$this->smarty->assignByRef('data', $this->data);
 		$this->smarty->assignByRef('af', $this->af);
