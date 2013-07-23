@@ -64,7 +64,7 @@ class Facebook_Graphapi
 		$result = json_decode($result, true);
 
 		if (is_array($result) && isset($result['error']))
-			Facebook::throwException($result);
+			Facebook::throwException($result,$this->params);
 		
 		return new $return_as($result,$this);
 	}

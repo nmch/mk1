@@ -160,13 +160,12 @@ class Facebook
 		);
 	}
 	
-	public static function throwException($result)
+	public static function throwException($result,$request_params = array())
 	{
 		Log::coredebug('Facebook Exception',$result);
-		throw new FacebookException(isset($result['message']) ? $result['message'] : '');
-		/*
-		$e = new FacebookException($result);
-		switch ($e->getType()) {
+		//$e = new FacebookException(isset($result['message']) ? $result['message'] : '');
+		$e = new FacebookException($result,$request_params);
+		switch ($e->type()) {
 			// OAuth 2.0 Draft 00 style
 			case 'OAuthException':
 			// OAuth 2.0 Draft 10 style
@@ -179,14 +178,11 @@ class Facebook
 				(strpos($message, 'An active access token must be used') !== false)
 				) {
 					$this->destroySession();
-					$e = new FacebookInvalidAccessTokenException($result);
+					$e = new FacebookInvalidAccessTokenException($result,$request_params);
 				}
 				break;
 		}
-
 		throw $e;
-		 * 
-		 */
 	}
 	
 	public static function getApplicationAccessToken() {
