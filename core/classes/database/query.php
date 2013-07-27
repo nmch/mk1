@@ -147,7 +147,8 @@ class Database_Query
 			$sql .= " LIMIT $this->_query_limit";
 		if($this->_query_offset)
 			$sql .= " OFFSET $this->_query_offset";
-		//Log::coredebug($sql);
+		
+		//Log::coredebug("[db query] sql=$sql");
 		return $sql;
 	}
 	public function compile_delete()
