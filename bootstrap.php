@@ -6,6 +6,7 @@ class AppException extends MkException {}
 class DatabaseQueryError extends MkException {}
 class RecordNotFoundException extends MkException {}
 class HttpNotFoundException extends MkException {}
+class ValidateErrorException extends MkException {}
 
 set_error_handler(function($errno, $errstr, $errfile, $errline ){
 	//echo "errno=$errno / ".error_reporting()."<HR>";

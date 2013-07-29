@@ -1,7 +1,4 @@
 <?
-
-class ValidateErrorException extends MkException {}
-
 class Actionform
 {
 	static private $instance;
@@ -43,7 +40,7 @@ class Actionform
 			//Log::coredebug($model->keys(),$this->validated_values[$name]);
 			foreach($model->keys() as $key){
 				if(array_key_exists($key,$this->validated_values[$name])){
-					Log::coredebug("[af save] set $key",$this->validated_values[$name][$key]);
+					//Log::coredebug("[af save] set $key",$this->validated_values[$name][$key]);
 					$model->$key = $this->validated_values[$name][$key];
 				}
 			}
@@ -54,9 +51,10 @@ class Actionform
 	
 	public function validate($name)
 	{
-		$validation = Config::get('form.preset.'.$name);
+		$config_key = 'form.preset.'.$name;
+		$validation = Config::get($config_key);
 		if( ! $validation )
-			throw new MkException('invalid preset name');
+			throw new MkException('invalid preset name '.$config_key);
 		
 		$this->validated_values[$name] = $validated_values = array();
 		$validation_results[$name] = $validation_results = array();
@@ -73,19 +71,19 @@ class Actionform
 				$value = $this->get($key);
 				if(isset($rules['filter'])){
 					foreach($rules['filter'] as $filter => $option){
-						if( ! is_array($option) ){
+						if( is_numeric($filter) ){
 							$filter = $option;
 							$option = array();
 						}
-						//Log::coredebug("[af] filter $filter");
 						$value = static::unit_filter($value,$filter,$option);
+						//Log::coredebug("[af] filter $filter",$value);
 					}
 				}
 				$this->set($key,$value);
 				
 				if(isset($rules['validation'])){
 					foreach($rules['validation'] as $validation => $option){
-						if( ! is_array($option) ){
+						if( is_numeric($validation) ){
 							$validation = $option;
 							$option = array();
 						}
@@ -107,16 +105,21 @@ class Actionform
 		
 		return $this;
 	}
+	public static function load($filename)
+	{
+		return include $filename;
+	}
 	public static function unit_filter($value,$filter,$option)
 	{
 		//Log::coredebug("filter $filter", file_exists("actionform/filter/".strtolower($filter).".php"));
-		$func = include "actionform/filter/".strtolower($filter).".php";
+		
+		$func = static::load("actionform/filter/".strtolower($filter).".php");
 		$value = $func($value,$option);
 		return $value;
 	}
 	public static function unit_validate($value,$validation,$option)
 	{
-		$func = include "actionform/validation/".strtolower($validation).".php";
+		$func = static::load("actionform/validation/".strtolower($validation).".php");
 		$func($value,$option);
 	}
 
