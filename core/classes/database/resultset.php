@@ -48,7 +48,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 		else
 			return $row;
 	}
-	function as_array($correct_values = false)
+	function as_array($correct_values = false, $array_key = NULL)
 	{
 		// Database_Type::retrieve()から、加工なしで返ることを期待して呼ばれているので注意
 		
@@ -56,8 +56,17 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 		if( ! $data )
 			$data = array();
 		if($correct_values){
-			foreach($data as $key => $item)
+			foreach($data as $key => $item){
 				$data[$key] = $this->correct_data($item);
+			}
+		}
+		if($array_key){
+			$new_data = array();
+			foreach($data as $item){
+				$new_data[ Arr::get($item,$array_key) ] = $item;
+			}
+			unset($data);
+			$data = $new_data;
 		}
 		return $data;
 	}
