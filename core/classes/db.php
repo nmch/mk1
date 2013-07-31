@@ -18,13 +18,16 @@ class DB
 	{
 		return new Database_Expression($expr);
 	}
-	static function array_to_pgarraystr($data,$delimiter = ',')
+	static function array_to_pgarraystr($data,$delimiter = ',',$typecat = 'S')
 	{
 		foreach($data as $key => $value){
 			if(is_array($value))
 				$data[$key] = static::array_to_pgarraystr($value,$delimiter);
 		}
-		$data = array_map(function($str){ return '"'.addslashes($str).'"'; }, $data);
+		if($typecat == 'S')
+			$data = array_map(function($str){ return '"'.addslashes($str).'"'; }, $data);
+		else
+			$data = array_map(function($str){ return is_numeric($str) ? $str : 'NULL'; }, $data);
 		$str = '{'.implode($delimiter,$data).'}';
 		return $str;
 	}

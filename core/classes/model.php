@@ -283,10 +283,11 @@ class Model implements Iterator,Countable,ArrayAccess
 			if($skip_unchanged_item && !array_key_exists($key, $this->_data))
 				continue;
 			
-			$data_type = Arr::get($property,'type_cat',NULL);
+			$data_type = Arr::get($property,'type',NULL);
+			$type_cat = Arr::get($property,'type_cat',NULL);
 			$value = $this->$key;
 			
-			switch($data_type){
+			switch($type_cat){
 				case 'N':
 					if( ! is_numeric($value) )
 						$value = NULL;
@@ -323,8 +324,13 @@ class Model implements Iterator,Countable,ArrayAccess
 						$value = NULL;
 					break;
 				case 'A':
+					//Log::debug($property);
+					$type_detail = Database_Type::get($data_type);
+					//Log::debug($type_detail);
+					$elem_type = Database_Type::get_by_oid($type_detail['typelem']);
+					//Log::debug($elem_type);
 					if(is_array($value))
-						$value = DB::array_to_pgarraystr($value);
+						$value = DB::array_to_pgarraystr($value,$type_detail['typdelim'],$elem_type['typcategory']);
 					break;
 
 			}
