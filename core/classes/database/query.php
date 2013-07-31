@@ -215,6 +215,18 @@ class Database_Query
 						}
 					}
 
+					if (is_bool($value))
+					{
+						if ($op === '=')
+						{
+							$op = 'IS';
+						}
+						elseif ($op === '!=' || $op === '<>')
+						{
+							$op = 'IS NOT';
+						}
+					}
+
 					// Database operators are always uppercase
 					$op = strtoupper($op);
 					
@@ -244,6 +256,10 @@ class Database_Query
 						$sql .= $column.' '.$op.' '.(string)$value;
 					else if($value === NULL)
 						$sql .= $column.' '.$op.' NULL';
+					else if($value === TRUE)
+						$sql .= $column.' '.$op.' TRUE';
+					else if($value === FALSE)
+						$sql .= $column.' '.$op.' FALSE';
 					else
 						$sql .= $column.' '.$op.' $'.$this->parameter($value);
 				}

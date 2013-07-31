@@ -111,8 +111,11 @@ class Route
 				'[[:alpha:]]+',
 				'[^/]*',
 			), $search);
-			$uri = preg_replace("#^$search$#",$route,$uri);
-			//Log::coredebug("search:$search / route:$route / uri:$uri");
+			$_uri = preg_replace("#^$search$#",$route,$uri);
+			if($uri != $_uri){
+				Log::coredebug("[route] Route ReWrited : [$uri] to [$_uri]");
+				$uri = $_uri;
+			}
 		}
 		
 		return $uri;
