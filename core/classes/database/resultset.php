@@ -135,8 +135,13 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 				}
 				break;
 			case 'A':
-				$delimiter = $type['typdelim'];
-				$value = array_map(function($str){ return stripslashes($str); },str_getcsv(trim($value,'{}'), $delimiter, '"', '\\'));
+				if($value){
+					$delimiter = $type['typdelim'];
+					if($value == '{}')
+						$value = array();
+					else
+						$value = array_map(function($str){ return stripslashes($str); },str_getcsv(trim($value,'{}'), $delimiter, '"', '\\'));
+				}
 				break;
 		}
 		//Log::coredebug("correct value [$value] as $type");

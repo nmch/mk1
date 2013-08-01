@@ -23,7 +23,8 @@ class Actionform
 	var $validation_results = array();
 	*/
 	
-	public function save($name,$model_list = array())
+	//public function save($name,$model_list = array())
+	public function save($name,$model = NULL)
 	{
 		$this->validate($name);
 		
@@ -31,6 +32,28 @@ class Actionform
 		if( ! $preset )
 			throw new MkException('invalid preset name');
 		
+		if( ! $model ){
+			$model = Arr::get($preset,'model');
+			if( ! $model )
+				throw new MkException('model not found');
+		}
+		
+		if( ! is_object($model) )
+			$obj = new $model;
+		else
+			$obj = $model;
+		
+		foreach($obj->keys() as $key){
+			if(array_key_exists($key,$this->validated_values[$name])){
+				//Log::coredebug("[af save] set $key",$this->validated_values[$name][$key]);
+				$obj->$key = $this->validated_values[$name][$key];
+			}
+		}
+		$obj->save();
+		
+		return $obj;
+		
+		/*
 		if( ! $model_list )
 			$model_list = Arr::get($preset,'model',array());
 		foreach($model_list as $model){
@@ -47,6 +70,7 @@ class Actionform
 			if($model->get_diff())
 				$model->save();
 		}
+		*/
 	}
 	
 	public function validate($name)
@@ -157,7 +181,7 @@ class Actionform
 	}
 	function set($name,$value,$set_default = false)
 	{
-		if( ! is_string($name) ){
+		if( is_array($name) || $name instanceof ArrayAccess ){
 			foreach($name as $key => $value)
 				$this->set($key,$value,$set_default);
 		}

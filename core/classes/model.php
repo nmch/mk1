@@ -47,6 +47,10 @@ class Model implements Iterator,Countable,ArrayAccess
 	{
 		return $this->get($name);
 	}
+	function get_all_data()
+	{
+		return array_merge($this->_original,$this->_data);
+	}
 	function get($name)
 	{
 		if(array_key_exists($name,$this->_data))
@@ -70,6 +74,19 @@ class Model implements Iterator,Countable,ArrayAccess
 			unset($this->_data[$name]);
 		if(isset($this->_original[$name]))
 			unset($this->_original[$name]);
+	}
+	function get_clone($ignore_list = array())
+	{
+		$primary_key = static::primary_key();
+		
+		$new = new static;
+		foreach($this->get_all_data() as $key => $value){
+			if($key == $primary_key || in_array($key,$ignore_list))
+				continue;
+			$new->$key = $value;
+		}
+		$new->save();
+		return $new;
 	}
 	function get_related($relation_type,$options)
 	{
