@@ -25,7 +25,7 @@ class DB
 				$data[$key] = static::array_to_pgarraystr($value,$delimiter);
 		}
 		if($typecat == 'S')
-			$data = array_map(function($str){ return '"'.addslashes($str).'"'; }, $data);
+			$data = array_map(function($str){ return '"'.pg_escape_string($str).'"'; }, $data);
 		else
 			$data = array_map(function($str){ return is_numeric($str) ? $str : 'NULL'; }, $data);
 		$str = '{'.implode($delimiter,$data).'}';

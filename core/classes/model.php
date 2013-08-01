@@ -51,18 +51,18 @@ class Model implements Iterator,Countable,ArrayAccess
 	{
 		return array_merge($this->_original,$this->_data);
 	}
-	function get($name)
+	function get($name, $default = NULL, $rel_options = array())
 	{
 		if(array_key_exists($name,$this->_data))
 			return $this->_data[$name];
 		else if(array_key_exists($name,$this->_original))
 			return $this->_original[$name];
 		else if(isset(static::$_belongs_to) && array_key_exists($name,static::$_belongs_to))
-			return $this->get_related('belongs_to',static::$_belongs_to[$name]);
+			return $this->get_related('belongs_to', Arr::merge(static::$_belongs_to[$name],$rel_options) );
 		else if(isset(static::$_has_many) && array_key_exists($name,static::$_has_many))
-			return $this->get_related('has_many',static::$_has_many[$name]);
+			return $this->get_related('has_many', Arr::merge(static::$_has_many[$name],$rel_options) );
 		else
-			return NULL;
+			return $default;
 	}
 	function is_exist($name)
 	{
@@ -383,6 +383,11 @@ class Model implements Iterator,Countable,ArrayAccess
 	public function offsetGet($offset)
 	{
 		return $this->get($offset);
+	}
+	function columns()
+	{
+		$schema = Database_Schema::get($this->table());
+		return array_keys($schema['columns']);
 	}
 	function keys()
 	{

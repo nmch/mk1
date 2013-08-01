@@ -43,7 +43,8 @@ class Actionform
 		else
 			$obj = $model;
 		
-		foreach($obj->keys() as $key){
+		//Log::coredebug("[af save] keys=",$obj->columns(),$obj);
+		foreach($obj->columns() as $key){
 			if(array_key_exists($key,$this->validated_values[$name])){
 				//Log::coredebug("[af save] set $key",$this->validated_values[$name][$key]);
 				$obj->$key = $this->validated_values[$name][$key];
@@ -127,6 +128,7 @@ class Actionform
 		if($is_error)
 			throw new ValidateErrorException();
 		
+		//Log::coredebug("[af validate] validated_values=",$this->validated_values);
 		return $this;
 	}
 	public static function load($filename)
