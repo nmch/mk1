@@ -19,8 +19,9 @@ class Response
 		if( headers_sent() )
 			return NULL;
 		http_response_code($this->status);
-		foreach($this->headers as $key => $header)
+		foreach($this->headers as $key => $header){
 			header($key.':'.$header);
+		}
 		
 		if($this->body instanceof View)
 			$body = $this->body->render();

@@ -170,7 +170,7 @@ class Actionform
 	}
 	public static function method()
 	{
-		return Arr::get($_SERVER,'REQUEST_METHOD','');
+		return strtoupper( Arr::get($_SERVER,'REQUEST_METHOD','') );
 	}
 	public static function request_uri()
 	{
