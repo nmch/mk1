@@ -35,14 +35,14 @@ class Database_Pager
 		if($total_pages < $page)
 			$page = $total_pages;
 		
-		$offset = $rows * ($page - 1);
+		$offset = $page ? $rows * ($page - 1) : 0;
 		$r2 = $this->db_query->offset($offset)->limit($rows)->execute();
 		
 		$this->set('total_rows',$total_rows);
 		$this->set('total_pages',$total_pages);
 		$this->set('page',$page);
 		$this->set('rows',$rows);
-		$this->set('is_first_page', $page == 1 );
+		$this->set('is_first_page', $page <= 1 );
 		$this->set('is_last_page', $page >= $total_pages );
 		
 		return $r2;
