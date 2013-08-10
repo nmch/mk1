@@ -37,6 +37,8 @@ class Actionform
 			if( ! $model )
 				throw new MkException('model not found');
 		}
+		if(is_array($model))
+			$model = reset($model);
 		
 		if( ! is_object($model) )
 			$obj = new $model;
