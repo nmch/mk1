@@ -40,6 +40,10 @@ class DB
 		
 		return $connection;
 	}
+	static function pager($db_query, $options)
+	{
+		return new Database_Pager($db_query, $options);
+	}
 	static function in_transaction($connection = NULL)
 	{
 		return static::get_database_connection($connection)->in_transaction();

@@ -48,12 +48,10 @@ class Database_Query
 	{
 		if ( ! is_object($db) )
 			$db = Database_Connection::instance($db);
-		if( ! $this->_sql ){
-			if($this->_query_type)
-				$this->compile();
-			if( ! $this->_sql )
-				throw new MkException('sql compile failed');
-		}
+		if($this->_query_type)
+			$this->compile();
+		if( ! $this->_sql )
+			throw new MkException('sql compile failed');
 		//Log::coredebug("[db] SQL = ".$this->_sql);
 		try {
 			$this->result = $db->query($this->_sql, $this->_parameters)->set_fetch_as($this->fetch_as);
