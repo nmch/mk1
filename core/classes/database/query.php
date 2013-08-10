@@ -166,7 +166,7 @@ class Database_Query
 		$last_condition = NULL;
 
 		$sql = '';
-		$parameters_index = 1;
+		$this->clear_parameter_index();
 		foreach ($this->_query_where as $group)
 		{
 			// Process groups of conditions
@@ -273,6 +273,11 @@ class Database_Query
 	{
 		$this->_parameters[$this->_parameters_index - 1] = $value;
 		return $this->_parameters_index++;
+	}
+	function clear_parameter_index()
+	{
+		$this->_parameters_index = 1;
+		return $this;
 	}
 	function clear_parameter()
 	{
