@@ -29,11 +29,11 @@ class Session
 			$flash = array();
 		$flash[$name] = $value;
 		static::set(static::$config['flash_id'],$flash);
-		Log::coredebug("[session flash] set $name",$value,$flash);
+		//Log::coredebug("[session flash] set $name",$value,$flash);
 	}
 	static function get_flash($name,$default = NULL)
 	{
-		Log::coredebug("[session flash] get $name",Arr::get(static::$flash,$name));
+		//Log::coredebug("[session flash] get $name",Arr::get(static::$flash,$name));
 		return array_key_exists($name,static::$flash) ? static::$flash[$name] : $default;
 	}
 	/**

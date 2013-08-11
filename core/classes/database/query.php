@@ -77,6 +77,7 @@ class Database_Query
 	}
 	public function compile()
 	{
+		$this->clear_parameter_index();
 		$this->_sql = $this->{'compile_'.$this->_query_type}();
 		return $this;
 	}
@@ -166,7 +167,6 @@ class Database_Query
 		$last_condition = NULL;
 
 		$sql = '';
-		$this->clear_parameter_index();
 		foreach ($this->_query_where as $group)
 		{
 			// Process groups of conditions
