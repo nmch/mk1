@@ -42,6 +42,8 @@ class View
 	}
 	function render()
 	{
+		Session::load_flash();
+		
 		$this->view();
 		
 		if( ! $this->smarty->templateExists($this->template_filename) )
