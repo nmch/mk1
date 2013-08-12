@@ -23,6 +23,23 @@ class Actionform
 	var $validation_results = array();
 	*/
 	
+	/**
+	 * キーを削除する
+	 */
+	function __unset($name)
+	{
+		//Log::coredebug("[af] unset $name",$this);
+		if(array_key_exists($name,$this->values))
+			unset($this->values[$name]);
+		if(array_key_exists($name,$this->values_default))
+			unset($this->values_default[$name]);
+		if(array_key_exists($name,$this->validated_values))
+			unset($this->validated_values[$name]);
+		if(array_key_exists($name,$this->validation_results))
+			unset($this->validation_results[$name]);
+		//Log::coredebug($this);
+	}
+	
 	//public function save($name,$model_list = array())
 	public function save($name,$model = NULL)
 	{
@@ -94,19 +111,29 @@ class Actionform
 			}
 			//Log::coredebug("[af] validate $key",$rules);
 			
+			// only_existsがtrueの場合、キーがデータに存在しない場合に一切の処理を行わない
+			if(Arr::get($rules,'only_exists') === true){
+				if( ! $this->key_exists($key) )
+					continue;
+			}
+			
 			try {
 				$value = $this->get($key);
-				if(isset($rules['filter'])){
-					foreach($rules['filter'] as $filter => $option){
-						if( is_numeric($filter) ){
-							$filter = $option;
-							$option = array();
+				
+				// 値がデータに存在しない場合はフィルタを適用しない
+				if($this->key_exists($key)){
+					if(isset($rules['filter'])){
+						foreach($rules['filter'] as $filter => $option){
+							if( is_numeric($filter) ){
+								$filter = $option;
+								$option = array();
+							}
+							$value = static::unit_filter($value,$filter,$option);
+							//Log::coredebug("[af] filter $filter",$value);
 						}
-						$value = static::unit_filter($value,$filter,$option);
-						//Log::coredebug("[af] filter $filter",$value);
 					}
+					$this->set($key,$value);
 				}
-				$this->set($key,$value);
 				
 				if(isset($rules['validation'])){
 					foreach($rules['validation'] as $validation => $option){
@@ -130,7 +157,7 @@ class Actionform
 		if($is_error)
 			throw new ValidateErrorException();
 		
-		//Log::coredebug("[af validate] validated_values=",$this->validated_values);
+		//Log::coredebug("[af validate] validated_values=",$this->validated_values,$this->values);
 		return $this;
 	}
 	public static function load($filename)
@@ -214,6 +241,14 @@ class Actionform
 			return $this->values_default[$name];
 		else
 			return $default;
+	}
+	function key_exists($name)
+	{
+		return (array_key_exists($name,$this->values) || array_key_exists($name,$this->values_default));
+	}
+	function value_exists($name)
+	{
+		return key_exists($name);
 	}
 	
 	function is_mobiledevice()

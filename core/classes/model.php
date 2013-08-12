@@ -149,6 +149,7 @@ class Model implements Iterator,Countable,ArrayAccess
 			if(array_key_exists($key,$schema['columns']))
 				$data[$key] = $value;
 		}
+		//Log::coredebug("[model] save data",$this->_data,$data);
 		
 		$r = NULL;
 		if($this->get($primary_key)){
