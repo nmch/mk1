@@ -19,8 +19,8 @@ class Database_Pager
 	 */
 	function execute()
 	{
-		$rows = $this->get('rows');	// 1ページあたりの行数
-		$page = $this->get('page');	// 指定ページ(1 origin)
+		$rows = (int) $this->get('rows');	// 1ページあたりの行数
+		$page = (int) $this->get('page');	// 指定ページ(1 origin)
 		if( ! $rows )
 			$rows = 10;
 		if( ! $page )
@@ -38,22 +38,37 @@ class Database_Pager
 		$offset = $page ? $rows * ($page - 1) : 0;
 		$r2 = $this->db_query->offset($offset)->limit($rows)->execute();
 		
+		$paging_data = array(
+			'total_rows'    => $total_rows,
+			'total_pages'   => $total_pages,
+			'page'          => $page,
+			'rows'          => $rows,
+			'is_first_page' => ($page <= 1) ,
+			'is_last_page'  => ($page >= $total_pages),
+		);
+		
+		/*
 		$this->set('total_rows',$total_rows);
 		$this->set('total_pages',$total_pages);
 		$this->set('page',$page);
 		$this->set('rows',$rows);
 		$this->set('is_first_page', $page <= 1 );
 		$this->set('is_last_page', $page >= $total_pages );
-		
+		*/
+		$this->set($paging_data);
+		$this->set('paging_data',$paging_data);
 		return $r2;
 	}
 	function __set($name,$value)
 	{
 		return $this->set($name,$value);
 	}
-	function set($name,$value)
+	function set($name,$value = NULL)
 	{
-		$this->options->$name = $value;
+		if(method_exists($this->options,'set'))
+			$this->options->set($name,$value);
+		else
+			$this->options->$name = $value;
 		return $this;
 	}
 	function get($name)
