@@ -147,7 +147,10 @@ class Task_Coretask extends Task
 		
 		// スケルトンのコピー
 		$cmd = "cp -ar ".FWPATH."skel/* ./";
-		$cmd = "cp -ar ".FWPATH."skel/.* ./";
+		echo $cmd."\n";
+		passthru($cmd);
+		$cmd = "cp -ar ".FWPATH."skel/.git* ./";
+		echo $cmd."\n";
 		passthru($cmd);
 		
 		// Git 初期化
