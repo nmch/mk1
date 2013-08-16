@@ -104,11 +104,15 @@ class Actionform
 		$validation_results[$name] = $validation_results = array();
 		$is_error = false;
 		
+		$default_rules = Arr::get($validation,'default_rules',array());
+		
 		foreach($validation['key'] as $key => $rules){
 			if( ! is_array($rules) ){
 				$key = $rules;
 				$rules = array();
 			}
+			if($default_rules)
+				$rules = array_merge($default_rules,$rules);
 			//Log::coredebug("[af] validate $key",$rules);
 			
 			// only_existsがtrueの場合、キーがデータに存在しない場合に一切の処理を行わない
@@ -217,6 +221,8 @@ class Actionform
 				$this->set($key,$value,$set_default);
 		}
 		else{
+			//echo "[af] set $name (default:$set_default)"; var_dump($value);
+			
 			if($set_default)
 				$this->values_default[$name] = $value;
 			else
