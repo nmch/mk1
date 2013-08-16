@@ -1,0 +1,6 @@
+<FilesMatch "^scripts$">
+   ForceType application/x-httpd-php 
+</FilesMatch>
+<FilesMatch "^stylesheets$">
+   ForceType application/x-httpd-php 
+</FilesMatch>

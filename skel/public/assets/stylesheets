@@ -1,0 +1,18 @@
+<?php
+   ini_set("zlib.output_compression", "Off");
+   header("Content-Type: text/css; charset=UTF-8"); 
+   header("Cache-Control: must-revalidate");     
+   
+   $expl = explode("/",$_SERVER["REQUEST_URI"]);
+   $fileList = trim(urldecode($expl[count($expl)-1]));
+   $orgFileNames = explode(",",$fileList);
+   
+   foreach($orgFileNames as $filename){
+	$filepath = 'css/'.trim($filename);
+	if(file_exists($filepath)){
+   	 readfile($filepath);
+   	 echo "\n\n";
+   	}
+   }
+   exit;
+?>
