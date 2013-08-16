@@ -132,7 +132,14 @@ class Actionform
 								$filter = $option;
 								$option = array();
 							}
-							$value = static::unit_filter($value,$filter,$option);
+							
+							// 値が配列の場合は各要素に対してフィルタを適用する
+							if(is_array($value)){
+								foreach($value as $value_key => $value_item)
+									$value[$key] = static::unit_filter($value_item,$filter,$option);
+							}
+							else
+								$value = static::unit_filter($value,$filter,$option);
 							//Log::coredebug("[af] filter $filter",$value);
 						}
 					}
@@ -146,7 +153,14 @@ class Actionform
 							$option = array();
 						}
 						//Log::coredebug("[af] validation $validation");
-						static::unit_validate($value,$validation,$option);
+						
+						// 値が配列の場合は各要素に対してバリデーションを適用する
+						if(is_array($value)){
+							foreach($value as $value_key => $value_item)
+								static::unit_validate($value_item,$validation,$option);
+						}
+						else
+							static::unit_validate($value,$validation,$option);
 					}
 				}
 				$validated_values[$key] = $value;
