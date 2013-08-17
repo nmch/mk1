@@ -91,8 +91,12 @@ class Database_Query
 		
 		$sql = "UPDATE $from SET ";
 		$ary = array();
-		foreach($this->_query_values as $key => $value)
-			$ary[] = "$key=$".$this->parameter($value);
+		foreach($this->_query_values as $key => $value){
+			if($value instanceof Database_Expression)
+				$ary[] = "$key=".(string)$value;
+			else
+				$ary[] = "$key=$".$this->parameter($value);
+		}
 		$sql .= implode(',',$ary);
 		$where = $this->build_where();
 		if($where)
