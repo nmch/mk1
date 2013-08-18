@@ -16,5 +16,5 @@ return function($value)
 		$value = NULL;
 	else
 		$value = (int)$value;
-	return (int)$value;
+	return $value;
 };
