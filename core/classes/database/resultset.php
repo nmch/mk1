@@ -7,6 +7,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 	private $fetch_as = array();
 	private $fields;
 	private $fields_hashed_by_name = array();
+	private $query;
 	
 	function __construct($result)
 	{
@@ -35,6 +36,14 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 	function get_affected_rows()
 	{
 		return pg_affected_rows($this->result_resource);
+	}
+	function get_query()
+	{
+		return $this->query;
+	}
+	function set_query($query)
+	{
+		return $this->query = $query;;
 	}
 	function fieldinfo()
 	{

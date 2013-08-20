@@ -55,6 +55,8 @@ class Database_Query
 		//Log::coredebug("[db] SQL = ".$this->_sql);
 		try {
 			$this->result = $db->query($this->_sql, $this->_parameters)->set_fetch_as($this->fetch_as);
+			if($this->result instanceof Database_Resultset)
+				$this->result->set_query($this);
 		} catch(Exception $e){
 			$message = $e->getMessage();
 			$new_expception = new DatabaseQueryError($message,$e->getCode(),$e);
