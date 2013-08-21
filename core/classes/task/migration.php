@@ -34,16 +34,18 @@ class Task_Migration extends Task
 				DB::start_transaction();
 				try{
 					$r = DB::query($query)->execute();
-					Log::debug($query,$r);
+					Log::coredebug($query,$r);
+					DB::query("update migrations set last_seq=$seq")->execute();
+					DB::commit_transaction();
+					Log::info("[db migration] seq=$seq / $name");
+					echo "OK";
 				} catch(Exception $e){
 					DB::rollback_transaction();
+					//Log::coredebug($e->getMessage());
+					//print_r( $e->getTrace());
 					echo "Error";
 					break;
 				}
-				DB::query("update migrations set last_seq=$seq")->execute();
-				DB::commit_transaction();
-				Log::info("[db migration] seq=$seq / $name");
-				echo "OK";
 			}
 			echo "\n";
 			

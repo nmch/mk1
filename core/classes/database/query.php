@@ -6,7 +6,7 @@ class Database_Query
 	protected $_parameters_index = 1;
 	protected $fetch_as = array();
 	protected $affected_rows = NULL;
-	protected $result = NULL;
+	//protected $result = NULL;
 	
 	protected $_query_type = NULL;
 	protected $_query_columns = array();
@@ -54,23 +54,33 @@ class Database_Query
 			throw new MkException('sql compile failed');
 		//Log::coredebug("[db] SQL = ".$this->_sql);
 		try {
+			/*
 			$this->result = $db->query($this->_sql, $this->_parameters)->set_fetch_as($this->fetch_as);
 			if($this->result instanceof Database_Resultset)
 				$this->result->set_query($this);
+			*/
+			$result = $db->query($this->_sql, $this->_parameters)->set_fetch_as($this->fetch_as);
+			if($result instanceof Database_Resultset){
+				$result->set_query($this);
+				$this->affected_rows = $result->get_affected_rows();
+			}
+			return $result;
 		} catch(Exception $e){
 			$message = $e->getMessage();
 			$new_expception = new DatabaseQueryError($message,$e->getCode(),$e);
 			Log::error($message);
 			throw $new_expception;
 		}
-		return $this->result;
 	}
 	function get_affected_rows()
 	{
+		/*
 		if($this->result instanceof Database_Resultset)
 			return $this->result->get_affected_rows();
 		else
 			return NULL;
+		*/
+		return $this->affected_rows;
 	}
 	function set_fetch_as($fetch_as)
 	{
