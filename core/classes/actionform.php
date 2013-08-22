@@ -10,6 +10,7 @@ class Actionform
 	
 	private $request_method;
 	private $useragent;
+	private $server_vars;
 	
 	/*
 	private $target_array_key;
@@ -210,9 +211,9 @@ class Actionform
 		$this->values = array_merge($_GET ?: array(),$_POST ?: array());
 		//echo "<PRE>form_values = "; print_r($this->form_values); echo "</PRE>";
 		//$this->af_filter = new \Model_ActionformFilter;
-		//$this->_SERVER = $_SERVER;
 		//$this->request_method = Arr::get($_SERVER,'REQUEST_METHOD','');
 		$this->useragent = Arr::get($_SERVER,'HTTP_USER_AGENT');
+		$this->server_vars = $_SERVER;
 		return $this;
 	}
 	public static function method()
@@ -261,6 +262,10 @@ class Actionform
 			return $this->values_default[$name];
 		else
 			return $default;
+	}
+	function as_array()
+	{
+		return array_merge($this->values_default,$this->values);
 	}
 	function key_exists($name)
 	{
@@ -751,4 +756,9 @@ class Actionform
 		return $body;
 	}
 	 */
+	
+	function is_ajax_request()
+	{
+		return strtolower(Arr::get($this->server_vars,'HTTP_X_REQUESTED_WITH')) == 'xmlhttprequest';
+	}
 }
