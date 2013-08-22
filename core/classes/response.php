@@ -23,8 +23,13 @@ class Response
 			header($key.':'.$header);
 		}
 		
-		if($this->body instanceof View)
+		if($this->body instanceof View){
 			$body = $this->body->render();
+			
+			//bodyがResponseオブジェクトだった場合(View::view()がResponseインスタンスを返した場合)、そこから先はそのインスタンスのsend()に任せる
+			if($body instanceof Response)
+				return $body->send();
+		}
 		else
 			$body = $this->body;
 		

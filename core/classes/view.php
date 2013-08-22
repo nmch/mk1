@@ -44,7 +44,11 @@ class View
 	{
 		Session::load_flash();
 		
-		$this->view();
+		$r = $this->view();
+		
+		// view()がResponseオブジェクト(JSONを想定)を返した場合はそのまま呼び出し元(たぶんResopnse::send()へ返す
+		if($r instanceof Response)
+			return $r;
 		
 		if( ! $this->smarty->templateExists($this->template_filename) )
 			throw new HttpNotFoundException();
