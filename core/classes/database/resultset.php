@@ -49,13 +49,21 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 	{
 		return $this->fields;
 	}
-	function get($column = NULL)
+	function get($column = NULL,$position = NULL)
 	{
-		$row = $this->fetch();
+		$row = $this->fetch(NULL,$position);
 		if($column)
 			return isset($row[$column]) ? $row[$column] : NULL;
 		else
 			return $row;
+	}
+	function get_first($column = NULL)
+	{
+		return $this->get($column,0);
+	}
+	function get_last($column = NULL)
+	{
+		return $this->get($column,$this->rows ? ($this->rows - 1) : NULL);
 	}
 	function as_array($correct_values = false, $array_key = NULL)
 	{
