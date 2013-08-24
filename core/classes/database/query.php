@@ -491,7 +491,7 @@ class Database_Query
 	{
 		if($column){
 			if( ! is_array($column) ){
-				$this->order_by(array($column => $direction));
+				$this->order_by(array((string)$column => $direction));
 			}
 			else{
 				foreach($column as $_column => $_direction){
