@@ -34,8 +34,10 @@ class Mail
 		$subject = isset($this->config['subject']) ? $this->config['subject'] : '';
 		$body = isset($this->config['body']) ? $this->config['body'] : '';
 		$r = mb_send_mail($to, $subject, $body, $additional_header);
-		if($r !== true)
+		if($r !== true){
+			Log::error("メールの送信に失敗しました",$r,$to, $subject, $body, $additional_header);
 			throw new EmailSendingFailedException();
+		}
 		Log::coredebug("sent email to $to [$subject]");
 	}
 	
