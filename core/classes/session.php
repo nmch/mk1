@@ -15,6 +15,7 @@ class Session
 		session_name($config[$config['driver']]['cookie_name']);
 		session_set_cookie_params($config['expiration_time'],$config['cookie_path'],$config['cookie_domain']);
 		session_start();
+		Log::coredebug("Session started : ".session_id());
 	}
 	static function __callStatic($name, $arguments)
 	{

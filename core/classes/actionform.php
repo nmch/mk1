@@ -761,4 +761,16 @@ class Actionform
 	{
 		return strtolower(Arr::get($this->server_vars,'HTTP_X_REQUESTED_WITH')) == 'xmlhttprequest';
 	}
+	
+	function set_message($type,$message)
+	{
+		$messages = Session::get_flash('messages');
+		if( ! $messages || ! is_array($messages) )
+			$messages = array();
+		
+		Log::coredebug("set message($type) : $message");
+		$messages[$type][] = $message;
+		
+		Session::set_flash('messages',$messages);
+	}
 }
