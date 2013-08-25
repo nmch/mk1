@@ -146,6 +146,7 @@ class Database_Query
 	}
 	public function compile_select()
 	{
+		//Log::coredebug("_query_columns=",$this->_query_columns);
 		$sql = "SELECT ";
 		if($this->_query_distinct)
 			$sql .= " DISTINCT ";
@@ -309,9 +310,16 @@ class Database_Query
 		$this->_query_type = 'SELECT';
 		//$this->_query_columns = $columns;
 		$this->_query_columns = array_merge($this->_query_columns,$columns);
-		
+		//Log::coredebug("select() _query_columns=",$columns,$this->_query_columns);
+		//echo "<PRE>"; debug_print_backtrace(); echo "</PRE>";
 		return $this;
 	}
+	function clear_select()
+	{
+		$this->_query_columns = array();
+		return $this;
+	}
+	
 	function update($table)
 	{
 		$this->_query_type = 'UPDATE';
@@ -501,6 +509,12 @@ class Database_Query
 		}
 		return $this;
 	}
+	function clear_order_by()
+	{
+		$this->_query_orderby = array();
+		return $this;
+	}
+	
 	function returning($column)
 	{
 		if(is_array($column))

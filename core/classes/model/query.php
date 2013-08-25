@@ -10,6 +10,10 @@ class Model_Query
 		$this->query = new Database_Query;
 		return $this->query->from($model::table())->set_fetch_as($model);
 	}
+	function get_query()
+	{
+		return $this->query;
+	}
 	function get()
 	{
 		$conditions = forward_static_call(array($this->model,'conditions'));

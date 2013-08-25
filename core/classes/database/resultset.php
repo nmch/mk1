@@ -95,6 +95,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 	
 	function fetch($fetch_as = NULL,$position = NULL,$forward = false)
 	{
+		//Log::coredebug("[db] fetch($fetch_as, $position, $forward)");
 		if($this->rows == 0)
 			return NULL;
 		if($position === NULL)
@@ -103,13 +104,13 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 			throw new OutOfRangeException('invalid offset '.$position);
 		
 		$fetch_as = is_null($fetch_as) ? $this->fetch_as : $fetch_as;
+		//Log::coredebug("[db] fetch as:{$fetch_as}, position:{$position}");
 		if(is_string($fetch_as))
 			$data = pg_fetch_object($this->result_resource,$position,$fetch_as);
 		else
 			$data = pg_fetch_assoc($this->result_resource,$position);
 		if($forward)
 			$this->next();
-		//Log::coredebug("[db] fetch position:{$position}");
 		$data = $this->correct_data($data);
 		return $data;
 	}

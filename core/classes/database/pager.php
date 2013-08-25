@@ -26,11 +26,13 @@ class Database_Pager
 		if( ! $page )
 			$page = 1;
 		
-		$r1 = $this->db_query->execute();
-		
-		$total_rows = $r1->count();					// 結果の全行数
+		if($this->db_query instanceof Model_Query)
+			$db_query_clone = clone $this->db_query->get_query();
+		else
+			$db_query_clone = clone $this->db_query;
+		$total_rows = $db_query_clone->clear_order_by()->clear_select()->select('count(*) as count')->set_fetch_as(NULL)->execute()->get('count');
+		unset($db_query_clone);
 		$total_pages = ceil($total_rows / $rows);	// 結果の全ページ数
-		unset($r1);
 		
 		if($total_pages < $page)
 			$page = $total_pages;

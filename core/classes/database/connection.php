@@ -40,7 +40,7 @@ class Database_Connection
 	}
 	function query($sql,$parameters = array())
 	{
-		Log::coredebug("[dbconn] SQL {$this->connection} = ".$sql, $parameters);
+		Log::coredebug("[dbconn] SQL {$this->connection} = $sql / ".var_export($parameters,true));
 		if($parameters)
 			$r = pg_query_params($this->connection,$sql,$parameters);
 		else
