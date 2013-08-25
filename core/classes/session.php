@@ -12,7 +12,17 @@ class Session
 		),Config::get('session'));
 		static::$config = $config;
 		
-		session_name($config[$config['driver']]['cookie_name']);
+		$driver_name = Arr::get($config,'driver');
+		if( ! $driver_name )
+			throw new Exception('invalid driver name');
+		$driver_config = Arr::get($config,$driver_name);
+		if( ! $driver_config )
+			throw new Exception('driver config not found');
+		$cookie_name = Arr::get($driver_config,'cookie_name');
+		if( ! $cookie_name )
+			throw new Exception('cookie name not found');
+		
+		session_name($cookie_name);
 		session_set_cookie_params($config['expiration_time'],$config['cookie_path'],$config['cookie_domain']);
 		session_start();
 		Log::coredebug("Session started : ".session_id());
