@@ -50,8 +50,11 @@ class View
 		if($r instanceof Response)
 			return $r;
 		
-		if( ! $this->smarty->templateExists($this->template_filename) )
+		if( ! $this->smarty->templateExists($this->template_filename) ){
+			if(is_scalar($this->template_filename))
+				Log::error("template not found {$this->template_filename}");
 			throw new HttpNotFoundException();
+		}
 		
 		$this->smarty->assignByRef('data', $this->data);
 		$this->smarty->assignByRef('af', $this->af);

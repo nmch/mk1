@@ -19,6 +19,7 @@ class Model implements Iterator,Countable,ArrayAccess
 	
 	protected $_is_new = true;
 	protected $_original = array();
+	protected $_original_before_save = array();
 	protected $_iter_keylist = array();
 	protected $_iter_curkey = 0;
 	public $_data = array();
@@ -164,6 +165,8 @@ class Model implements Iterator,Countable,ArrayAccess
 
 		// 更新・挿入されたアイテムはoriginalとして保存し、_dataからは消す
 		if($r){
+			$this->_original_before_save = $this->_original;
+			
 			$new_data = $r->get();
 			foreach($new_data as $key => $value){
 				$this->_original[$key] = $value;
