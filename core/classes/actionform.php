@@ -124,6 +124,7 @@ class Actionform
 			
 			try {
 				$value = $this->get($key);
+				//Log::coredebug("[af] target vlaue=",$value);
 				
 				// 値がデータに存在しない場合はフィルタを適用しない
 				if($this->key_exists($key)){
@@ -137,7 +138,7 @@ class Actionform
 							// 値が配列の場合は各要素に対してフィルタを適用する
 							if(is_array($value)){
 								foreach($value as $value_key => $value_item)
-									$value[$key] = static::unit_filter($value_item,$filter,$option);
+									$value[$value_key] = static::unit_filter($value_item,$filter,$option);
 							}
 							else
 								$value = static::unit_filter($value,$filter,$option);
