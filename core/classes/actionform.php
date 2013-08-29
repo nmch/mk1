@@ -135,14 +135,22 @@ class Actionform
 								$option = array();
 							}
 							
-							// 値が配列の場合は各要素に対してフィルタを適用する
-							if(is_array($value)){
-								foreach($value as $value_key => $value_item)
-									$value[$value_key] = static::unit_filter($value_item,$filter,$option);
-							}
-							else
+							// フィルタ名が配列として指定されている場合は
+							// 値が配列の場合にのみ適用し、フィルタには値を配列のまま渡す
+							if(is_array($filter)){
+								$filter = array_pop($filter);
 								$value = static::unit_filter($value,$filter,$option);
-							//Log::coredebug("[af] filter $filter",$value);
+							}
+							else{
+								// 値が配列の場合は各要素に対してフィルタを適用する
+								if(is_array($value)){
+									foreach($value as $value_key => $value_item)
+										$value[$value_key] = static::unit_filter($value_item,$filter,$option);
+								}
+								else
+									$value = static::unit_filter($value,$filter,$option);
+								//Log::coredebug("[af] filter $filter",$value);
+							}
 						}
 					}
 					$this->set($key,$value);
@@ -246,6 +254,13 @@ class Actionform
 		}
 		
 		return $this;
+	}
+	function get_default($name = NULL)
+	{
+		if( ! $name )
+			return $this->values_default;
+		else
+			return Arr::get($this->values_default,$name);
 	}
 	function set_default($name,$value = NULL)
 	{
