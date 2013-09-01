@@ -38,8 +38,13 @@ class Model_Query
 	
 	function __call($name , array $arguments)
 	{
-		call_user_func_array(array($this->query,$name), $arguments);
-		return $this;
+		$r = call_user_func_array(array($this->query,$name), $arguments);
+		if($r instanceof Database_Query){
+			// Database_Queryのメソッドから$this、つまりDatabase_Queryのインスタンスがかえってきた場合はそれを模倣するようModel_Queryを返す
+			return $this;
+		}
+		else
+			return $r;
 	}
 	/*
 	function join()

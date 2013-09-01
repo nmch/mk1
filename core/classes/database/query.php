@@ -178,6 +178,16 @@ class Database_Query
 			$sql .= " LIMIT $this->_query_limit";
 		return $sql;
 	}
+	/**
+	 * where条件が設定されているか
+	 *
+	 * @return boolean
+	 */
+	function condition_where_exists()
+	{
+		//Log::coredebug("condition_where_exists=",$this->_query_where,!empty($this->_query_where));
+		return ( ! empty($this->_query_where) );
+	}
 	function build_where()
 	{
 		//Log::coredebug($this->_query_where,$this->_query_values);
