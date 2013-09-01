@@ -7,7 +7,7 @@ class Mk
 	const TEST			= 'test';
 	const PRODUCTION	= 'production';
 	const STAGE			= 'stage';
-	public static $env = Mk::DEVELOPMENT;
+	public static $env = Mk::PRODUCTION;
 	
 	public $config;
 	public static $include_path_list;
@@ -16,7 +16,7 @@ class Mk
 	function __construct()
 	{
 		// 実行環境の決定
-		self::$env = self::DEVELOPMENT;
+		self::$env = self::PRODUCTION;			//何も指定されていない場合のデフォルト動作はPRODUCTION
 		if( ! empty($_SERVER['FUEL_ENV']) )
 			self::$env = $_SERVER['FUEL_ENV'];
 		if( ! empty($_SERVER['MK_ENV']) )
