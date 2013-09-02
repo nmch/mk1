@@ -18,8 +18,9 @@ class Request
 	
 	function execute()
 	{
-		list($controller_name,$controller_method_name,$controller_method_options) = Route::get_controller($this->uri);
-		Log::debug("[route] controller = $controller_name / method = $controller_method_name");
+		$route_class_name = Config::get('class.route','Route');
+		list($controller_name,$controller_method_name,$controller_method_options) = $route_class_name::get_controller($this->uri);
+		Log::debug("[$route_class_name] controller = $controller_name / method = $controller_method_name");
 		
 		$controller = new $controller_name(array(
 			'request' => $this,
