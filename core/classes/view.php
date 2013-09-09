@@ -40,6 +40,11 @@ class View
 		$this->smarty->$name = $value;
 		return $this;
 	}
+	function nofilter()
+	{
+		$this->set_smarty_environment('default_modifiers',array());
+		return $this;
+	}
 	function render()
 	{
 		Session::load_flash();
@@ -55,6 +60,7 @@ class View
 				Log::error("template not found {$this->template_filename}");
 			throw new HttpNotFoundException();
 		}
+		//echo "<PRE>"; print_r($this->smarty); echo "</PRE>";
 		
 		$this->smarty->assignByRef('data', $this->data);
 		$this->smarty->assignByRef('af', $this->af);
