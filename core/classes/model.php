@@ -117,16 +117,7 @@ class Model implements Iterator,Countable,ArrayAccess
 	}
 	function as_array($array_key = NULL)
 	{
-		$data = array_merge($this->_original,$this->_data);
-		if($array_key){
-			$new_data = array();
-			foreach($data as $item){
-				$new_data[ Arr::get($item,$array_key) ] = $item;
-			}
-			unset($data);
-			$data = $new_data;
-		}
-		return $data;
+		return array_merge($this->_original,$this->_data);
 	}
 	
 	function get_diff()
