@@ -115,9 +115,18 @@ class Model implements Iterator,Countable,ArrayAccess
 				throw new MkException('invalid relation type');
 		}
 	}
-	function as_array()
+	function as_array($array_key = NULL)
 	{
-		return array_merge($this->_original,$this->_data);
+		$data = array_merge($this->_original,$this->_data);
+		if($array_key){
+			$new_data = array();
+			foreach($data as $item){
+				$new_data[ Arr::get($item,$array_key) ] = $item;
+			}
+			unset($data);
+			$data = $new_data;
+		}
+		return $data;
 	}
 	
 	function get_diff()
