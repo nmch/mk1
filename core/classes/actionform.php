@@ -176,6 +176,7 @@ class Actionform
 				$validated_values[$key] = $value;
 				$validation_results[$key] = NULL;
 			} catch(ValidateErrorException $e){
+				Log::debug("[af] validation error key=[$key] msg=".$e->getMessage());
 				$validation_results[$key] = $e;
 				$is_error = true;
 			}
