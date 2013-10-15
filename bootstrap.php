@@ -73,7 +73,7 @@ if( ! empty($_SERVER['argv']) ){
 	$retval = forward_static_call_array(array('Task_Coretask',$argv[1]),array_slice($argv,2));
 }
 else{
-	$request_uri_from_server = Arr::get($_SERVER,'REDIRECT_URL') ?: Arr::get($_SERVER,'REQUEST_URI');
+	$request_uri_from_server = parse_url( Arr::get($_SERVER,'REDIRECT_URL') ?: Arr::get($_SERVER,'REQUEST_URI'), PHP_URL_PATH);
 	if( ! $request_uri_from_server )
 		$uri = '/';
 	else
