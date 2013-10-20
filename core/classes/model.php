@@ -320,6 +320,9 @@ class Model implements Iterator,Countable,ArrayAccess
 					// UNIXタイムスタンプだった場合は変換する
 					if(is_numeric($value))
 						$value = date(DATE_ATOM,$value);
+					// 日付として空文字列は受け付けられないので、NULLにする
+					if($value === "")
+						$value = NULL;
 					break;
 				case 'B':
 					if(is_numeric($value)){
