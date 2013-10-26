@@ -244,7 +244,7 @@ class Actionform
 		$this->set($name,$value);
 		return $this;
 	}
-	function set($name,$value,$set_default = false)
+	function set($name,$value = NULL,$set_default = false)
 	{
 		if( is_array($name) || $name instanceof ArrayAccess ){
 			foreach($name as $key => $value)
