@@ -52,6 +52,16 @@ class Model implements Iterator,Countable,ArrayAccess
 	{
 		return array_merge($this->_original,$this->_data);
 	}
+	function set_all_data($data)
+	{
+		foreach($this->columns() as $key){
+			if(is_object($data))
+				$this->$key = $data->$key;
+			if(is_array($data))
+				$this->$key = array_key_exists($key,$data) ? $data[$key] : NULL;
+		}
+		return $this;
+	}
 	function get($name, $default = NULL, $rel_options = array())
 	{
 		if(array_key_exists($name,$this->_data))
