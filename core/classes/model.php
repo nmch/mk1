@@ -178,12 +178,14 @@ class Model implements Iterator,Countable,ArrayAccess
 			$this->_original_before_save = $this->_original;
 			
 			$new_data = $r->get();
+			//Log::coredebug("[model] new_data = ",$new_data);
 			foreach($new_data as $key => $value){
 				$this->_original[$key] = $value;
-				if(isset($this->_data[$key]))
+				if(array_key_exists($key,$this->_data))
 					unset($this->_data[$key]);
 			}
 		}
+		//Log::coredebug("[model] saved data = ",$this);
 		
 		$this->after_save();
 		return $this;
