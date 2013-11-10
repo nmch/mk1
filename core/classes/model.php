@@ -40,7 +40,7 @@ class Model implements Iterator,Countable,ArrayAccess
 		if($this->_is_new || $force_original)
 			$this->_original[$name] = $value;
 		else if( ! array_key_exists($name,$this->_original) || $this->$name !== $value ){
-			//Log::coredebug("[model] set $name / {$this->_is_new}",$value,debug_backtrace(0,3));
+			//Log::coredebug("[model] set $name / _is_new={$this->_is_new}",$value,debug_backtrace(0,3));
 			$this->_data[$name] = $value;
 		}
 	}
@@ -209,11 +209,17 @@ class Model implements Iterator,Countable,ArrayAccess
 	protected function before_delete() {}
 	protected function after_delete() {}
 	
-	function __construct()
+	function __construct($options = array())
+	{
+		if(empty($options['deferred_init']))
+			$this->_is_new = false;
+		
+		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
+	}
+	function drop_isnew_flag()
 	{
 		$this->_is_new = false;
-		
-		//Log::coredebug("constructed a new object of ".get_called_class()." table is ".$this->table()." / pkey is ".static::$_primary_key,reset(static::$_schema));
+		return $this;
 	}
 	static function table()
 	{
