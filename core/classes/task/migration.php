@@ -51,9 +51,8 @@ class Task_Migration extends Task
 			
 			// DBスキーマのキャッシュを消去する
 			$cache_dir = Cache::cache_dir(NULL,'core_db');
-			if(is_dir($cache_dir)){
-				system('rm -R '.$cache_dir);
-			}
+			if(is_dir($cache_dir))
+				File::rm($cache_dir);
 		}
 	}
 }

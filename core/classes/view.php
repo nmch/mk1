@@ -42,9 +42,10 @@ class View
 	}
 	function render()
 	{
-		Session::load_flash();
-		
 		$r = $this->view();
+		
+		// view()でset_flashする可能性があるので、load_flash()はview()のあとで。
+		Session::load_flash();
 		
 		// view()がResponseオブジェクト(JSONを想定)を返した場合はそのまま呼び出し元(たぶんResopnse::send()へ返す
 		if($r instanceof Response)

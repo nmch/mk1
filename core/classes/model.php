@@ -40,7 +40,7 @@ class Model implements Iterator,Countable,ArrayAccess
 		if($this->_is_new || $force_original)
 			$this->_original[$name] = $value;
 		else if( ! array_key_exists($name,$this->_original) || $this->$name !== $value ){
-			//Log::coredebug("[model] set $name / {$this->_is_new}",$value,debug_backtrace(0,3));
+			//Log::coredebug("[model] set $name / _is_new={$this->_is_new}",$value,debug_backtrace(0,3));
 			$this->_data[$name] = $value;
 		}
 	}
@@ -51,6 +51,16 @@ class Model implements Iterator,Countable,ArrayAccess
 	function get_all_data()
 	{
 		return array_merge($this->_original,$this->_data);
+	}
+	function set_all_data($data)
+	{
+		foreach($this->columns() as $key){
+			if(is_object($data))
+				$this->$key = $data->$key;
+			if(is_array($data))
+				$this->$key = array_key_exists($key,$data) ? $data[$key] : NULL;
+		}
+		return $this;
 	}
 	function get($name, $default = NULL, $rel_options = array())
 	{
@@ -168,12 +178,14 @@ class Model implements Iterator,Countable,ArrayAccess
 			$this->_original_before_save = $this->_original;
 			
 			$new_data = $r->get();
+			//Log::coredebug("[model] new_data = ",$new_data);
 			foreach($new_data as $key => $value){
 				$this->_original[$key] = $value;
-				if(isset($this->_data[$key]))
+				if(array_key_exists($key,$this->_data))
 					unset($this->_data[$key]);
 			}
 		}
+		//Log::coredebug("[model] saved data = ",$this);
 		
 		$this->after_save();
 		return $this;
@@ -197,11 +209,17 @@ class Model implements Iterator,Countable,ArrayAccess
 	protected function before_delete() {}
 	protected function after_delete() {}
 	
-	function __construct()
+	function __construct($options = array())
+	{
+		if(empty($options['deferred_init']))
+			$this->_is_new = false;
+		
+		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
+	}
+	function drop_isnew_flag()
 	{
 		$this->_is_new = false;
-		
-		//Log::coredebug("constructed a new object of ".get_called_class()." table is ".$this->table()." / pkey is ".static::$_primary_key,reset(static::$_schema));
+		return $this;
 	}
 	static function table()
 	{
@@ -320,6 +338,9 @@ class Model implements Iterator,Countable,ArrayAccess
 					// UNIXタイムスタンプだった場合は変換する
 					if(is_numeric($value))
 						$value = date(DATE_ATOM,$value);
+					// 日付として空文字列は受け付けられないので、NULLにする
+					if($value === "")
+						$value = NULL;
 					break;
 				case 'B':
 					if(is_numeric($value)){

@@ -11,12 +11,12 @@ class Route
 		$controller_method_options = array();
 		
 		if( ! is_array($uri) )
-			$uri = self::get_route($uri);
+			$uri = static::get_route($uri);
 		
 		if( is_array($uri) ){
 			list($controller_name,$controller_method_name) = $uri;
 			$controller_name = 'Controller_'.ucfirst($controller_name);
-			$controller_method_name = self::find_method($controller_name,$controller_method_name);
+			$controller_method_name = static::find_method($controller_name,$controller_method_name);
 		}
 		else{
 			$uri_exploded = explode('/',$uri);
@@ -36,7 +36,7 @@ class Route
 				
 				if(class_exists($controller_name_candidate)){
 //					Log::coredebug("[route] Found controller class $controller_name_candidate");
-					$controller_method_name = self::find_method($controller_name_candidate,$controller_method_name_candidate,$request_method);
+					$controller_method_name = static::find_method($controller_name_candidate,$controller_method_name_candidate,$request_method);
 //					Log::coredebug("[route] Found controller method $controller_method_name");
 					
 					if( $controller_method_name ){

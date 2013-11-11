@@ -104,9 +104,13 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 			throw new OutOfRangeException('invalid offset '.$position);
 		
 		$fetch_as = is_null($fetch_as) ? $this->fetch_as : $fetch_as;
-		//Log::coredebug("[db] fetch as:{$fetch_as}, position:{$position}");
-		if(is_string($fetch_as))
-			$data = pg_fetch_object($this->result_resource,$position,$fetch_as);
+		//Log::coredebug("[db] fetch as ",$fetch_as,$position);
+		if(is_string($fetch_as)){
+			$data = pg_fetch_object($this->result_resource,$position,$fetch_as,array('deferred_init' => true));
+			if($data instanceof Model)
+				$data->drop_isnew_flag();
+			//Log::coredebug("pg_fetch_object",$data);
+		}
 		else
 			$data = pg_fetch_assoc($this->result_resource,$position);
 		if($forward)
