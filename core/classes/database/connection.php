@@ -38,6 +38,14 @@ class Database_Connection
 		
 		return static::$instances[$name];
 	}
+	function dbname()
+	{
+		return pg_dbname($this->connection);
+	}
+	function copy_from($table_name , $rows)
+	{
+		return pg_copy_from($this->connection, $table_name , $rows);
+	}
 	function query($sql,$parameters = array())
 	{
 		Log::coredebug("[dbconn] SQL {$this->connection} = $sql / ".var_export($parameters,true));
