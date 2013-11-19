@@ -229,6 +229,32 @@ class Actionform
 		//$this->request_method = Arr::get($_SERVER,'REQUEST_METHOD','');
 		$this->useragent = Arr::get($_SERVER,'HTTP_USER_AGENT');
 		$this->server_vars = $_SERVER;
+		
+		// アップロードされたファイル
+		if(is_array($_FILES) && count($_FILES)){
+			foreach($_FILES as $file_key => $file){
+				if(is_array($file['tmp_name'])){
+					$files = [];
+					foreach($file['tmp_name'] as $file_index => $file_tmpname){
+						if(is_uploaded_file($file_tmpname) ){
+							$files[$file_index] = [
+								'tmp_name' => $file_tmpname,
+								'name'  => Arr::get($file,"name.{$file_index}"),
+								'type'  => Arr::get($file,"type.{$file_index}"),
+								'error' => Arr::get($file,"error.{$file_index}"),
+								'size'  => Arr::get($file,"size.{$file_index}"),
+							];
+						}
+					}
+					$this->set( $file_key, $files );
+				}
+				else{
+					if(is_uploaded_file($file['tmp_name']) )
+						$this->set( $file_key, $file );
+				}
+			}
+		}
+		
 		return $this;
 	}
 	public static function method()
