@@ -41,8 +41,9 @@ class Request
 		if($controller_return_var === NULL)
 			return;
 		
-		if($controller_return_var instanceof Response)
+		if($controller_return_var instanceof Response){
 			$response = $controller_return_var;
+		}
 		if(is_scalar($controller_return_var))
 			$response = new Response($controller_return_var);
 		if($controller_return_var instanceof View)

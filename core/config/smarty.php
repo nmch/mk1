@@ -14,6 +14,6 @@ return array(
 		'compile_check'     => true,
 		'debugging'         => false,
 		'autoload_filters'  => array(),
-		'default_modifiers' => array('escape:"htmlall"'),
+		'default_modifiers' => array('escape:"html"'),
 	),
 );
