@@ -84,7 +84,7 @@ class Database_Connection
 		if( ! $this->in_transaction() )
 			$this->start_transaction();
 		
-		$point_name = uniqid(gethostname());
+		$point_name = preg_replace('/[^0-9a-z]/','',strtolower(uniqid(gethostname())));
 		DB::query('SAVEPOINT '.$point_name)->execute($this);
 		Log::coredebug('[dbconn] SAVEPOINT '.$point_name);
 		$this->savepoint_counter++;
