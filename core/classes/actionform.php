@@ -27,7 +27,7 @@ class Actionform
 	/**
 	 * キーを削除する
 	 */
-	function __unset($name)
+	function delete($name)
 	{
 		//Log::coredebug("[af] unset $name",$this);
 		if(array_key_exists($name,$this->values))
@@ -38,7 +38,12 @@ class Actionform
 			unset($this->validated_values[$name]);
 		if(array_key_exists($name,$this->validation_results))
 			unset($this->validation_results[$name]);
-		//Log::coredebug($this);
+		
+		return $this;
+	}
+	function __unset($name)
+	{
+		return $this->delete($name);
 	}
 	
 	//public function save($name,$model_list = array())
@@ -314,6 +319,10 @@ class Actionform
 	function as_array()
 	{
 		return array_merge($this->values_default,$this->values);
+	}
+	function get_validated_values($name)
+	{
+		return Arr::get($this->validated_values,$name,[]);
 	}
 	
 	/**
@@ -815,9 +824,14 @@ class Actionform
 	}
 	 */
 	
+	function server_vars($name)
+	{
+		return Arr::get($this->server_vars,$name);
+	}
+	
 	function is_ajax_request()
 	{
-		return strtolower(Arr::get($this->server_vars,'HTTP_X_REQUESTED_WITH')) == 'xmlhttprequest';
+		return strtolower($this->server_vars('HTTP_X_REQUESTED_WITH')) == 'xmlhttprequest';
 	}
 	
 	function set_message($type,$message)
