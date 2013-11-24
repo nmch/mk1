@@ -383,6 +383,29 @@ class Model implements Iterator,Countable,ArrayAccess
 		}
 	}
 	
+	protected static function make_unique_code($column_name, $length = 32)
+	{
+		$char_seed = array_merge(range('a','z'),range('A','Z'),range('0','9'));
+		
+		$unique_code = "";
+		for($c = 0;$c < 100;$c++){
+			$unique_code_candidate = "";
+			for($i = 0;$i < $length;$i++){
+				$unique_code_candidate .= $char_seed[ mt_rand(0,count($char_seed) - 1) ];
+			}
+			
+			$r = DB::select($column_name)->from(static::table())->where($column_name,$unique_code_candidate)->execute();
+			if( $r->count() == 0){
+				$unique_code = $unique_code_candidate;
+				break;
+			}
+		}
+		if( ! $unique_code )
+			throw new Exception('generate unique id failed');
+		
+		return $unique_code;
+	}
+	
 	/*
 	public static function instance_from_query_data()
 	{
