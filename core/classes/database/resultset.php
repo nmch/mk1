@@ -65,6 +65,17 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 	{
 		return $this->get($column,$this->rows ? ($this->rows - 1) : NULL);
 	}
+	function as_object_array($array_key = NULL)
+	{
+		$list = [];
+		foreach($this as $item){
+			if($array_key)
+				$list[$item->$array_key] = $item;
+			else
+				$list[] = $item;
+		}
+		return $list;
+	}
 	function as_array($correct_values = false, $array_key = NULL)
 	{
 		// Database_Type::retrieve()から、加工なしで返ることを期待して呼ばれているので注意
