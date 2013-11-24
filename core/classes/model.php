@@ -353,7 +353,7 @@ class Model implements Iterator,Countable,ArrayAccess
 							$value = true;
 						}
 						else if($str[0] == 'f' || strtolower($str) == 'off'){
-							$value = true;
+							$value = false;
 						}
 						else
 							$value = NULL;
