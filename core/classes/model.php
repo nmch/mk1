@@ -86,7 +86,16 @@ class Model implements Iterator,Countable,ArrayAccess
 		if(isset($this->_original[$name]))
 			unset($this->_original[$name]);
 	}
-	function get_clone($ignore_list = array())
+	
+	/**
+	 * 現在のモデルのデータを引き継いだ新しいオブジェクトを作成する
+	 * 
+	 * データは保存されない。
+	 * 
+	 * @param type $ignore_list
+	 * @return \static
+	 */
+	function duplicate($ignore_list = array())
 	{
 		$primary_key = static::primary_key();
 		
@@ -96,8 +105,20 @@ class Model implements Iterator,Countable,ArrayAccess
 				continue;
 			$new->$key = $value;
 		}
-		$new->save();
 		return $new;
+	}
+	/**
+	 * 現在のデータの内容を新しいレコードに保存して、新しいオブジェクトを返す
+	 * 
+	 * duplicate()がデータを保存しないのに対し、これはデータを保存し新しいIDができる
+	 * 
+	 * @param type $ignore_list
+	 * @return \static
+	 */
+	function get_clone($ignore_list = array())
+	{
+		$new_obj = $this->duplicate($ignore_list);
+		return $new_obj->save();
 	}
 	function get_related($relation_type,$options)
 	{
