@@ -179,10 +179,17 @@ class Model implements Iterator,Countable,ArrayAccess
 			
 			$new_data = $r->get();
 			//Log::coredebug("[model] new_data = ",$new_data);
-			foreach($new_data as $key => $value){
-				$this->_original[$key] = $value;
-				if(array_key_exists($key,$this->_data))
-					unset($this->_data[$key]);
+			if($new_data){
+				foreach($new_data as $key => $value){
+					$this->_original[$key] = $value;
+					if(array_key_exists($key,$this->_data))
+						unset($this->_data[$key]);
+				}
+			}
+			else{
+				// セーブに失敗した(保存できたデータがない)場合はdataを消し、originalの状態に戻して例外をスロー
+				$this->_data = [];
+				throw new Exception('save failed');
 			}
 		}
 		//Log::coredebug("[model] saved data = ",$this);
