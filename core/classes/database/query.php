@@ -12,6 +12,7 @@ class Database_Query
 	protected $_query_columns = array();
 	protected $_query_where = array();
 	protected $_query_from = array();
+	protected $_query_with= array();
 	protected $_query_join= array();
 	protected $_query_values = array();
 	protected $_query_orderby = array();
@@ -147,7 +148,15 @@ class Database_Query
 	public function compile_select()
 	{
 		//Log::coredebug("_query_columns=",$this->_query_columns);
-		$sql = "SELECT ";
+		$sql = '';
+		if($this->_query_with){
+			$sql_with = [];
+			foreach($this->_query_with as $with){
+				$sql_with[] = Arr::get($with,'name').' AS ('.Arr::get($with,'query').')';
+			}
+			$sql .= "WITH ".implode(',',$sql_with)." ";
+		}
+		$sql .= "SELECT ";
 		if($this->_query_distinct)
 			$sql .= " DISTINCT ";
 		$sql .= $this->_query_columns ? implode(',',$this->_query_columns) : '*';
@@ -357,6 +366,14 @@ class Database_Query
 	function set(array $values)
 	{
 		return $this->values($values);
+	}
+	function with($with,$with_query = NULL)
+	{
+		if(is_array($with))
+			$this->_query_with = array_merge($this->_query_with,$with);
+		else
+			$this->_query_with[] = ['name' => $with, 'query' => $with_query];
+		return $this;
 	}
 	function values(array $values)
 	{
