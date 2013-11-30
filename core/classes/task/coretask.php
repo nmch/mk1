@@ -156,7 +156,7 @@ class Task_Coretask extends Task
 		// Git 初期化
 		passthru("git init");
 		// フレームワークをサブモジュールとして追加
-		passthru("git submodule add redmine@rm.hkkd.info:repo/mk1");
+		passthru("git submodule add git@rm.hkkd.info:mk1.git");
 		passthru("git submodule update --init");
 		/*
 		// mkコマンドのリンク
