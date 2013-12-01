@@ -8,5 +8,5 @@
  */
 return function($value)
 {
-	return date('Y-m-d',strtotime($value));
+	return $value ? date('Y-m-d',strtotime($value)) : NULL;
 };

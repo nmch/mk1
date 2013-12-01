@@ -31,6 +31,7 @@ class DB
 		$str = '{'.implode($delimiter,$data).'}';
 		return $str;
 	}
+	
 	static function get_database_connection($connection = NULL)
 	{
 		if( ! is_object($connection) )
@@ -40,6 +41,14 @@ class DB
 		
 		return $connection;
 	}
+	
+	static function copy_from($table_name , $rows, $connection = NULL)
+	{
+		Log::coredebug($table_name,$rows);
+		$dbconn = static::get_database_connection($connection);
+		return $dbconn->copy_from($table_name , $rows);
+	}
+	
 	static function pager($db_query, $options)
 	{
 		return new Database_Pager($db_query, $options);

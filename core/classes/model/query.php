@@ -10,6 +10,12 @@ class Model_Query
 		$this->query = new Database_Query;
 		return $this->query->from($model::table())->set_fetch_as($model);
 	}
+	function __clone()
+	{
+		// $this->modelは文字列型なので実体が複製されている
+		// $this->queryはオブジェクトなのでディープコピーが必要
+		$this->query = clone $this->query;
+	}
 	function get_query()
 	{
 		return $this->query;

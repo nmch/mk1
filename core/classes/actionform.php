@@ -27,7 +27,7 @@ class Actionform
 	/**
 	 * キーを削除する
 	 */
-	function __unset($name)
+	function delete($name)
 	{
 		//Log::coredebug("[af] unset $name",$this);
 		if(array_key_exists($name,$this->values))
@@ -38,7 +38,12 @@ class Actionform
 			unset($this->validated_values[$name]);
 		if(array_key_exists($name,$this->validation_results))
 			unset($this->validation_results[$name]);
-		//Log::coredebug($this);
+		
+		return $this;
+	}
+	function __unset($name)
+	{
+		return $this->delete($name);
 	}
 	
 	//public function save($name,$model_list = array())
@@ -123,8 +128,13 @@ class Actionform
 			}
 			
 			try {
+				// デフォルトが設定されていて、キーがデータに存在しない場合はデフォルトをset()する。キーのチェックはvalue_defaultを省く。
+				if( ! $this->key_exists($key,true) && array_key_exists('default',$rules) ){
+					$this->set($key,$rules['default']);
+				}
+				
 				$value = $this->get($key);
-				//Log::coredebug("[af] target vlaue=",$value);
+				//Log::coredebug("[af] target value=",$value);
 				
 				// 値がデータに存在しない場合はフィルタを適用しない
 				if($this->key_exists($key)){
@@ -176,6 +186,7 @@ class Actionform
 				$validated_values[$key] = $value;
 				$validation_results[$key] = NULL;
 			} catch(ValidateErrorException $e){
+				Log::debug("[af] validation error key=[$key] msg=".$e->getMessage());
 				$validation_results[$key] = $e;
 				$is_error = true;
 			}
@@ -223,6 +234,32 @@ class Actionform
 		//$this->request_method = Arr::get($_SERVER,'REQUEST_METHOD','');
 		$this->useragent = Arr::get($_SERVER,'HTTP_USER_AGENT');
 		$this->server_vars = $_SERVER;
+		
+		// アップロードされたファイル
+		if(is_array($_FILES) && count($_FILES)){
+			foreach($_FILES as $file_key => $file){
+				if(is_array($file['tmp_name'])){
+					$files = [];
+					foreach($file['tmp_name'] as $file_index => $file_tmpname){
+						if(is_uploaded_file($file_tmpname) ){
+							$files[$file_index] = [
+								'tmp_name' => $file_tmpname,
+								'name'  => Arr::get($file,"name.{$file_index}"),
+								'type'  => Arr::get($file,"type.{$file_index}"),
+								'error' => Arr::get($file,"error.{$file_index}"),
+								'size'  => Arr::get($file,"size.{$file_index}"),
+							];
+						}
+					}
+					$this->set( $file_key, $files );
+				}
+				else{
+					if(is_uploaded_file($file['tmp_name']) )
+						$this->set( $file_key, $file );
+				}
+			}
+		}
+		
 		return $this;
 	}
 	public static function method()
@@ -238,7 +275,7 @@ class Actionform
 		$this->set($name,$value);
 		return $this;
 	}
-	function set($name,$value,$set_default = false)
+	function set($name,$value = NULL,$set_default = false)
 	{
 		if( is_array($name) || $name instanceof ArrayAccess ){
 			foreach($name as $key => $value)
@@ -283,9 +320,23 @@ class Actionform
 	{
 		return array_merge($this->values_default,$this->values);
 	}
-	function key_exists($name)
+	function get_validated_values($name)
 	{
-		return (array_key_exists($name,$this->values) || array_key_exists($name,$this->values_default));
+		return Arr::get($this->validated_values,$name,[]);
+	}
+	
+	/**
+	 * 値データに指定キーが存在するか調べる
+	 *
+	 * @params string キー
+	 * @params boolean true=valuesのみ調べる / false=values_defaultも調べる
+	 */
+	function key_exists($name,$only_values = false)
+	{
+		if($only_values)
+			return array_key_exists($name,$this->values);
+		else
+			return (array_key_exists($name,$this->values) || array_key_exists($name,$this->values_default));
 	}
 	function value_exists($name)
 	{
@@ -773,9 +824,14 @@ class Actionform
 	}
 	 */
 	
+	function server_vars($name)
+	{
+		return Arr::get($this->server_vars,$name);
+	}
+	
 	function is_ajax_request()
 	{
-		return strtolower(Arr::get($this->server_vars,'HTTP_X_REQUESTED_WITH')) == 'xmlhttprequest';
+		return strtolower($this->server_vars('HTTP_X_REQUESTED_WITH')) == 'xmlhttprequest';
 	}
 	
 	function set_message($type,$message)

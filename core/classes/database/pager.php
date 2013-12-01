@@ -25,6 +25,7 @@ class Database_Pager
 			$rows = 10;
 		if( ! $page )
 			$page = 1;
+		//Log::coredebug("[db pager] rows=$rows / page=$page");
 		
 		if($this->db_query instanceof Model_Query)
 			$db_query_clone = clone $this->db_query->get_query();
@@ -38,6 +39,7 @@ class Database_Pager
 			$page = $total_pages;
 		
 		$offset = $page ? $rows * ($page - 1) : 0;
+		//Log::coredebug("[db pager] total_pages=$total_pages / page=$page / offset=$offset");
 		$r2 = $this->db_query->offset($offset)->limit($rows)->execute();
 		
 		$paging_data = array(

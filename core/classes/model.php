@@ -40,7 +40,7 @@ class Model implements Iterator,Countable,ArrayAccess
 		if($this->_is_new || $force_original)
 			$this->_original[$name] = $value;
 		else if( ! array_key_exists($name,$this->_original) || $this->$name !== $value ){
-			//Log::coredebug("[model] set $name / {$this->_is_new}",$value,debug_backtrace(0,3));
+			//Log::coredebug("[model] set $name / _is_new={$this->_is_new}",$value,debug_backtrace(0,3));
 			$this->_data[$name] = $value;
 		}
 	}
@@ -51,6 +51,16 @@ class Model implements Iterator,Countable,ArrayAccess
 	function get_all_data()
 	{
 		return array_merge($this->_original,$this->_data);
+	}
+	function set_all_data($data)
+	{
+		foreach($this->columns() as $key){
+			if(is_object($data))
+				$this->$key = $data->$key;
+			if(is_array($data))
+				$this->$key = array_key_exists($key,$data) ? $data[$key] : NULL;
+		}
+		return $this;
 	}
 	function get($name, $default = NULL, $rel_options = array())
 	{
@@ -76,7 +86,16 @@ class Model implements Iterator,Countable,ArrayAccess
 		if(isset($this->_original[$name]))
 			unset($this->_original[$name]);
 	}
-	function get_clone($ignore_list = array())
+	
+	/**
+	 * 現在のモデルのデータを引き継いだ新しいオブジェクトを作成する
+	 * 
+	 * データは保存されない。
+	 * 
+	 * @param type $ignore_list
+	 * @return \static
+	 */
+	function duplicate($ignore_list = array())
 	{
 		$primary_key = static::primary_key();
 		
@@ -86,8 +105,20 @@ class Model implements Iterator,Countable,ArrayAccess
 				continue;
 			$new->$key = $value;
 		}
-		$new->save();
 		return $new;
+	}
+	/**
+	 * 現在のデータの内容を新しいレコードに保存して、新しいオブジェクトを返す
+	 * 
+	 * duplicate()がデータを保存しないのに対し、これはデータを保存し新しいIDができる
+	 * 
+	 * @param type $ignore_list
+	 * @return \static
+	 */
+	function get_clone($ignore_list = array())
+	{
+		$new_obj = $this->duplicate($ignore_list);
+		return $new_obj->save();
 	}
 	function get_related($relation_type,$options)
 	{
@@ -168,12 +199,21 @@ class Model implements Iterator,Countable,ArrayAccess
 			$this->_original_before_save = $this->_original;
 			
 			$new_data = $r->get();
-			foreach($new_data as $key => $value){
-				$this->_original[$key] = $value;
-				if(isset($this->_data[$key]))
-					unset($this->_data[$key]);
+			//Log::coredebug("[model] new_data = ",$new_data);
+			if($new_data){
+				foreach($new_data as $key => $value){
+					$this->_original[$key] = $value;
+					if(array_key_exists($key,$this->_data))
+						unset($this->_data[$key]);
+				}
+			}
+			else{
+				// セーブに失敗した(保存できたデータがない)場合はdataを消し、originalの状態に戻して例外をスロー
+				$this->_data = [];
+				throw new Exception('save failed');
 			}
 		}
+		//Log::coredebug("[model] saved data = ",$this);
 		
 		$this->after_save();
 		return $this;
@@ -197,11 +237,17 @@ class Model implements Iterator,Countable,ArrayAccess
 	protected function before_delete() {}
 	protected function after_delete() {}
 	
-	function __construct()
+	function __construct($options = array())
+	{
+		if(empty($options['deferred_init']))
+			$this->_is_new = false;
+		
+		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
+	}
+	function drop_isnew_flag()
 	{
 		$this->_is_new = false;
-		
-		//Log::coredebug("constructed a new object of ".get_called_class()." table is ".$this->table()." / pkey is ".static::$_primary_key,reset(static::$_schema));
+		return $this;
 	}
 	static function table()
 	{
@@ -320,6 +366,9 @@ class Model implements Iterator,Countable,ArrayAccess
 					// UNIXタイムスタンプだった場合は変換する
 					if(is_numeric($value))
 						$value = date(DATE_ATOM,$value);
+					// 日付として空文字列は受け付けられないので、NULLにする
+					if($value === "")
+						$value = NULL;
 					break;
 				case 'B':
 					if(is_numeric($value)){
@@ -332,7 +381,7 @@ class Model implements Iterator,Countable,ArrayAccess
 							$value = true;
 						}
 						else if($str[0] == 'f' || strtolower($str) == 'off'){
-							$value = true;
+							$value = false;
 						}
 						else
 							$value = NULL;
@@ -360,6 +409,29 @@ class Model implements Iterator,Countable,ArrayAccess
 				$this->$key = $value;
 			}
 		}
+	}
+	
+	protected static function make_unique_code($column_name, $length = 32)
+	{
+		$char_seed = array_merge(range('a','z'),range('A','Z'),range('0','9'));
+		
+		$unique_code = "";
+		for($c = 0;$c < 100;$c++){
+			$unique_code_candidate = "";
+			for($i = 0;$i < $length;$i++){
+				$unique_code_candidate .= $char_seed[ mt_rand(0,count($char_seed) - 1) ];
+			}
+			
+			$r = DB::select($column_name)->from(static::table())->where($column_name,$unique_code_candidate)->execute();
+			if( $r->count() == 0){
+				$unique_code = $unique_code_candidate;
+				break;
+			}
+		}
+		if( ! $unique_code )
+			throw new Exception('generate unique id failed');
+		
+		return $unique_code;
 	}
 	
 	/*

@@ -38,6 +38,14 @@ class Database_Connection
 		
 		return static::$instances[$name];
 	}
+	function dbname()
+	{
+		return pg_dbname($this->connection);
+	}
+	function copy_from($table_name , $rows)
+	{
+		return pg_copy_from($this->connection, $table_name , $rows);
+	}
 	function query($sql,$parameters = array())
 	{
 		Log::coredebug("[dbconn] SQL {$this->connection} = $sql / ".var_export($parameters,true));
@@ -76,7 +84,7 @@ class Database_Connection
 		if( ! $this->in_transaction() )
 			$this->start_transaction();
 		
-		$point_name = uniqid(gethostname());
+		$point_name = preg_replace('/[^0-9a-z]/','',strtolower(uniqid(gethostname())));
 		DB::query('SAVEPOINT '.$point_name)->execute($this);
 		Log::coredebug('[dbconn] SAVEPOINT '.$point_name);
 		$this->savepoint_counter++;
