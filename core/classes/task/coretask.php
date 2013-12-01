@@ -190,7 +190,7 @@ class Task_Coretask extends Task
 			}
 		}
 		
-		$migration_filename = sprintf("%03d_%s",$new_migration_seq,$name);
+		$migration_filename = sprintf("%03d_%s.txt",$new_migration_seq,$name);
 		
 		$filebody = "";
 		
