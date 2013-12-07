@@ -81,10 +81,17 @@ class Model implements Iterator,Countable,ArrayAccess
 	}
 	function _unset($name)
 	{
-		if(isset($this->_data[$name]))
+		if(array_key_exists($name,$this->_data))
 			unset($this->_data[$name]);
-		if(isset($this->_original[$name]))
+		if(array_key_exists($name,$this->_original))
 			unset($this->_original[$name]);
+	}
+	
+	function __clone()
+	{
+		$this->_data = array_merge($this->_original,$this->_data);
+		$this->_original = [];
+		$this->_unset($this->primary_key());
 	}
 	
 	/**
