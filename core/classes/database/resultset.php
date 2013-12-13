@@ -103,6 +103,10 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 		$this->fetch_as = $fetch_as;
 		return $this;
 	}
+	function get_fetch_as()
+	{
+		return $this->fetch_as;
+	}
 	
 	function fetch($fetch_as = NULL,$position = NULL,$forward = false)
 	{
