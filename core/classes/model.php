@@ -469,8 +469,12 @@ class Model implements Iterator,Countable,ArrayAccess
 	}
 	function columns()
 	{
-		$schema = Database_Schema::get($this->table());
+		$schema = $this->schema();
 		return array_keys($schema['columns']);
+	}
+	function schema()
+	{
+		return Database_Schema::get($this->table());
 	}
 	function keys()
 	{
