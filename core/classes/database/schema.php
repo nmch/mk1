@@ -37,11 +37,13 @@ class Database_Schema
 				attnotnull as not_null,
 				typname as type,
 				typlen as len,
-				typcategory as type_cat	
+				typcategory as type_cat,
+				description as desc
 			FROM PG_CLASS as c
-			JOIN pg_namespace n ON n.oid = c.relnamespace
-			JOIN PG_ATTRIBUTE ON PG_ATTRIBUTE.ATTRELID = c.OID 
-			JOIN PG_TYPE ON PG_TYPE.OID = PG_ATTRIBUTE.ATTTYPID 
+			JOIN pg_namespace			n ON n.oid = c.relnamespace
+			JOIN PG_ATTRIBUTE			a ON a.ATTRELID = c.OID 
+			JOIN PG_TYPE				t ON t.OID = a.ATTTYPID 
+			LEFT JOIN pg_description	d ON objoid = c.oid and objsubid=a.attnum
 			
 			where c.relkind='r'
 			and n.nspname='public'
