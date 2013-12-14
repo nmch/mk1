@@ -15,6 +15,6 @@ return function($value)
 	if(strlen($value) == 0)
 		$value = NULL;
 	else
-		$value = (int)$value;
+		$value = $value;	//電話番号などのフィルタでも使っているため、数値にキャストしてはならない
 	return $value;
 };
