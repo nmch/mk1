@@ -52,6 +52,11 @@ class Model implements Iterator,Countable,ArrayAccess
 	{
 		return array_merge($this->_original,$this->_data);
 	}
+	/**
+	 * Modelに定義されたカラムをもとにしてデータをセットする
+	 * 
+	 * 与えられたデータにキーが存在しないデータはNULLとしてセットされる
+	 */
 	function set_all_data($data)
 	{
 		foreach($this->columns() as $key){
@@ -384,10 +389,10 @@ class Model implements Iterator,Countable,ArrayAccess
 					else if(is_string($value)){
 						//文字列表現だった場合は先頭1文字(t/f)もしくはon/offで判別
 						$str = strtolower($value);
-						if($str[0] == 't' || strtolower($str) == 'on'){
+						if((strlen($str) && $str[0] == 't') || strtolower($str) === 'on'){
 							$value = true;
 						}
-						else if($str[0] == 'f' || strtolower($str) == 'off'){
+						else if((strlen($str) && $str[0] == 'f') || strtolower($str) === 'off'){
 							$value = false;
 						}
 						else
