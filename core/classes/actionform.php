@@ -51,7 +51,7 @@ class Actionform
 	public function save($name,$model = NULL)
 	{
 		$this->validate($name);
-		Log::coredebug($this->validated_values);
+		//Log::coredebug($this->validated_values);
 		
 		$preset = Config::get('form.preset.'.$name);
 		if( ! $preset )
@@ -73,7 +73,7 @@ class Actionform
 		//Log::coredebug("[af save] keys=",$obj->columns(),$obj);
 		foreach($obj->columns() as $key){
 			if(array_key_exists($key,$this->validated_values[$name])){
-				Log::coredebug("[af save] set $key",$this->validated_values[$name][$key]);
+				//Log::coredebug("[af save] set $key",$this->validated_values[$name][$key]);
 				$obj->$key = $this->validated_values[$name][$key];
 			}
 		}
@@ -217,7 +217,7 @@ class Actionform
 	}
 	public static function unit_filter($value,$filter,$option)
 	{
-		Log::coredebug("filter $filter", $value, $option);
+		//Log::coredebug("filter $filter", $value, $option);
 		
 		$func = static::load("actionform/filter/".strtolower($filter).".php");
 		$value = (string)$func($value,$option);
@@ -852,8 +852,8 @@ class Actionform
 		if( ! $messages || ! is_array($messages) )
 			$messages = array();
 		
-		Log::coredebug("set message($type) : $message");
 		$messages[$type][] = $message;
+		Log::coredebug("set message($type) : $message",$messages);
 		
 		Session::set_flash('messages',$messages);
 	}

@@ -26,41 +26,57 @@ class Session
 		session_set_cookie_params($config['expiration_time'],$config['cookie_path'],$config['cookie_domain']);
 		session_start();
 		Log::coredebug("Session started : ".session_id());
+		
+		// Flashデータをロード
+		static::$flash = static::get(static::flash_id());
+		if( ! is_array(static::$flash) )
+			static::$flash = array();
 	}
 	static function __callStatic($name, $arguments)
 	{
 		return call_user_func(array(self::instance(),$name),$arguments);
 	}
 	
-	static function set_flash($name,$value)
+	static function flash_id()
 	{
-		$flash_id = static::$config['flash_id'];
-		$flash = static::get($flash_id);
-		if( ! is_array($flash) )
-			$flash = array();
-		$flash[$name] = $value;
-		static::set(static::$config['flash_id'],$flash);
-		//Log::coredebug("[session flash] set $name",$value,$flash);
-	}
-	static function get_flash($name,$default = NULL)
-	{
-		//Log::coredebug("[session flash] get $name",Arr::get(static::$flash,$name));
-		return array_key_exists($name,static::$flash) ? static::$flash[$name] : $default;
+		return static::$config['flash_id'];;
 	}
 	/**
-	 * フラッシュセッションデータをロードする
+	 * フラッシュセッションデータをセットする
+	 *
+	 * コントローラやビュー内でのセット/ゲットをサポートするため
+	 * static::$flash と static::set()の両方を呼び出している
+	 */
+	static function set_flash($name,$value)
+	{
+		$flash = static::get_flash();
+		$flash[$name] = $value;
+		static::set(static::flash_id(),$flash);
+		static::$flash = $flash;
+	}
+	/**
+	 * フラッシュセッションデータを得る
+	 *
+	 * フラッシュデータは常にstatic::$flashからのみ読み込む
+	 */
+	static function get_flash($name = NULL,$default = NULL)
+	{
+		if($name){
+			return Arr::get(static::$flash,$name,$default);
+		}
+		else{
+			return static::$flash;
+		}
+	}
+	/**
+	 * フラッシュセッションデータを削除する
 	 *
 	 * ロードされたフラッシュデータはセッションからは消去される。
 	 * Viewから呼び出される。
 	 */
-	static function load_flash()
+	static function clear_flash()
 	{
-		$flash_id = static::$config['flash_id'];
-		static::$flash = static::get($flash_id);
-		//Log::coredebug("[load flash] $flash_id ",static::$flash);
-		if( ! is_array(static::$flash) )
-			static::$flash = array();
-		static::delete($flash_id);
+		static::delete(static::flash_id());
 	}
 	
 	static function set($name,$value)
@@ -73,7 +89,10 @@ class Session
 	}
 	static function get($name,$default = NULL)
 	{
-		return array_key_exists($name,$_SESSION) ? $_SESSION[$name] : $default;
+		$value = Arr::get($_SESSION,$name,$default);
+		//Log::coredebug("[session] get $name : ",$value);
+		return $value;
+		//return array_key_exists($name,$_SESSION) ? $_SESSION[$name] : $default;
 	}
 	static function delete($name)
 	{

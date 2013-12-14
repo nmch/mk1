@@ -49,8 +49,8 @@ class View
 	{
 		$r = $this->view();
 		
-		// view()でset_flashする可能性があるので、load_flash()はview()のあとで。
-		Session::load_flash();
+		// view()でset_flashする可能性があるので、clear_flash()はview()のあとで。
+		Session::clear_flash();
 		
 		// view()がResponseオブジェクト(JSONを想定)を返した場合はそのまま呼び出し元(たぶんResopnse::send()へ返す
 		if($r instanceof Response)
