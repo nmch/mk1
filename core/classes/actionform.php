@@ -5,8 +5,9 @@ class Actionform
 	
 	private $values = array();
 	private $values_default = array();
-	private $validation_results = array();
 	private $validated_values = array();
+	
+	public  $validation_results = array();
 	
 	private $request_method;
 	private $useragent;
@@ -50,6 +51,7 @@ class Actionform
 	public function save($name,$model = NULL)
 	{
 		$this->validate($name);
+		Log::coredebug($this->validated_values);
 		
 		$preset = Config::get('form.preset.'.$name);
 		if( ! $preset )
@@ -71,7 +73,7 @@ class Actionform
 		//Log::coredebug("[af save] keys=",$obj->columns(),$obj);
 		foreach($obj->columns() as $key){
 			if(array_key_exists($key,$this->validated_values[$name])){
-				//Log::coredebug("[af save] set $key",$this->validated_values[$name][$key]);
+				Log::coredebug("[af save] set $key",$this->validated_values[$name][$key]);
 				$obj->$key = $this->validated_values[$name][$key];
 			}
 		}
@@ -164,6 +166,7 @@ class Actionform
 						}
 					}
 					$this->set($key,$value);
+					//Log::coredebug("[af] set $key",$value);
 				}
 				
 				if(isset($rules['validation'])){
@@ -183,11 +186,15 @@ class Actionform
 							static::unit_validate($value,$validation,$option);
 					}
 				}
-				$validated_values[$key] = $value;
+				$validated_values[$key] = (string)$value;
 				$validation_results[$key] = NULL;
 			} catch(ValidateErrorException $e){
 				Log::debug("[af] validation error key=[$key] msg=".$e->getMessage());
-				$validation_results[$key] = $e;
+				$validation_results[$key] = [
+					'key' => $key,
+					'rules' => $rules,
+					'message' => $e->getMessage(),
+				];
 				$is_error = true;
 			}
 		}
@@ -199,16 +206,21 @@ class Actionform
 		//Log::coredebug("[af validate] validated_values=",$this->validated_values,$this->values);
 		return $this;
 	}
+	public function validation_results()
+	{
+		return $this->validation_results;
+	}
+	
 	public static function load($filename)
 	{
 		return include $filename;
 	}
 	public static function unit_filter($value,$filter,$option)
 	{
-		//Log::coredebug("filter $filter", file_exists("actionform/filter/".strtolower($filter).".php"));
+		Log::coredebug("filter $filter", $value, $option);
 		
 		$func = static::load("actionform/filter/".strtolower($filter).".php");
-		$value = $func($value,$option);
+		$value = (string)$func($value,$option);
 		return $value;
 	}
 	public static function unit_validate($value,$validation,$option)
