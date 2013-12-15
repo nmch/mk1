@@ -186,7 +186,7 @@ class Actionform
 							static::unit_validate($value,$validation,$option);
 					}
 				}
-				$validated_values[$key] = (string)$value;
+				$validated_values[$key] = $value;	//配列の場合がある
 				$validation_results[$key] = NULL;
 			} catch(ValidateErrorException $e){
 				Log::debug("[af] validation error key=[$key] msg=".$e->getMessage());
