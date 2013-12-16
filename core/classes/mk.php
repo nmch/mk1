@@ -24,8 +24,8 @@ class Mk
 		
 		self::$include_path_list = self::get_include_path_list();
 		$this->config = Config::instance();
-		Log::coredebug("[mk] env=".self::$env);
-		if(self::$env == self::PRODUCTION){
+		Log::coredebug("[mk] env=".self::$env.(self::is_production() ? ' [PRODUCTION]' : ''));
+		if(self::is_production()){
 			error_reporting(0);
 			ini_set('display_errors', 0);
 		}
@@ -38,6 +38,16 @@ class Mk
 		
 		if(Config::get('session.auto_initialize') && php_sapi_name() != 'cli')
 			self::$session = Session::instance();
+	}
+	
+	/**
+	 * 本番環境かどうかの判定
+	 *
+	 * 環境変数がproductionから始まる場合は真
+	 */
+	static function is_production()
+	{
+		return (strncmp(strtolower(self::$env), 'production', strlen('production')) === 0);
 	}
 	
 	// 優先度 低→高の並び

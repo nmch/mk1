@@ -11,7 +11,7 @@ class Error
 		foreach(Arr::merge(static::$exception_handler,static::$error_handler) as $function)
 			$function($e);
 		
-		if(Mk::$env != Mk::PRODUCTION){
+		if( ! Mk::is_production() ){
 			echo (string)$e;
 		}
 	}
