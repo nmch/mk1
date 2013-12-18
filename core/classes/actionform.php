@@ -11,6 +11,7 @@ class Actionform
 	
 	private $request_method;
 	private $useragent;
+	private $referer;
 	private $server_vars;
 	
 	/*
@@ -244,6 +245,7 @@ class Actionform
 		//echo "<PRE>form_values = "; print_r($this->form_values); echo "</PRE>";
 		//$this->af_filter = new \Model_ActionformFilter;
 		//$this->request_method = Arr::get($_SERVER,'REQUEST_METHOD','');
+		$this->referer = Arr::get($_SERVER,'HTTP_REFERER');
 		$this->useragent = Arr::get($_SERVER,'HTTP_USER_AGENT');
 		$this->server_vars = $_SERVER;
 		
@@ -273,6 +275,10 @@ class Actionform
 		}
 		
 		return $this;
+	}
+	public function referer()
+	{
+		return $this->referer;
 	}
 	public static function method()
 	{
