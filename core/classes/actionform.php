@@ -220,7 +220,7 @@ class Actionform
 		//Log::coredebug("filter $filter", $value, $option);
 		
 		$func = static::load("actionform/filter/".strtolower($filter).".php");
-		$value = (string)$func($value,$option);
+		$value = $func($value,$option);	//返り値は配列の可能性がある
 		return $value;
 	}
 	public static function unit_validate($value,$validation,$option)
