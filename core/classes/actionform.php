@@ -216,7 +216,7 @@ class Actionform
 	{
 		return include $filename;
 	}
-	public static function unit_filter($value,$filter,$option)
+	public static function unit_filter($value,$filter,$option = [])
 	{
 		//Log::coredebug("filter $filter", $value, $option);
 		
@@ -224,7 +224,7 @@ class Actionform
 		$value = $func($value,$option);	//返り値は配列の可能性がある
 		return $value;
 	}
-	public static function unit_validate($value,$validation,$option)
+	public static function unit_validate($value,$validation,$option = [])
 	{
 		$func = static::load("actionform/validation/".strtolower($validation).".php");
 		$func($value,$option);
