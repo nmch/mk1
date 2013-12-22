@@ -63,7 +63,7 @@ class Mail
 	function template($view,$data = array())
 	{
 		if(is_scalar($view))
-			$view = new View("mail/".$view,$data);
+			$view = new View("mail/".$view,$data,true);	//第三引数はフラッシュメッセージをクリアさせないフラグ
 		$body = $view->set_smarty_environment('default_modifiers',array())->render();
 		list($subject,$body) = explode("\n",$body,2);
 		$this->subject($subject);

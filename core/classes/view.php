@@ -6,10 +6,13 @@ class View
 	var $af;
 	var $smarty;
 	var $template_filename;
+	private $do_not_clear_flash = false;
 	protected $data;
-			
-	function __construct($template_filename = NULL,$data = array())
+	
+	function __construct($template_filename = NULL,$data = array(),$do_not_clear_flash = false)
 	{
+		$this->do_not_clear_flash = $do_not_clear_flash;
+		
 		if( ! $template_filename ){
 			$template_filename = implode('/',array_slice(explode('_',strtolower(get_called_class())),1));
 		}
@@ -50,7 +53,9 @@ class View
 		$r = $this->view();
 		
 		// view()でset_flashする可能性があるので、clear_flash()はview()のあとで。
-		Session::clear_flash();
+		if( ! $this->do_not_clear_flash ){
+			Session::clear_flash();
+		}
 		
 		// view()がResponseオブジェクト(JSONを想定)を返した場合はそのまま呼び出し元(たぶんResopnse::send()へ返す
 		if($r instanceof Response)
