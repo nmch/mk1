@@ -57,7 +57,7 @@ class Autoloader
 				$filepath = $include_path.$path.$basename.'.php';
 				//echo "check $filepath\n";
 				if(is_readable($filepath)){
-					//echo "find! $filepath<BR>";
+					//echo "found! $filepath<BR>";
 					include($filepath);
 					if(class_exists($class) && method_exists($class, '_init') && is_callable($class.'::_init'))
 						call_user_func($class.'::_init');

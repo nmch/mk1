@@ -35,10 +35,15 @@ define('FWPATH',      __DIR__.'/');
 define('COREPATH',    realpath(FWPATH.'core/').'/');
 define('SCRIPTPATH',  realpath($_SERVER['SCRIPT_FILENAME']));
 define('SCRIPTDIR',   dirname(realpath(SCRIPTPATH)).'/');
-if(file_exists(SCRIPTDIR.FWNAME))
+if(isset($_SERVER['UNITTESTMODE'])){	//ユニットテストモード
+	define('PROJECTPATH', realpath(COREPATH.'../../').'/');
+}
+else if(file_exists(SCRIPTDIR.FWNAME)){
 	define('PROJECTPATH', SCRIPTDIR);	// CLIの場合
-else
+}
+else{
 	define('PROJECTPATH', realpath(SCRIPTDIR.'../').'/');
+}
 define('APPPATH',     realpath(PROJECTPATH.'app/').'/');
 define('PKGPATH',     realpath(PROJECTPATH.'packages/').'/');
 
@@ -57,8 +62,21 @@ Autoloader::register();
 // 実行環境
 $mk = Mk::instance();
 
-// ユニットテストモードの場合ここでリターン(exitではない)
+// ユニットテストモード
 if(isset($_SERVER['UNITTESTMODE'])){
+	/*
+	echo "FWNAME=".FWNAME."\n";
+	echo "FWPATH=".FWPATH."\n";
+	echo "COREPATH=".COREPATH."\n";
+	echo "SCRIPTPATH=".SCRIPTPATH."\n";
+	echo "SCRIPTDIR=".SCRIPTDIR."\n";
+	echo "PROJECTPATH=".PROJECTPATH."\n";
+	echo "APPPATH=".APPPATH."\n";
+	echo "PKGPATH=".PKGPATH."\n";
+	*/
+	// マイグレーション実行
+	Task_Coretask::refine('migration');
+	
 	return;
 }
 
