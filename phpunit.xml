@@ -1,1 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit colors="true" stopOnFailure="false" bootstrap="./bootstrap.php">
+	<php>
+		<server name="MK_ENV" value="test"/>
+		<server name="UNITTESTMODE" value="1"/>
+	</php>
+	<testsuites>
+		<testsuite name="core">
+			<directory suffix=".php">./core/tests</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

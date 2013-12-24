@@ -20,12 +20,14 @@ class Log
 	function __construct()
 	{
 		$drivers = Config::get('log.drivers',array());
-		foreach($drivers as $driver_name => $threshold){
-			$driver_name = 'Log_'.ucfirst($driver_name);
-			self::$drivers[$driver_name] = array(
-				'threshold' => $threshold,
-				'driver' => new $driver_name,
-			);
+		if(is_array($drivers)){
+			foreach($drivers as $driver_name => $threshold){
+				$driver_name = 'Log_'.ucfirst($driver_name);
+				self::$drivers[$driver_name] = array(
+					'threshold' => $threshold,
+					'driver' => new $driver_name,
+				);
+			}
 		}
 		self::$date_format = Config::get('log.date_format','Y-m-d H:i:s');
 	}

@@ -1,12 +1,12 @@
 <?
 ini_set('display_errors', 0);
 
-class MkException extends Exception {}
-class AppException extends MkException {}
-class DatabaseQueryError extends MkException {}
-class RecordNotFoundException extends MkException {}
-class HttpNotFoundException extends MkException {}
-class ValidateErrorException extends MkException {}
+class MkException				extends Exception {}
+class AppException				extends MkException {}
+class DatabaseQueryError		extends MkException {}
+class RecordNotFoundException	extends MkException {}
+class HttpNotFoundException		extends MkException {}
+class ValidateErrorException	extends MkException {}
 
 set_error_handler(function($errno, $errstr, $errfile, $errline ){
 	//echo "errno=$errno / ".error_reporting()."<HR>";
@@ -57,6 +57,12 @@ Autoloader::register();
 // 実行環境
 $mk = Mk::instance();
 
+// ユニットテストモードの場合ここでリターン(exitではない)
+if(isset($_SERVER['UNITTESTMODE'])){
+	return;
+}
+
+
 // リクエストURIがある場合は URI → ルーター → コントローラーを実行
 // ない場合はモジュール名が決まっているので、Task_NAME を実行
 $retval = 0;
@@ -99,14 +105,3 @@ else{
 }
 
 exit($retval);
-
-/*
-$mk = new Mk;
-
-list($controller,$controller_method_name,$controller_method_options) = $mk->get_controller();
-
-$controller_return_var = call_user_func_array(array($controller,$controller_method_name),$controller_method_options);
-*/
-
-//echo class_exists('Controller_Test2');
-
