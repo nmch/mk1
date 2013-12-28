@@ -1,5 +1,5 @@
 <?
-class Test_Actionform extends Testcase
+class test_Actionform extends Testcase
 {
 	protected $af;
 	

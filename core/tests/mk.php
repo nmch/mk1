@@ -1,5 +1,5 @@
 <?
-class Test_Mk extends Testcase
+class test_Mk extends Testcase
 {
 	function testブートストラップ()
 	{

@@ -18,6 +18,18 @@ class Database_Schema
 		return $name ? Arr::get(static::$schema,$name,$default) : static::$schema;
 	}
 	
+	/**
+	 * DBスキーマのキャッシュを消去する
+	 */
+	static function clear_cache()
+	{
+		static::$schema = NULL;
+		
+		$cache_dir = Cache::cache_dir(NULL,'core_db');
+		if(is_dir($cache_dir))
+			File::rm($cache_dir);
+	}
+	
 	static function retrieve()
 	{
 		$primary_keys = array();

@@ -49,10 +49,7 @@ class Task_Migration extends Task
 			}
 			echo "\n";
 			
-			// DBスキーマのキャッシュを消去する
-			$cache_dir = Cache::cache_dir(NULL,'core_db');
-			if(is_dir($cache_dir))
-				File::rm($cache_dir);
+			DB::clear_schema_cache();
 		}
 	}
 }

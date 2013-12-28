@@ -43,6 +43,7 @@ class Model implements Iterator,Countable,ArrayAccess
 			//Log::coredebug("[model] set $name / _is_new={$this->_is_new}",$value,debug_backtrace(0,3));
 			$this->_data[$name] = $value;
 		}
+		//echo "set $name ($force_original) to "; print_r($value); print_r($this->_data);
 	}
 	function __get($name)
 	{
@@ -90,6 +91,10 @@ class Model implements Iterator,Countable,ArrayAccess
 			unset($this->_data[$name]);
 		if(array_key_exists($name,$this->_original))
 			unset($this->_original[$name]);
+	}
+	function __unset($name)
+	{
+		$this->_unset($name);
 	}
 	
 	function __clone()
@@ -194,16 +199,29 @@ class Model implements Iterator,Countable,ArrayAccess
 				$data[$key] = $value;
 		}
 		//Log::coredebug("[model] save data",$this->_data,$data);
+		//echo "this->_data = "; print_r($this->_data);
+		//echo "data = "; print_r($data);
 		
 		$r = NULL;
 		if($this->get($primary_key)){
 			//データがある場合のみ更新する
-			if(count($data))
-				$r = DB::update($this->table())->values($data)->where($primary_key,$this->get($primary_key))->returning('*')->execute();
+			if(count($data)){
+				$query_update = DB::update($this->table())->values($data)->where($primary_key,$this->get($primary_key))->returning('*');
+				$sql_select = static::_build_select_query()->clear_from()->from('model_save_query')->get_sql();
+				$sql_update = $query_update->get_sql();
+				$query_update->clear_query_type()->set_sql("with model_save_query as ($sql_update) $sql_select");
+				//echo "SQL = "; print_r($query_update->get_sql(true));
+				$r = $query_update->execute();
+			}
 		}
 		else{
 			//挿入の場合、データがなくてもdefault valuesが挿入される
-			$r = DB::insert($this->table())->values($data)->returning('*')->execute();
+			$query_insert = DB::insert($this->table())->values($data)->returning('*');
+			$sql_select = static::_build_select_query()->clear_from()->from('model_save_query')->get_sql();
+			$sql_insert = $query_insert->get_sql();
+			$query_insert->clear_query_type()->set_sql("with model_save_query as ($sql_insert) $sql_select");
+			//echo "SQL = "; print_r($query_insert->get_sql(true));
+			$r = $query_insert->execute();
 		}
 
 		// 更新・挿入されたアイテムはoriginalとして保存し、_dataからは消す
@@ -211,6 +229,7 @@ class Model implements Iterator,Countable,ArrayAccess
 			$this->_original_before_save = $this->_original;
 			
 			$new_data = $r->get();
+			//echo "new_data = "; print_r($new_data);
 			//Log::coredebug("[model] new_data = ",$new_data);
 			if($new_data){
 				foreach($new_data as $key => $value){
@@ -243,6 +262,7 @@ class Model implements Iterator,Countable,ArrayAccess
 		
 		$this->before_delete();
 		$r = DB::delete()->from($this->table())->where($primary_key,$this->get($primary_key))->execute();
+		unset($this->$primary_key);
 		$this->after_delete();
 		return $r->get_affected_rows();
 	}
@@ -273,7 +293,7 @@ class Model implements Iterator,Countable,ArrayAccess
 	{
 		if(empty(static::$_primary_key)){
 			//スキーマからプライマリキーを取得
-			$schema = Database_Schema::get(static::table());
+			$schema = Database_Schema::get(static::table(),[]);
 			if(Arr::get($schema,'has_pkey'))
 				$primary_key = Arr::get($schema,'primary_key',array());
 			else
@@ -295,14 +315,11 @@ class Model implements Iterator,Countable,ArrayAccess
 		
 		return $primary_key;
 	}
-	static function find()
+	
+	protected static function _build_select_query()
 	{
-		$argc = func_num_args();
-		$args = func_get_args();
-		$id = isset($args[0]) ? $args[0] : NULL;
-		$id_field = isset($args[1]) ? $args[1] : NULL;
-			
 		$query = new Model_Query(get_called_class());
+		$query->select('*');
 		
 		if(isset(static::$_join)){
 			$join = static::$_join;
@@ -314,6 +331,17 @@ class Model implements Iterator,Countable,ArrayAccess
 		if( ! empty(static::$_add_field) ){
 			$query->select(static::$_add_field);
 		}
+		
+		return $query;
+	}
+	static function find()
+	{
+		$argc = func_num_args();
+		$args = func_get_args();
+		$id = Arr::get($args,'0');
+		$id_field = Arr::get($args,'1');
+			
+		$query = static::_build_select_query();
 		
 		if( $argc ){
 			if($id === 'all'){	// 型判定なし(==)で比較すると文字列を比較する際に文字列が数値にキャストされてしまう。そのため$idに0が入っているとtrueになるので注意。
@@ -331,6 +359,21 @@ class Model implements Iterator,Countable,ArrayAccess
 		else{
 			return $query;
 		}
+	}
+	function reload()
+	{
+		$query = $this->_build_select_query();
+		$id_field = static::primary_key();
+		$r = $query->where($id_field,$this->$id_field)->get_one();
+		if( $r === NULL )
+			throw new RecordNotFoundException;
+		
+		$this->_original = [];
+		foreach($r as $key => $value){
+			$this->_original[$key] = $value;
+		}
+		
+		return $this;
 	}
 	static function get_all()
 	{

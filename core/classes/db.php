@@ -49,6 +49,25 @@ class DB
 		return $dbconn->copy_from($table_name , $rows);
 	}
 	
+	/**
+	 * DBスキーマのキャッシュを消去する
+	 */
+	static function clear_schema_cache()
+	{
+		Database_Schema::clear_cache();
+	}
+	
+	/**
+	 * publicスキーマに存在する全テーブルを削除する
+	 */
+	static function delete_all_tables()
+	{
+		Database_Schema::clear_cache();
+		$schema = Database_Schema::get();
+		DB::query("drop table ".implode(',',array_keys($schema))." CASCADE")->execute();
+		Database_Schema::clear_cache();
+	}
+	
 	static function pager($db_query, $options)
 	{
 		return new Database_Pager($db_query, $options);

@@ -88,8 +88,32 @@ class Database_Query
 		$this->fetch_as = $fetch_as;
 		return $this;
 	}
+	public function set_sql($sql)
+	{
+		if( ! is_string($sql) ){
+			throw new MkException('sql must be a string');
+		}
+		$this->_sql = $sql;
+		return $this;
+	}
+	public function get_sql($with_parameters = false)
+	{
+		if($this->_query_type){
+			$this->compile();
+		}
+		
+		if($with_parameters){
+			return [$this->_sql,$this->_parameters];
+		}
+		else{
+			return $this->_sql;
+		}
+	}
 	public function compile()
 	{
+		if(empty($this->_query_type)){
+			throw new MkException('empty query type');
+		}
 		$this->clear_parameter_index();
 		$this->_sql = $this->{'compile_'.$this->_query_type}();
 		return $this;
@@ -328,14 +352,30 @@ class Database_Query
 			$columns = func_get_args();
 		$this->_query_type = 'SELECT';
 		//$this->_query_columns = $columns;
-		$this->_query_columns = array_merge($this->_query_columns,$columns);
+		//$this->_query_columns = array_merge($this->_query_columns,$columns);
+		foreach($columns as $col){
+			$col = trim($col);
+			if( ! in_array($col,$this->_query_columns) ){
+				$this->_query_columns[] = $col;
+			}
+		}
 		//Log::coredebug("select() _query_columns=",$columns,$this->_query_columns);
 		//echo "<PRE>"; debug_print_backtrace(); echo "</PRE>";
+		return $this;
+	}
+	function clear_query_type()
+	{
+		$this->_query_type = NULL;
 		return $this;
 	}
 	function clear_select()
 	{
 		$this->_query_columns = array();
+		return $this;
+	}
+	function clear_from()
+	{
+		$this->_query_from = array();
 		return $this;
 	}
 	
