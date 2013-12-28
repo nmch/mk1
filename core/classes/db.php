@@ -14,6 +14,15 @@ class DB
 			throw new MkException("method $name not found");
 		return call_user_func_array(array($query,$name),$args);
 	}
+	static function escape($value)
+	{
+		return static::escape_literal($value);
+	}
+	static function escape_literal($value)
+	{
+		$dbconn = static::get_database_connection();
+		return $dbconn->escape_literal($value);
+	}
 	static function expr($expr)
 	{
 		return new Database_Expression($expr);
