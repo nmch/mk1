@@ -3,6 +3,7 @@ class Model_Query
 {
 	private $model;
 	private $query;
+	private $ignore_conditions = [];
 	
 	function __construct($model)
 	{
@@ -20,11 +21,49 @@ class Model_Query
 	{
 		return $this->query;
 	}
+	function clear_ignore_conditions()
+	{
+		$this->ignore_conditions = [];
+	}
+	function ignore_conditions($ignore_conditions)
+	{
+		if( ! is_array($ignore_conditions) ){
+			$ignore_conditions = [$ignore_conditions];
+		}
+		$this->ignore_conditions = array_merge($this->ignore_conditions, $ignore_conditions);
+	}
 	function get()
 	{
 		$conditions = forward_static_call(array($this->model,'conditions'));
 		
-		$this->query->order_by(Arr::get($conditions,'order_by',array()));
+		foreach($conditions as $index => $condition){
+			if( ! is_numeric($index) ){
+				$label	= NULL;
+				$name	= $index;
+				$options= $condition;
+			}
+			else{
+				$label	= Arr::get($condition, 'label');
+				$name	= Arr::get($condition, 'name');
+				$options= Arr::get($condition, 'options');
+			}
+			
+			// 無視するコンディションリストにラベルが登録されていた場合はスキップ
+			if($label && in_array($label,$this->ignore_conditions)){
+				continue;
+			}
+			
+			// 後方互換性のため、order_byに限って['key' => '(asc|desc)']形式を受け付ける。
+			// 本来は[ ['key','(asc|desc)'], [...] ]形式が必要。
+			if($name === 'order_by'){
+				if( ! Arr::is_multi($options) ){
+					$options = [$options];
+				}
+			}
+			//Log::coredebug("[model query] conditions $name", $options);
+			call_user_func_array( [$this,$name], $options );
+		}
+		//$this->query->order_by(Arr::get($conditions,'order_by',array()));
 		
 		return $this->query->select('*')->execute();
 	}

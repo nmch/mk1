@@ -6,6 +6,19 @@ class Model implements Iterator,Countable,ArrayAccess
 	protected static $_primary_key = NULL;
 	protected static $_properties = array();
 	
+	protected static $_conditions = [
+		[
+			'label'		=> 'order_by',
+			'name'		=> 'order_by',
+			'options'	=> ['column','asc'],
+		],
+		[
+			'label'		=> 'ignore_deleted',
+			'name'		=> 'where',
+			'options'	=> ['deleted',false],
+		],
+	];
+	
 	protected static $_belongs_to = array();
 	
 	/*
@@ -285,6 +298,11 @@ class Model implements Iterator,Countable,ArrayAccess
 	{
 		return isset(static::$_table_name) ? static::$_table_name : Inflector::tableize(get_called_class());
 	}
+	/**
+	 * データ取得時の強制条件を取得する
+	 *
+	 * Model_Query::get() から呼ばれる
+	 */
 	static function conditions()
 	{
 		return isset(static::$_conditions) ? static::$_conditions : array();
@@ -334,14 +352,22 @@ class Model implements Iterator,Countable,ArrayAccess
 		
 		return $query;
 	}
+	/**
+	 * 特定の行を取得する
+	 *
+	 * find(ID, ID_FIELD, IGNORE_CONDITION_LABELS)
+	 * ID_FIELDがfalse判定の場合はプライマリキーを使用する
+	 */
 	static function find()
 	{
 		$argc = func_num_args();
 		$args = func_get_args();
 		$id = Arr::get($args,'0');
 		$id_field = Arr::get($args,'1');
-			
+		$ignore_conditions = Arr::get($args,'2');
+		
 		$query = static::_build_select_query();
+		$query->ignore_conditions($ignore_conditions);
 		
 		if( $argc ){
 			if($id === 'all'){	// 型判定なし(==)で比較すると文字列を比較する際に文字列が数値にキャストされてしまう。そのため$idに0が入っているとtrueになるので注意。
