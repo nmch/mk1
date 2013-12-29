@@ -19,21 +19,6 @@ class Model_Query
 	}
 	function get_query()
 	{
-		return $this->query;
-	}
-	function clear_ignore_conditions()
-	{
-		$this->ignore_conditions = [];
-	}
-	function ignore_conditions($ignore_conditions)
-	{
-		if( ! is_array($ignore_conditions) ){
-			$ignore_conditions = [$ignore_conditions];
-		}
-		$this->ignore_conditions = array_merge($this->ignore_conditions, $ignore_conditions);
-	}
-	function get()
-	{
 		$conditions = forward_static_call(array($this->model,'conditions'));
 		
 		foreach($conditions as $index => $condition){
@@ -65,7 +50,22 @@ class Model_Query
 		}
 		//$this->query->order_by(Arr::get($conditions,'order_by',array()));
 		
-		return $this->query->select('*')->execute();
+		return $this->query;
+	}
+	function clear_ignore_conditions()
+	{
+		$this->ignore_conditions = [];
+	}
+	function ignore_conditions($ignore_conditions)
+	{
+		if( ! is_array($ignore_conditions) ){
+			$ignore_conditions = [$ignore_conditions];
+		}
+		$this->ignore_conditions = array_merge($this->ignore_conditions, $ignore_conditions);
+	}
+	function get()
+	{
+		return $this->get_query()->select('*')->execute();
 	}
 	/**
 	 * get()のエイリアス
