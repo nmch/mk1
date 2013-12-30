@@ -52,6 +52,8 @@ class View
 	{
 		$r = $this->view();
 		
+		$this->after_view();
+		
 		// view()でset_flashする可能性があるので、clear_flash()はview()のあとで。
 		if( ! $this->do_not_clear_flash ){
 			Session::clear_flash();
@@ -86,5 +88,6 @@ class View
 		$this->after();
 	}
 	function before() {}
+	function after_view() {}
 	function after() {}
 }
