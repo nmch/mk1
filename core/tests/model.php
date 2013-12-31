@@ -93,4 +93,31 @@ class ModelTest extends Testcase
 		$r = DB::query("select * from testmodel")->execute()->as_array();
 		$this->assertEquals([], $r);
 	}
+	
+	function testConditionsOrderby()
+	{
+		test_model_testmodel::$_conditions = [
+			'order_by' => 'test_int1',
+		];
+		$sql = test_model_testmodel::find()->get_query()->get_sql();
+		$this->assertContains(strtolower('ORDER BY test_int1 asc'), strtolower($sql));
+		
+		test_model_testmodel::$_conditions = [
+			'order_by' => [
+				'test_int1' => 'asc',
+				'test_int2' => 'desc',
+			],
+		];
+		$sql = test_model_testmodel::find()->get_query()->get_sql();
+		$this->assertContains(strtolower('ORDER BY test_int1 asc,test_int2 desc'), strtolower($sql));
+		
+		test_model_testmodel::$_conditions = [
+			'order_by' => [
+				['test_int1' , 'asc'],
+				['test_int2' , 'desc'],
+			],
+		];
+		$sql = test_model_testmodel::find()->get_query()->get_sql();
+		$this->assertContains(strtolower('ORDER BY test_int1 asc,test_int2 desc'), strtolower($sql));
+	}
 }

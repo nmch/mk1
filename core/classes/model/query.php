@@ -38,15 +38,35 @@ class Model_Query
 				continue;
 			}
 			
-			// 後方互換性のため、order_byに限って['key' => '(asc|desc)']形式を受け付ける。
-			// 本来は[ ['key','(asc|desc)'], [...] ]形式が必要。
+			// order_byは複数の形式をとることが可能。tests/model.phpのtestConditionsOrderby()参照。
 			if($name === 'order_by'){
-				if( ! Arr::is_multi($options) ){
-					$options = [$options];
+				if(is_string($options)){
+					$options = [
+						[$options, 'asc']
+					];
+				}
+				elseif(is_array($options)){
+					$new_options = [];
+					foreach($options as $key => $value){
+						if( ! is_numeric($key) && is_scalar($value) ){
+							// 'column' => 'asc' 形式
+							$new_options[] = [$key, $value];
+						}
+						elseif( is_array($value) && count($value) == 2 ){
+							// ['column' , 'asc'] 形式
+							$new_options[] = $value;
+						}
+					}
+					$options = $new_options;
+				}
+				foreach($options as $option){
+					call_user_func_array( [$this,$name], $option );
 				}
 			}
-			//Log::coredebug("[model query] conditions $name", $options);
-			call_user_func_array( [$this,$name], $options );
+			else{
+				//Log::coredebug("[model query] conditions $name", $options);
+				call_user_func_array( [$this,$name], $options );
+			}
 		}
 		//$this->query->order_by(Arr::get($conditions,'order_by',array()));
 		
