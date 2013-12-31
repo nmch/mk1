@@ -91,31 +91,4 @@ class Model_Query
 		else
 			return $r;
 	}
-	/*
-	function join()
-	{
-		call_user_func_array(array($this->query,'join'),func_get_args());
-		return $this;
-	}
-	function limit()
-	{
-		call_user_func_array(array($this->query,'limit'),func_get_args());
-		return $this;
-	}
-	function order_by()
-	{
-		call_user_func_array(array($this->query,'order_by'),func_get_args());
-		return $this;
-	}
-	function where()
-	{
-		call_user_func_array(array($this->query,'where'),func_get_args());
-		return $this;
-	}
-	function add_column()
-	{
-		call_user_func_array(array($this->query,'select'),func_get_args());
-		return $this;
-	}
-	*/
 }
