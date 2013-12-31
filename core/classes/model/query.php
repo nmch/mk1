@@ -11,6 +11,10 @@ class Model_Query
 		$this->query = new Database_Query;
 		return $this->query->from($model::table())->set_fetch_as($model);
 	}
+	function get_model()
+	{
+		return $this->model;
+	}
 	function __clone()
 	{
 		// $this->modelは文字列型なので実体が複製されている
