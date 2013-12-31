@@ -1,4 +1,7 @@
 <?
+/**
+ * @todo カラの配列に対してrequiredが効かない(正常)
+ */
 class test_Actionform extends Testcase
 {
 	protected $af;
