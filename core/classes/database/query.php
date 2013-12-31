@@ -526,44 +526,9 @@ class Database_Query
 
 		return $this;
 	}
-	/*
-	function where()
-	{
-		$column = NULL;
-		$op = NULL;
-		$value = NULL;
-		
-		$args = func_get_args();
-		if(func_num_args() == 2){
-			$column = array_shift($args);
-			$value = array_shift($args);
-		}
-		else if(func_num_args() == 3){
-			$column = array_shift($args);
-			$op = array_shift($args);
-			$value = array_shift($args);
-		}
-		else
-			throw new MkException('invalid where options');
-		
-		if($value === NULL){
-			if( $op == '=' || ! $op )
-				$op = 'is';
-			if( $op == '!=' || $op == '<>' )
-				$op = 'is not';
-		}
-		else{
-			if( ! $op )
-				$op = '=';
-		}
-		$this->_query_query_where[] = "$column $op ?";
-		$this->_query_values[] = $value;
-		
-		return $this;
-	}
-	*/
 	function order_by($column, $direction = null)
 	{
+		//Log::coredebug("[database_query] order_by",$column,$direction);
 		if($column){
 			if( ! is_array($column) ){
 				$this->order_by(array((string)$column => $direction));

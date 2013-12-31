@@ -272,10 +272,11 @@ class Actionform
 			foreach(Database_Schema::get() as $table_name => $table){
 				foreach(Arr::get($table,'columns') as $col_name => $col){
 					$rule = [
-						'name' => '',
+						'name' => Arr::get($col,'desc'),
 						'filter' => '',
+						'typecat' => Arr::get($col,'type_cat'),
 					];
-					switch(Arr::get($col,'type_cat')){
+					switch($rule['typecat']){
 						case 'N':
 							$rule['filter'] = ['hankaku','only0to9'];
 							
@@ -299,6 +300,7 @@ class Actionform
 								'name' => $rule['name'].' TO',
 								'filter' => $rule['filter'],
 							]);
+							break;
 						case 'B':
 						case 'S':
 						case 'A':
@@ -315,7 +317,7 @@ class Actionform
 		
 		return $this;
 	}
-	private function get_config($name)
+	public function get_config($name)
 	{
 		return Arr::get($this->config,$name);
 	}

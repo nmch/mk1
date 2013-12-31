@@ -70,6 +70,7 @@ class Database_Schema
 				$tables[$attr['table']] = array(
 					'name' => $attr['table'],
 					'has_pkey' => $attr['table_has_pkey'],
+					'description' => $attr['desc'],
 					'columns' => array(),
 					'primary_key' => array(),
 				);
