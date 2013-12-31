@@ -233,6 +233,7 @@ class Database_Query
 			foreach ($group as $logic => $condition)
 			{
 				//Log::coredebug("$logic = ",$condition);
+				//echo "[$logic = "; var_export($condition); echo "]\n";
 				if ($condition === '(')
 				{
 					if ( ! empty($sql) AND $last_condition !== '(')
@@ -245,6 +246,11 @@ class Database_Query
 				}
 				elseif ($condition === ')')
 				{
+					// 空のwhere_open()～where_close()で'()'を生成するとエラーになるため、ダミーの式を入れる
+					if($last_condition === '('){
+						$sql .= 'true';
+					}
+					
 					$sql .= ')';
 				}
 				else

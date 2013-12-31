@@ -9,6 +9,7 @@
 		<testsuite name="core">
 			<file>core/tests/mk.php</file>
 			<file>core/tests/actionform.php</file>
+			<file>core/tests/db.php</file>
 			<file>core/tests/model.php</file>
 		</testsuite>
 	</testsuites>
