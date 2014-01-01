@@ -4,6 +4,7 @@ class Model_Query
 	private $model;
 	private $query;
 	private $ignore_conditions = [];
+	private $conditions_applied = false;
 	
 	function __construct($model)
 	{
@@ -21,8 +22,15 @@ class Model_Query
 		// $this->queryはオブジェクトなのでディープコピーが必要
 		$this->query = clone $this->query;
 	}
-	function get_query()
+	/**
+	 * static::$_conditionsをqueryに反映する
+	 */
+	function apply_conditions($force = false)
 	{
+		if($this->conditions_applied && ! $force){
+			return $this;
+		}
+		
 		$conditions = forward_static_call(array($this->model,'conditions'));
 		
 		foreach($conditions as $index => $condition){
@@ -63,6 +71,7 @@ class Model_Query
 					}
 					$options = $new_options;
 				}
+				Log::debug($options);
 				foreach($options as $option){
 					call_user_func_array( [$this,$name], $option );
 				}
@@ -72,7 +81,14 @@ class Model_Query
 				call_user_func_array( [$this,$name], $options );
 			}
 		}
-		//$this->query->order_by(Arr::get($conditions,'order_by',array()));
+		
+		$this->conditions_applied = true;
+		
+		return $this;
+	}
+	function get_query()
+	{
+		$this->apply_conditions();
 		
 		return $this->query;
 	}
