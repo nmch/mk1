@@ -4,3 +4,6 @@
 <FilesMatch "^stylesheets$">
    ForceType application/x-httpd-php 
 </FilesMatch>
+<FilesMatch "^less$">
+   ForceType application/x-httpd-php 
+</FilesMatch>
