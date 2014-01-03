@@ -52,6 +52,7 @@ class ModelTest extends Testcase
 	
 	function testJson()
 	{
+		// ************** 配列
 		$testarray = ['key' => 'value'];
 		$obj = new test_model_testmodel;
 		$obj->test_json = $testarray;
@@ -69,6 +70,40 @@ class ModelTest extends Testcase
 		$r = DB::select()->from('testmodel')->where('test_id',$id)->execute()->as_array();
 		$this->assertEquals(json_encode($testarray), $r[0]['test_json']);
 		
+		// ************** NULL
+		$obj->test_json = NULL;
+		$obj->save();
+		$this->assertEquals(NULL, $obj->test_json);
+		$id = $obj->test_id;
+		unset($obj);
+		$obj = test_model_testmodel::find($id);
+		$this->assertEquals(NULL, $obj->test_json);
+		$r = DB::select()->from('testmodel')->where('test_id',$id)->execute()->as_array();
+		$this->assertEquals(NULL, $r[0]['test_json']);
+		
+		// ************** 空配列
+		$obj->test_json = [];
+		$obj->save();
+		$this->assertEquals([], $obj->test_json);
+		$id = $obj->test_id;
+		unset($obj);
+		$obj = test_model_testmodel::find($id);
+		$this->assertEquals([], $obj->test_json);
+		$r = DB::select()->from('testmodel')->where('test_id',$id)->execute()->as_array();
+		$this->assertEquals('[]', $r[0]['test_json']);
+		
+		// ************** 空文字列
+		$obj->test_json = '';
+		$obj->save();
+		$this->assertEquals('', $obj->test_json);
+		$id = $obj->test_id;
+		unset($obj);
+		$obj = test_model_testmodel::find($id);
+		$this->assertEquals('', $obj->test_json);
+		$r = DB::select()->from('testmodel')->where('test_id',$id)->execute()->as_array();
+		$this->assertEquals('""', $r[0]['test_json']);
+		
+		// ************** 後始末
 		$obj->delete();
 		$r = DB::query("select * from testmodel")->execute()->as_array();
 		$this->assertEquals([], $r);

@@ -486,7 +486,7 @@ class Model implements Iterator,Countable,ArrayAccess
 					break;
 				case 'U':
 					if($data_type === 'json'){
-						$value = json_encode($value);
+						$value = $value === NULL ? NULL : json_encode($value);
 					}
 					break;
 			}
