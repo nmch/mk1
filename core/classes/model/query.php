@@ -58,6 +58,13 @@ class Model_Query
 					];
 				}
 				elseif(is_array($options)){
+					// 'options' => ['test_int1','asc'] 形式を変換
+					if(count($options) === 2 && (Arr::get($options,'1') === 'asc' || Arr::get($options,'1') === 'desc')){
+						$options = [
+							[Arr::get($options,'0'), Arr::get($options,'1')]
+						];
+					}
+					
 					$new_options = [];
 					foreach($options as $key => $value){
 						if( ! is_numeric($key) && is_scalar($value) ){

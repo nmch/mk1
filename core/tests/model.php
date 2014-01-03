@@ -179,5 +179,20 @@ class ModelTest extends Testcase
 		];
 		$sql = test_model_testmodel::find()->get_query()->get_sql();
 		$this->assertContains(strtolower('ORDER BY test_int1 asc,test_int2 desc'), strtolower($sql));
+		
+		test_model_testmodel::$_conditions = [
+			[
+				'label'		=> 'test_int1',
+				'name'		=> 'order_by',
+				'options'	=> ['test_int1','asc'],
+			],
+			[
+				'label'		=> 'test_int2',
+				'name'		=> 'order_by',
+				'options'	=> ['test_int2','desc'],
+			],
+		];
+		$sql = test_model_testmodel::find()->get_query()->get_sql();
+		$this->assertContains(strtolower('ORDER BY test_int1 asc,test_int2 desc'), strtolower($sql));
 	}
 }
