@@ -53,7 +53,7 @@ class DB
 	
 	static function copy_from($table_name , $rows, $connection = NULL)
 	{
-		Log::coredebug($table_name,$rows);
+		//Log::coredebug($table_name,$rows);
 		$dbconn = static::get_database_connection($connection);
 		return $dbconn->copy_from($table_name , $rows);
 	}

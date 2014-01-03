@@ -34,7 +34,7 @@ class Task_Migration extends Task
 				DB::start_transaction();
 				try{
 					$r = DB::query($query)->execute();
-					Log::coredebug($query,$r);
+					//Log::coredebug($query,$r);
 					DB::query("update migrations set last_seq=$seq")->execute();
 					DB::commit_transaction();
 					Log::info("[db migration] seq=$seq / $name");
