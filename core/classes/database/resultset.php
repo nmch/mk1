@@ -138,7 +138,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 	 * 
 	 * インスタンス生成時に取得したフィールドの型データと、データ本体とを見比べて
 	 * 正しい表記へ書き換え、返します。
-	 * 主にBooleanの表記('t'/'f' → true/false)が対象です。
+	 * Booleanの表記('t'/'f' → true/false)、JSON等が対象です。
 	 * 
 	 * @param type $data
 	 */

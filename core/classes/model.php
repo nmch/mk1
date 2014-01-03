@@ -334,6 +334,16 @@ class Model implements Iterator,Countable,ArrayAccess
 		return $primary_key;
 	}
 	
+	/**
+	 * このModelのデータを取得する際のselectクエリを得る
+	 *
+	 * @return Database_Query
+	 */
+	public function get_select_query()
+	{
+		$model_query = static::_build_select_query();	// Model_Queryにjoinやadd_fieldを加える
+		return $model_query->get_query();				// Database_Queryを得る
+	}
 	protected static function _build_select_query()
 	{
 		$query = new Model_Query(get_called_class());
