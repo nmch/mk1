@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{capture name="title"}{block name=title}{/block}{/capture}{$smarty.capture.title|default:''|addstr:"":" - "}タイトル</title>
+	<link rel="stylesheet" href="/assets/less/bootstrap/bootstrap.less">
+	<link rel="stylesheet" href="/assets/css/common.css">
+	{block name=cssfiles}{/block}
+	<style>{block name=css}{/block}</style>
+	
+	<script src="/assets/js/jquery-1.10.2.min.js"></script>
+	<script src="/assets/js/bootstrap.min.js"></script>
+	<script src="/assets/js/jquery.ah-placeholder.js"></script>
+	<script src="/assets/js/common.js"></script>
+	{block name=jsfiles}{/block}
+	<script>{block name=js}{/block}</script>
+</head>
+<body>
+
+<div class="container">
+
+<nav class="navbar navbar-default" role="navigation">
+	<div class="navbar-header">
+		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+		</button>
+		
+		<a class="navbar-brand" href="/">APP</a>
+	</div>
+	<div class="collapse navbar-collapse navbar-ex1-collapse">
+		<ul class="nav navbar-nav">
+		{*
+		<li><A href="/page">PAGE</A>
+		<li class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown">MENU<b class="caret"></b></a>
+			<ul class="dropdown-menu">
+			<li class="divider"></li>
+			<li><a href="/login/logout">ログアウト</a></li>
+			</ul>
+		*}
+		</ul>
+	</div>
+</nav>
+
+<div class="messages">
+{* メッセージ *}
+{foreach from=Session::get_flash('messages') key=message_type item=messages}
+	{if $message_type == 'error'}{$message_type = 'danger'}{/if}
+	{foreach from=(array)$messages item=message}
+		<p class='alert alert-{$message_type}'>{$message}</p>
+	{/foreach}
+{/foreach}
+</div>
+
+{block name="contents"}{/block}
+
+<hr>
+<div class="footer" style="color:gray; text-align:center">App</div>
+
+<script>{Config::get('app.ga_tag') nofilter}</script>
+
+</body>
+</html>

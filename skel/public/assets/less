@@ -1,0 +1,45 @@
+<?php
+require realpath(__DIR__).'/../../app/vendor/lessc.inc.php';
+
+$cache_dir = realpath(__DIR__).'/../../tmp/cache';
+
+$expl = explode("/",$_SERVER["REQUEST_URI"]);
+$target_dir = trim(urldecode($expl[count($expl)-2]));
+$less_filename = trim(urldecode($expl[count($expl)-1]));
+
+$target_dir = realpath(__DIR__).'/css/'.$target_dir;
+if( ! file_exists($target_dir) || ! is_dir($target_dir) ){
+	throw new Exception('target dir not found');
+}
+
+$less_filepath = $target_dir.'/'.$less_filename;
+if( ! file_exists($less_filepath) ){
+	throw new Exception('less file not found');
+}
+
+$last_modified = 0;
+foreach(glob($target_dir.'/*.less') as $file){
+	$stat = stat($file);
+	if(is_file($file) && $last_modified < $stat['mtime']){
+		$last_modified = $stat['mtime'];
+	}
+}
+
+$cache_filename = $less_filename.'.'.$last_modified;
+$cache_filepath = $cache_dir.'/'.$cache_filename;
+
+header('Last-Modified: '.gmdate( "D, d M Y H:i:s", $last_modified ) . " GMT");
+header('Content-Type: text/css');
+if(file_exists($cache_filepath)){
+	readfile($cache_filepath);
+}
+else{
+	$less = new lessc;
+	$css = $less->compileFile($less_filepath);
+	
+	if(file_exists($cache_dir) && is_writable($cache_dir)){
+		file_put_contents($cache_filepath,$css);
+	}
+	
+	echo $css;
+}

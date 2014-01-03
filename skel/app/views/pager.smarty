@@ -1,0 +1,38 @@
+{if empty($actionform)}{$actionform=$af}{/if}
+{if $actionform->total_pages}
+<div class="text-center">
+<ul class="pagination">
+
+        <li class="{if $actionform->is_first_page}disabled{/if}"><a href="1">
+        	<span class="glyphicon glyphicon-backward"></span>
+        </a></li>
+        <li class="{if $actionform->is_first_page}disabled{/if}"><a href="{$actionform->page - 1}">
+        	<span class="glyphicon glyphicon-step-backward"></span>
+        </a></li>
+        
+        {if $af->is_mobiledevice()}{$page_elements = 5}{else}{$page_elements = 5}{/if}
+        {$page_start = (int)($actionform->page - floor($page_elements/2))}
+        {if $page_start < 1}{$page_start = 1}{/if}
+        {for $page=$page_start to $page_start+$page_elements-1}
+                {if $page <= $actionform->total_pages}
+                <li class="{if $page == $actionform->page}disabled{/if}">
+                        <a href="{$page}">{$page}</a></li>
+                {/if}
+        {/for}
+
+        <li class="{if $actionform->is_last_page}disabled{/if}"><a href="{$actionform->page + 1}">
+        	<span class="glyphicon glyphicon-step-forward"></span>
+        </a></li>
+        <li class="{if $actionform->is_last_page}disabled{/if}"><a href="{$actionform->total_pages}">
+        	<span class="glyphicon glyphicon-forward"></span>
+        </a></li>
+</ul>
+
+{if empty($without_summary)}
+	{if $actionform->total_rows > 0}
+		<p>全{$actionform->total_pages}ページ / {$actionform->total_rows}件</p>
+	{/if}
+{/if}
+
+</div>
+{/if}
