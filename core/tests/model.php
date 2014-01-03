@@ -10,6 +10,7 @@ class ModelTest extends Testcase
 				test_text text,
 				test_int1 integer,
 				test_int2 integer,
+				test_json json,
 				test_created_at timestamp
 			);
 			create table testmodel_belongsto (
@@ -45,6 +46,30 @@ class ModelTest extends Testcase
 		
 		$obj->delete();
 		$this->assertNull($obj->test_id);
+		$r = DB::query("select * from testmodel")->execute()->as_array();
+		$this->assertEquals([], $r);
+	}
+	
+	function testJson()
+	{
+		$testarray = ['key' => 'value'];
+		$obj = new test_model_testmodel;
+		$obj->test_json = $testarray;
+		$obj->save();
+		// セーブしても配列のまま。
+		$this->assertEquals($testarray, $obj->test_json);
+		$id = $obj->test_id;
+		
+		unset($obj);
+		$obj = test_model_testmodel::find($id);
+		// ロードしても同じ配列。
+		$this->assertEquals($testarray, $obj->test_json);
+		
+		// 生データをみるとJSON
+		$r = DB::select()->from('testmodel')->where('test_id',$id)->execute()->as_array();
+		$this->assertEquals(json_encode($testarray), $r[0]['test_json']);
+		
+		$obj->delete();
 		$r = DB::query("select * from testmodel")->execute()->as_array();
 		$this->assertEquals([], $r);
 	}

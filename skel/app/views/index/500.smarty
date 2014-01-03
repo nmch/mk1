@@ -1,7 +1,7 @@
 {extends file='app.smarty'}
 {block name="contents"}
 
-<H1>500 Error</H1>
+<H1>Error</H1>
 
 <pre>
 {if $af->error && is_object($af->error) && $af->error instanceof AppException}

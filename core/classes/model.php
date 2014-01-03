@@ -416,6 +416,7 @@ class Model implements Iterator,Countable,ArrayAccess
 		
 		foreach($schema['columns'] as $key => $property){
 			//Log::coredebug("[model typecheck] $key",$property);
+			//echo "[model typecheck] $key"; print_r($property);
 			/*
 			if( is_numeric($key) && ! is_array($property) ){
 				$key = $property;
@@ -431,8 +432,8 @@ class Model implements Iterator,Countable,ArrayAccess
 			if($skip_unchanged_item && !array_key_exists($key, $this->_data))
 				continue;
 			
-			$data_type = Arr::get($property,'type',NULL);
-			$type_cat = Arr::get($property,'type_cat',NULL);
+			$data_type = Arr::get($property,'type',NULL);		// int4, timestamp, text
+			$type_cat = Arr::get($property,'type_cat',NULL);	// S, N, A, U
 			$value = $this->$key;
 			
 			switch($type_cat){
@@ -484,7 +485,7 @@ class Model implements Iterator,Countable,ArrayAccess
 						$value = DB::array_to_pgarraystr($value,$type_detail['typdelim'],$elem_type['typcategory']);
 					break;
 				case 'U':
-					if($type_detail['typname'] === 'json'){
+					if($data_type === 'json'){
 						$value = json_encode($value);
 					}
 					break;
