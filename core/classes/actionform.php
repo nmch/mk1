@@ -236,7 +236,7 @@ class Actionform
 		$this->config = Config::get('form',[]);
 		
 		$this->values = array_merge($_GET ?: array(),$_POST ?: array());
-		//echo "<PRE>form_values = "; print_r($this->form_values); echo "</PRE>";
+		//echo "<PRE>values = "; print_r($this->values); echo "</PRE>";
 		//$this->af_filter = new \Model_ActionformFilter;
 		//$this->request_method = Arr::get($_SERVER,'REQUEST_METHOD','');
 		$this->referer = Arr::get($_SERVER,'HTTP_REFERER');
@@ -350,7 +350,7 @@ class Actionform
 				$this->set($key,$value,$set_default);
 		}
 		else{
-			//echo "[af] set $name (default:$set_default)"; var_dump($value);
+			//echo "<PRE>[af] set $name (default:$set_default)"; var_dump($value); print_r(debug_backtrace(NULL,3));
 			
 			if($set_default)
 				$this->values_default[$name] = $value;

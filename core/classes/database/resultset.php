@@ -180,6 +180,11 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 						$value = array_map(function($str){ return stripslashes($str); },str_getcsv(trim($value,'{}'), $delimiter, '"', '\\'));
 				}
 				break;
+			case 'U':
+				if($type['typname'] === 'json'){
+					$value = json_decode($value,true);
+				}
+				break;
 		}
 		//Log::coredebug("correct value [$value] as $type");
 		return $value;

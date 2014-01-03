@@ -483,7 +483,11 @@ class Model implements Iterator,Countable,ArrayAccess
 					if(is_array($value))
 						$value = DB::array_to_pgarraystr($value,$type_detail['typdelim'],$elem_type['typcategory']);
 					break;
-
+				case 'U':
+					if($type_detail['typname'] === 'json'){
+						$value = json_encode($value);
+					}
+					break;
 			}
 			if($this->$key !== $value){
 				//Log::coredebug("typecheck $key ($data_type) {$this->$key} → $value");
