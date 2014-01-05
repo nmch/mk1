@@ -35,6 +35,7 @@ class Model implements Iterator,Countable,ArrayAccess
 	protected $_original_before_save = array();
 	protected $_iter_keylist = array();
 	protected $_iter_curkey = 0;
+	protected $_save_diff = [];	//save()時にとられるdiff
 	public $_data = array();
 	
 	static function __callStatic($name, $arguments)
@@ -236,16 +237,22 @@ class Model implements Iterator,Countable,ArrayAccess
 			//echo "SQL = "; print_r($query_insert->get_sql(true));
 			$r = $query_insert->execute();
 		}
-
+		
 		// 更新・挿入されたアイテムはoriginalとして保存し、_dataからは消す
 		if($r){
 			$this->_original_before_save = $this->_original;
 			
 			$new_data = $r->get();
+			$this->_save_diff = [];
+			
 			//echo "new_data = "; print_r($new_data);
 			//Log::coredebug("[model] new_data = ",$new_data);
 			if($new_data){
 				foreach($new_data as $key => $value){
+					if($this->$key !== $value){
+						$this->_save_diff[0][$key] = $this->$key;
+						$this->_save_diff[1][$key] = $value;
+					}
 					$this->_original[$key] = $value;
 					if(array_key_exists($key,$this->_data))
 						unset($this->_data[$key]);
