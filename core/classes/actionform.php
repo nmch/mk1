@@ -164,25 +164,16 @@ class Actionform
 				
 				if(isset($rules['validation'])){
 					foreach($rules['validation'] as $validation => $option){
-						if( is_numeric($validation) ){
-							$validation = $option;
-							$option = array();
-						}
+						
 						//Log::coredebug("[af] validation $validation");
 						
-						// 値が配列の場合は各要素に対してバリデーションを適用する
-						if(is_array($value)){
-							foreach($value as $value_key => $value_item)
-								static::unit_validate($value_item,$validation,$option);
-						}
-						else
-							static::unit_validate($value,$validation,$option);
+						static::unit_validate($value,$validation,$option);
 					}
 				}
 				$validated_values[$key] = $value;	//配列の場合がある
 				$validation_results[$key] = NULL;
 			} catch(ValidateErrorException $e){
-				Log::debug("[af] validation error key=[$key] msg=".$e->getMessage());
+				Log::coredebug("[af] validation error key=[$key] msg=".$e->getMessage());
 				$validation_results[$key] = [
 					'key' => $key,
 					'rules' => $rules,
@@ -216,10 +207,51 @@ class Actionform
 		$value = $func($value,$option);	//返り値は配列の可能性がある
 		return $value;
 	}
+	
+	/**
+	 * 単体のバリデーションを実行する
+	 *
+	 * @param バリデーション対象の値
+	 * @param バリデーションルール
+	 * @param オプション
+	 * @throws ValidateErrorException
+	 */
 	public static function unit_validate($value,$validation,$option = [])
 	{
-		$func = static::load("actionform/validation/".strtolower($validation).".php");
-		$func($value,$option);
+		if( is_array($validation) ){
+			foreach($validation as $validation_key => $validation_value){
+				static::unit_validate($value,$validation_key,$validation_value);
+			}
+		}
+		else{
+			if(is_array($value)){
+				foreach($value as $value_key => $value_item){
+					static::unit_validate($value_item,$validation,$option);
+				}
+			}
+			else{
+				if(is_numeric($validation) && $option){
+					$validation = $option;
+					$option = [];
+				}
+				
+				if(is_callable($validation)){
+					$af = static::instance();
+					$add_validation = call_user_func($validation,$af);
+					if($add_validation){
+						if( ! is_array($add_validation) ){
+							$add_validation = [$add_validation,[]];
+						}
+						Log::coredebug("[af] add_validation = ",$add_validation);
+						call_user_func_array( "static::unit_validate", array_merge([$value],$add_validation) );
+					}
+				}
+				else{
+					$func = static::load("actionform/validation/".strtolower($validation).".php");
+					call_user_func($func,$value,$option);
+				}
+			}
+		}
 	}
 
 
@@ -435,6 +467,11 @@ class Actionform
 	function server_vars($name)
 	{
 		return Arr::get($this->server_vars,$name);
+	}
+	
+	function is_ssl()
+	{
+		return ($this->server_vars('HTTPS') === 'on');
 	}
 	
 	function is_ajax_request()
