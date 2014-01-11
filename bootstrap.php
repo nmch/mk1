@@ -1,5 +1,6 @@
 <?
 ini_set('display_errors', 0);
+mb_internal_encoding('UTF-8');
 
 class MkException				extends Exception {}
 class AppException				extends MkException {}
