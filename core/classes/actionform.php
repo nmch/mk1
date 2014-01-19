@@ -1,7 +1,7 @@
 <?
 class Actionform
 {
-	static private $instance;
+	use Singleton;
 	
 	private $config = array();
 	
@@ -252,16 +252,6 @@ class Actionform
 				}
 			}
 		}
-	}
-
-
-	public static function instance()
-	{
-		if (is_null(self::$instance)) {
-			self::$instance = new self;
-		}
-		
-		return self::$instance;
 	}
 	function __construct()
 	{

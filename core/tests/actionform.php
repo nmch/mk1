@@ -16,6 +16,18 @@ class test_Actionform extends Testcase
 		$this->af = Actionform::instance();
 	}
 	
+	function test_force_new_instance()
+	{
+		$af1 = Actionform::instance();
+		$af1->test = 'test';
+		
+		$af2 = Actionform::instance();
+		$this->assertEquals('test', $af2->test);
+		
+		$af3 = Actionform::instance(true);
+		$this->assertNull($af3->test);
+	}
+	
 	function test外部からの変数()
 	{
 		$this->assertEquals('string',$this->af->var_str);

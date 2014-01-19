@@ -1,10 +1,11 @@
 <?
-trait Singleton {
+trait Singleton
+{
 	static private $instance;
 	
-	static function instance()
+	static function instance($force_new = false)
 	{
-		if (is_null(static::$instance)) {
+		if( $force_new || is_null(static::$instance) ){
 			static::$instance = new static;
 		}
 		
