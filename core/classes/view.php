@@ -63,7 +63,7 @@ class View
 		if($r instanceof Response)
 			return $r;
 		
-		if( ! $this->smarty->templateExists($this->template_filename) ){
+		if( ! $this->template_exists($this->template_filename) ){
 			if(is_scalar($this->template_filename))
 				Log::error("template not found {$this->template_filename}");
 			throw new HttpNotFoundException();
@@ -73,6 +73,10 @@ class View
 		$this->smarty->assignByRef('data', $this->data);
 		$this->smarty->assignByRef('af', $this->af);
 		return $this->smarty->fetch($this->template_filename);
+	}
+	function template_exists($template_filename)
+	{
+		return $this->smarty->templateExists($template_filename);
 	}
 	function __toString()
 	{
