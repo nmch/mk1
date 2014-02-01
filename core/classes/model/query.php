@@ -78,7 +78,7 @@ class Model_Query
 					}
 					$options = $new_options;
 				}
-				Log::debug($options);
+				//Log::coredebug($options);
 				foreach($options as $option){
 					call_user_func_array( [$this,$name], $option );
 				}
