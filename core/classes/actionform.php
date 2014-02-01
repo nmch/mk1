@@ -68,10 +68,30 @@ class Actionform
 		if(is_array($model))
 			$model = reset($model);
 		
-		if( ! is_object($model) )
-			$obj = new $model;
-		else
+		if( ! is_object($model) ){
+			if( ! class_exists($model) ){
+				throw new MkException('model not defined');
+			}
+			if( ! is_subclass_of($model, 'Model') ){
+				throw new MkException('specified name is not subclass of Model');
+			}
+			$primary_key = $model::primary_key();
+			if( ! $primary_key ){
+				throw new MkException('primary key is not defined');
+			}
+			if( $this->$primary_key ){
+				try {
+					$obj = $model::find($this->$primary_key);
+				} catch(RecordNotFoundException $e){
+				}
+			}
+			if(empty($obj)){
+				$obj = new $model;
+			}
+		}
+		else{
 			$obj = $model;
+		}
 		
 		//Log::coredebug("[af save] keys=",$obj->columns(),$obj);
 		foreach($obj->columns() as $key){
