@@ -153,7 +153,8 @@ class Actionform
 				
 				// 値がデータに存在しない場合はフィルタを適用しない
 				if($this->key_exists($key)){
-					if(isset($rules['filter'])){
+					//Log::coredebug("rules filter = ",$rules['filter']);
+					if(isset($rules['filter']) && is_array($rules['filter'])){
 						foreach($rules['filter'] as $filter => $option){
 							if( is_numeric($filter) ){
 								$filter = $option;
@@ -346,7 +347,7 @@ class Actionform
 						case 'B':
 						case 'S':
 						case 'A':
-							$rule['filter'] = ['hankaku','hantozen','trim'];
+							$rule['filter'] = ['hankaku','hantozen','trim','empty2null'];
 							break;
 						case 'U':	//ユーザ定義型
 							break;
