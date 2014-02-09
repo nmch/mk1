@@ -20,7 +20,13 @@ class View
 		
 		$this->smarty = new Smarty();
 		
-		$this->smarty->template_dir = APPPATH.'views/';
+		$list = [COREPATH.'views/'];
+		foreach(glob(PKGPATH.'*',GLOB_ONLYDIR) as $dir){
+			$list[] = $dir.'/'.'views/';
+		}
+		$list[] = APPPATH.'views/';
+		$this->smarty->template_dir = array_reverse($list);
+		//$this->smarty->template_dir = APPPATH.'views/';
 		$environments = Config::get('smarty.environment');
 		if(is_array($environments)){
 			foreach($environments as $name => $environment){

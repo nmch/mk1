@@ -348,8 +348,10 @@ class Actionform
 						case 'A':
 							$rule['filter'] = ['hankaku','hantozen','trim'];
 							break;
+						case 'U':	//ユーザ定義型
+							break;
 						default:
-							Log::coredebug('[af] Unknown typecat: ',Arr::get($col,'type_cat'));
+							Log::coredebug("[af] Unknown {$col_name} typecat: ",Arr::get($col,'type_cat'));
 					}
 					$this->set_config('global.key.'.$col_name, $rule);
 				}

@@ -37,12 +37,15 @@ class Autoloader
 			COREPATH,
 		];
 		
+		
+		// View::__construct()でも同じロジックを使っているので注意。いつか共通化する。
 		$list = [COREPATH];
 		foreach(glob(PKGPATH.'*',GLOB_ONLYDIR) as $dir){
 			$list[] = $dir.'/';
 		}
 		$list[] = APPPATH;
 		$include_path_list = array_reverse($list);
+		//echo "<PRE>"; print_r($include_path_list);
 		
 		foreach($include_path_list as $include_path){
 			$include_path .= 'classes/';
@@ -55,7 +58,7 @@ class Autoloader
 					$path .= '/';
 				
 				$filepath = $include_path.$path.$basename.'.php';
-				//echo "check $filepath\n";
+				//echo "check $filepath <br>\n";
 				if(is_readable($filepath)){
 					//echo "found! $filepath<BR>";
 					include($filepath);
