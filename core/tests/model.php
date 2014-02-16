@@ -13,6 +13,12 @@ class ModelTest extends Testcase
 				test_json json,
 				test_created_at timestamp
 			);
+			create table testmodel_join (
+				testjoin_id serial primary key,
+				testjoin_test_id integer references testmodel(test_id) on update cascade on delete cascade,
+				testjoin_text text,
+				testjoin_created_at timestamp
+			);
 			create table testmodel_belongsto (
 				testbelongsto_id serial primary key,
 				testbelongsto_test_id integer references testmodel(test_id) on update cascade on delete cascade,
@@ -109,27 +115,75 @@ class ModelTest extends Testcase
 		$this->assertEquals([], $r);
 	}
 	
-	function testBelongsto()
+	function testJoin()
 	{
 		$obj = new test_model_testmodel;
 		$obj->test_text = 'test';
 		$obj->save();
 		$id = $obj->test_id;
 		
-		$obj2 = new test_model_testmodel_belongsto;
-		$obj2->testbelongsto_test_id = $obj->test_id;
-		$obj2->testbelongsto_text = 'test_belongsto';
+		$obj2 = new test_model_testmodel_join;
+		$obj2->testjoin_test_id = $obj->test_id;
+		$obj2->testjoin_text = 'test_join';
 		$obj2->save();
 		
 		unset($obj);
 		
 		$obj = test_model_testmodel::find($id);
-		$this->assertEquals('test_belongsto', $obj->testbelongsto_text);
+		$this->assertEquals('test_join', $obj->testjoin_text);
+		
+		$obj2->testjoin_text = 'test_join_changed';
+		$obj2->save();
+		$obj->reload();
+		$this->assertEquals('test_join_changed', $obj->testjoin_text);
+		
+		$obj->delete();
+		$r = DB::query("select * from testmodel")->execute()->as_array();
+		$this->assertEquals([], $r);
+	}
+	
+	function testBelongsto()
+	{
+		$obj = new test_model_testmodel;
+		$obj->test_text = 'test';
+		$obj->save();
+		$id = $obj->test_id;
+		$this->assertNull($obj->belongsto);
+		
+		$obj2 = new test_model_testmodel_belongsto;
+		$obj2->testbelongsto_test_id = $obj->test_id;
+		$obj2->testbelongsto_text = 'test_belongsto';
+		$obj2->save();
+		$id2 = $obj2->testbelongsto_id;
+		
+		$this->assertInstanceof('test_model_testmodel_belongsto', $obj->belongsto);
+		$this->assertEquals('test_belongsto', $obj->belongsto->testbelongsto_text);
 		
 		$obj2->testbelongsto_text = 'test_belongsto_changed';
 		$obj2->save();
-		$obj->reload();
-		$this->assertEquals('test_belongsto_changed', $obj->testbelongsto_text);
+		
+		$this->assertEquals('test_belongsto_changed', $obj->belongsto->testbelongsto_text);
+		
+		$obj->delete();
+		$r = DB::query("select * from testmodel")->execute()->as_array();
+		$this->assertEquals([], $r);
+	}
+	
+	function testBelongstoAutogen()
+	{
+		$obj = new test_model_testmodel;
+		
+		$this->assertInstanceof('test_model_testmodel_belongsto', $obj->belongsto_autogen);
+		$this->assertNull($obj->belongsto_autogen->testbelongsto_test_id);
+		$this->assertNull($obj->belongsto_autogen->testbelongsto_id);
+		
+		$obj->test_text = 'test';
+		$obj->save();
+		$id = $obj->test_id;
+		
+		$this->assertInstanceof('test_model_testmodel_belongsto', $obj->belongsto_autogen);
+		$this->assertEquals($id, $obj->belongsto_autogen->testbelongsto_test_id);
+		$this->assertNull($obj->belongsto_autogen->testbelongsto_id);
 		
 		$obj->delete();
 		$r = DB::query("select * from testmodel")->execute()->as_array();

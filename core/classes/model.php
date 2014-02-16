@@ -170,7 +170,13 @@ class Model implements Iterator,Countable,ArrayAccess
 		
 		switch($relation_type){
 			case 'belongs_to':
-				return $query->get_one();
+				$target = $query->get_one();
+				if($target === NULL && Arr::get($options,'autogen')){
+					// autogenモードの場合は自動的にオブジェクトを作って返す (saveはしない)
+					$target = new $options['model_to'];
+					$target->{$options['key_to']} = $this->{$options['key_from']};
+				}
+				return $target;
 			case 'has_many':
 				return $query->get();
 			default:
