@@ -54,7 +54,7 @@ class Actionform
 	public function save($name,$model = NULL)
 	{
 		$this->validate($name);
-		//Log::coredebug($this->validated_values);
+		//Log::coredebug("validated_values = ",$this->validated_values);
 		
 		$preset = Config::get('form.preset.'.$name);
 		if( ! $preset )
@@ -134,7 +134,7 @@ class Actionform
 			}
 			if($default_rules)
 				$rules = array_merge($default_rules,$rules);
-			//Log::coredebug("[af] validate $key",$rules);
+			//Log::coredebug("[af] validate $key","key_exists = ".$this->key_exists($key,true).'/'.$this->key_exists($key),$rules);
 			
 			// only_existsがtrueの場合、キーがデータに存在しない場合に一切の処理を行わない
 			if(Arr::get($rules,'only_exists') === true){
@@ -152,8 +152,8 @@ class Actionform
 				//Log::coredebug("[af] target value=",$value);
 				
 				// 値がデータに存在しない場合はフィルタを適用しない
-				if($this->key_exists($key)){
-					//Log::coredebug("rules filter = ",$rules['filter']);
+				if($this->key_exists($key,true)){
+					//Log::coredebug("rules filter (key=$key) ",$rules['filter']);
 					if(isset($rules['filter']) && is_array($rules['filter'])){
 						foreach($rules['filter'] as $filter => $option){
 							if( is_numeric($filter) ){
@@ -191,7 +191,12 @@ class Actionform
 						static::unit_validate($value,$validation,$option);
 					}
 				}
-				$validated_values[$key] = $value;	//配列の場合がある
+				
+				// 値がデータに存在しない場合はvalidated_valuesに代入しない
+				if($this->key_exists($key)){
+					//Log::coredebug("store validated_values $key",$value);
+					$validated_values[$key] = $value;	//配列の場合がある
+				}
 				$validation_results[$key] = NULL;
 			} catch(ValidateErrorException $e){
 				Log::coredebug("[af] validation error key=[$key] msg=".$e->getMessage());
