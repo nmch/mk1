@@ -112,6 +112,12 @@ class Actionform
 		}
 		else{
 			$validation = $this->get_config('preset.'.$name);
+			$parent_name = Arr::get($validation, 'inherit');
+			if($parent_name){
+				$parent = $this->get_config('preset.'.$parent_name);
+				$validation = Arr::merge($parent, $validation);
+				//Log::coredebug("merged rules = ",$validation);
+			}
 		}
 		if( ! $validation )
 			throw new MkException("empty validation rules ($name)");
@@ -185,10 +191,7 @@ class Actionform
 				
 				if(isset($rules['validation'])){
 					foreach($rules['validation'] as $validation => $option){
-						
-						//Log::coredebug("[af] validation $validation");
-						
-						static::unit_validate($value,$validation,$option);
+						static::unit_validate($value,$validation,$option,Arr::get($rules,'ignore_validation',[]));
 					}
 				}
 				
@@ -240,19 +243,20 @@ class Actionform
 	 * @param バリデーション対象の値
 	 * @param バリデーションルール
 	 * @param オプション
+	 * @param 無視リスト(バリデーション名がこのリストの要素にあれば処理を行わない)
 	 * @throws ValidateErrorException
 	 */
-	public static function unit_validate($value,$validation,$option = [])
+	public static function unit_validate($value,$validation,$option = [],$ignore = [])
 	{
 		if( is_array($validation) ){
 			foreach($validation as $validation_key => $validation_value){
-				static::unit_validate($value,$validation_key,$validation_value);
+				static::unit_validate($value,$validation_key,$validation_value,$ignore);
 			}
 		}
 		else{
 			if(is_array($value)){
 				foreach($value as $value_key => $value_item){
-					static::unit_validate($value_item,$validation,$option);
+					static::unit_validate($value_item,$validation,$option,$ignore);
 				}
 			}
 			else{
@@ -273,8 +277,10 @@ class Actionform
 					}
 				}
 				else{
-					$func = static::load("actionform/validation/".strtolower($validation).".php");
-					call_user_func($func,$value,$option);
+					if( ! in_array($validation,$ignore) ){
+						$func = static::load("actionform/validation/".strtolower($validation).".php");
+						call_user_func($func,$value,$option);
+					}
 				}
 			}
 		}
