@@ -71,4 +71,16 @@ class Mk
 	{
 		return ($var instanceof \Closure) ? $var() : $var;
 	}
+	
+	static function make_random_code($length = 32)
+	{
+		$char_seed = array_merge(range('a','z'),range('A','Z'),range('0','9'));
+		
+		$code = "";
+		for($i = 0;$i < $length;$i++){
+			$code .= $char_seed[ mt_rand(0,count($char_seed) - 1) ];
+		}
+		
+		return $code;
+	}
 }
