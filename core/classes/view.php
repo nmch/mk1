@@ -20,6 +20,7 @@ class View
 		
 		$this->smarty = new Smarty();
 		
+		// テンプレートディレクトリ設定
 		$list = [COREPATH.'views/'];
 		foreach(glob(PKGPATH.'*',GLOB_ONLYDIR) as $dir){
 			$list[] = $dir.'/'.'views/';
@@ -27,6 +28,23 @@ class View
 		$list[] = APPPATH.'views/';
 		$this->smarty->template_dir = array_reverse($list);
 		//$this->smarty->template_dir = APPPATH.'views/';
+		
+		// プラグインディレクトリ設定
+		$list = [SMARTY_PLUGINS_DIR, COREPATH.'plugin/Smarty/'];
+		foreach(glob(PKGPATH.'*',GLOB_ONLYDIR) as $dir){
+			$list[] = $dir.'/'.'plugin/Smarty/';
+		}
+		$list[] = APPPATH.'plugin/Smarty/';
+		$config_plugins = Config::get('smarty.environment.plugins_dir');
+		if($config_plugins){
+			if( ! is_array($config_plugins) ){
+				$config_plugins = [$config_plugins];
+			}
+			$list = array_merge($config_plugins, $list);
+		}
+		$this->smarty->plugins_dir = array_reverse($list);
+		Log::debug($this->smarty->plugins_dir);
+		/*
 		$environments = Config::get('smarty.environment');
 		if(is_array($environments)){
 			foreach($environments as $name => $environment){
@@ -35,7 +53,7 @@ class View
 				$this->smarty->$name = $environment;
 			}
 		}
-		
+		*/
 		$this->af = Actionform::instance();
 		$this->data = $data;
 		$this->set_view();
