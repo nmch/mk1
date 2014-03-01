@@ -43,7 +43,7 @@ class View
 			$list = array_merge($config_plugins, $list);
 		}
 		$this->smarty->plugins_dir = array_reverse($list);
-		Log::debug($this->smarty->plugins_dir);
+		//Log::debug($this->smarty->plugins_dir);
 		/*
 		$environments = Config::get('smarty.environment');
 		if(is_array($environments)){

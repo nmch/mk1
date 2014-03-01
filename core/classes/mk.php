@@ -24,6 +24,7 @@ class Mk
 		
 		self::$include_path_list = self::get_include_path_list();
 		$this->config = Config::instance();
+		Log::coredebug("Process Start\n-------------------------------------------------------------------------------------------------------------------");
 		Log::coredebug("[mk] env=".self::$env.(self::is_production() ? ' [PRODUCTION]' : ''));
 		if(self::is_production()){
 			error_reporting(0);
