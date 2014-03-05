@@ -44,12 +44,13 @@ class View
 		}
 		$this->smarty->plugins_dir = array_reverse($list);
 		
+		// その他の設定
 		$environments = Config::get('smarty.environment');
 		if(is_array($environments)){
 			foreach($environments as $name => $environment){
-				if($name == 'plugins_dir')
-					$environment = array_merge(array(SMARTY_PLUGINS_DIR),$environment);
-				$this->smarty->$name = $environment;
+				if($name !== 'plugins_dir'){	//プラグインディレクトリは先に設定済み
+					$this->smarty->$name = $environment;
+				}
 			}
 		}
 		
