@@ -43,8 +43,7 @@ class View
 			$list = array_merge($config_plugins, $list);
 		}
 		$this->smarty->plugins_dir = array_reverse($list);
-		//Log::debug($this->smarty->plugins_dir);
-		/*
+		
 		$environments = Config::get('smarty.environment');
 		if(is_array($environments)){
 			foreach($environments as $name => $environment){
@@ -53,7 +52,8 @@ class View
 				$this->smarty->$name = $environment;
 			}
 		}
-		*/
+		
+		//Log::debug("compile_dir = ",$this->smarty->compile_dir);
 		$this->af = Actionform::instance();
 		$this->data = $data;
 		$this->set_view();
