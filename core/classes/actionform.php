@@ -512,7 +512,7 @@ class Actionform
 			$messages = array();
 		
 		$messages[$type][] = $message;
-		Log::coredebug("set message($type) : $message",$messages);
+		Log::coredebug("set message($type) : $message");
 		
 		Session::set_flash('messages',$messages);
 	}
