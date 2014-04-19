@@ -27,19 +27,25 @@ class Model_Common extends Model
 			'options'	=> ['col_name',false],
 		],
 	];
-	protected static $_has_many = array(
-		'name' => array(
+	protected static $_has_many = [
+		'name' => [
 			'key_from' => 'key_from',
 			'model_to' => 'Model',
 			'key_to' => 'Model_Key',
-		),
-	);
-	protected static $_belongs_to = array(
-		'name' => array(
+			'condition' => [
+				[
+					'method' => 'order_by',
+					'args' => ['key','asc'],
+				],
+			],
+		],
+	];
+	protected static $_belongs_to = [
+		'name' => [
 			'key_from' => 'key_from',
 			'model_to' => 'Model',
 			'key_to' => 'Model_Key',
-		),
-	);
+		],
+	];
 	*/
 }
