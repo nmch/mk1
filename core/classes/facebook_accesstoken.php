@@ -23,7 +23,7 @@ class Facebook_Accesstoken
 			else if(isset($data['access_token']))
 				$this->token = $data['access_token'];
 			else{
-				Log::coredebug($data);
+				//Log::coredebug($data);
 				throw new FacebookException('empty access token');
 			}
 			
@@ -36,7 +36,7 @@ class Facebook_Accesstoken
 				$this->expire += time();
 		}
 		else{
-			Log::coredebug($data);
+			//Log::coredebug($data);
 			throw new FacebookException('invalid data');
 		}
 			
