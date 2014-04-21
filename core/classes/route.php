@@ -46,6 +46,17 @@ class Route
 					}
 				}
 			}
+			
+			// 最後にクラス名 + ***_index()メソッドに渡せるかどうかチェック
+			if( ! class_exists($controller_name) || ! method_exists($controller_name,$controller_method_name) ){
+				if(count($uri_exploded) > 1){
+					$controller_method_name = static::find_method('Controller_'.$uri_exploded[0],'index',$request_method);
+					if( $controller_method_name ){
+						$controller_name = $controller_name_candidate;
+						$controller_method_options = $tmp_uri_exploded;
+					}
+				}
+			}
 		}
 		//Log::coredebug("[route] controller_name=$controller_name");
 		//Log::coredebug("[route] controller_method_name=$controller_method_name");
@@ -63,6 +74,7 @@ class Route
 	}
 	static function find_method($controller_name,$controller_method_name_candidate,$request_method = NULL)
 	{
+		//Log::coredebug("find_method $controller_name $request_method $controller_method_name_candidate");
 		if( ! class_exists($controller_name) )
 			return false;
 		
