@@ -53,7 +53,7 @@ class Route
 					$controller_method_name = static::find_method('Controller_'.$uri_exploded[0],'index',$request_method);
 					if( $controller_method_name ){
 						$controller_name = $controller_name_candidate;
-						$controller_method_options = $tmp_uri_exploded;
+						$controller_method_options = array_slice($uri_exploded,1);
 					}
 				}
 			}
