@@ -472,9 +472,12 @@ class Actionform
 	function is_mobiledevice()
 	{
 		if($this->useragent){
-			$browser = get_browser($this->useragent);
-			if(is_object($browser))
-				return $browser->ismobiledevice;
+			return Cache::get($this->useragent,'ismobiledevice_by_ua',function($useragent){
+				$browser = get_browser($useragent);
+				if(is_object($browser)){
+					return $browser->ismobiledevice;
+				}
+			});
 		}
 		return NULL;
 	}

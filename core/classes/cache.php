@@ -15,15 +15,21 @@ class Cache
 		
 		return $cache_dir;
 	}
+	
 	protected static function key($key,$group = NULL)
 	{
-		if( ! $key )
+		if( ! $key ){
 			throw new Exception('invalid key');
+		}
+		$key = sha1($key);
+		
 		if($group)
 			$key = $group.'_'.$key;
+		
 		return $key;
 	}
-	public static function get($key,$group = NULL)
+	
+	public static function get($key,$group = NULL,$retrieve_handler = NULL)
 	{
 		$cache_dir = static::cache_dir($key,$group);
 		$filepath = $cache_dir . static::key($key,$group);
@@ -32,8 +38,16 @@ class Cache
 			//Log::coredebug("[cache] hit $key($group)");
 			return unserialize(file_get_contents($filepath));
 		}
-		else
-			return NULL;
+		else{
+			if($retrieve_handler){
+				$data = $retrieve_handler($key,$group);
+				static::set($key,$group,$data);
+				return $data;
+			}
+			else{
+				return NULL;
+			}
+		}
 	}
 	public static function set()
 	{
