@@ -264,6 +264,8 @@ class Model implements Iterator,Countable,ArrayAccess
 					if(array_key_exists($key,$this->_data))
 						unset($this->_data[$key]);
 				}
+				// DBから返ってきた新しいデータをセットしたあとは初期化された直後と同じとみなしてafter_load()を呼ぶ
+				$this->after_load();
 			}
 			else{
 				// セーブに失敗した(保存できたデータがない)場合はdataを消し、originalの状態に戻して例外をスロー
@@ -296,10 +298,13 @@ class Model implements Iterator,Countable,ArrayAccess
 	protected function before_delete() {}
 	protected function after_delete() {}
 	
+	protected function after_load() {}
 	function __construct($options = array())
 	{
 		if(empty($options['deferred_init']))
 			$this->_is_new = false;
+		
+		$this->after_load();
 		
 		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
 	}
