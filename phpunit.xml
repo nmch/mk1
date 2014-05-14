@@ -11,6 +11,7 @@
 			<file>core/tests/actionform.php</file>
 			<file>core/tests/db.php</file>
 			<file>core/tests/model.php</file>
+			<file>core/tests/crypt.php</file>
 		</testsuite>
 	</testsuites>
 </phpunit>
