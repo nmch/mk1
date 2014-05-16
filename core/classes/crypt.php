@@ -18,13 +18,13 @@ class Crypt
 		if($key){
 			$this->cipher->setKey($key);
 		}
-		return $this->cipher->encrypt($value);
+		return base64_encode($this->cipher->encrypt($value));
 	}
 	function decode($value, $key = NULL)
 	{
 		if($key){
 			$this->cipher->setKey($key);
 		}
-		return $this->cipher->decrypt($value);
+		return $this->cipher->decrypt(base64_decode($value));
 	}
 }
