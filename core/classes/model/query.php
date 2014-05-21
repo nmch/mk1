@@ -109,6 +109,7 @@ class Model_Query
 			$ignore_conditions = [$ignore_conditions];
 		}
 		$this->ignore_conditions = array_merge($this->ignore_conditions, $ignore_conditions);
+		return $this;
 	}
 	function get()
 	{

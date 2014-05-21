@@ -6,8 +6,7 @@ class CryptTest extends Testcase
 		$str = 'test';
 		$key = 'test';
 		
-		$obj = new Crypt;
-		$encoded = $obj->encode($str,$key);
+		$encoded = (new Crypt)->encode($str,$key);
 		
 		$obj2 = new Crypt;
 		$this->assertEquals($str, $obj2->decode($encoded,$key));
