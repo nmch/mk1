@@ -124,9 +124,13 @@ class Model_Query
 	{
 		return call_user_func_array(array($this,'get'), func_get_args());
 	}
-	function get_one()
+	function get_one($throw_exception_if_not_exist = false)
 	{
-		return $this->get()->get();
+		$obj = $this->get()->get();
+		if( ! $obj && $throw_exception_if_not_exist ){
+			throw new RecordNotFoundException;
+		}
+		return $obj;
 	}
 	
 	function __call($name , array $arguments)

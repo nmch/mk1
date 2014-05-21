@@ -406,8 +406,9 @@ class Model implements Iterator,Countable,ArrayAccess
 				if( ! $id_field )
 					$id_field = static::primary_key();
 				$r = $query->where($id_field,$id)->get_one();
-				if( $r === NULL )
+				if( $r === NULL ){
 					throw new RecordNotFoundException;
+				}
 				return $r;
 			}
 		}
