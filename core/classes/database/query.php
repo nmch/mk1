@@ -566,6 +566,11 @@ class Database_Query
 		
 		return $this;
 	}
+	function clear_join()
+	{
+		$this->_query_join = [];
+		return $this;
+	}
 	function join($join_str)
 	{
 		$this->_query_join[] = $join_str;
