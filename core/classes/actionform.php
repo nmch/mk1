@@ -267,7 +267,8 @@ class Actionform
 					$option = [];
 				}
 				
-				if(is_callable($validation)){
+				if( ! is_string($validation) && is_callable($validation) ){	//is_callable()だけだと'date'などの標準関数と同じ名前だと標準関数が呼ばれてしまう
+					// validationがコードの場合、実行して必要なvalidation名を戻してもらう
 					$af = static::instance();
 					$add_validation = call_user_func($validation,$af);
 					if($add_validation){
@@ -275,7 +276,7 @@ class Actionform
 							$add_validation = [$add_validation,[]];
 						}
 						Log::coredebug("[af] add_validation = ",$add_validation);
-						call_user_func_array( "static::unit_validate", array_merge([$value],$add_validation) );
+						call_user_func_array("static::unit_validate", array_merge([$value],$add_validation));
 					}
 				}
 				else{
