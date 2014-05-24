@@ -19,12 +19,11 @@ class Database_Pager
 	 */
 	function execute()
 	{
-		$rows = (int) $this->get('rows');	// 1ページあたりの行数
-		$page = (int) $this->get('page');	// 指定ページ(1 origin)
-		if( ! $rows )
-			$rows = 10;
-		if( ! $page )
-			$page = 1;
+		$rows         = $this->get('rows');										// 1ページあたりの行数
+		$nolimit_rows = ($rows === 'nolimit' || $this->get('nolimit_rows'));	// 1ページあたりの行数を無制限にするフラグ
+		$page         = (int) $this->get('page');								// 指定ページ(1 origin)
+		$page = $page ?: 1;
+		$rows = intval($rows) ?: 10;
 		//Log::coredebug("[db pager] rows=$rows / page=$page");
 		
 		if($this->db_query instanceof Model_Query)
@@ -33,12 +32,20 @@ class Database_Pager
 			$db_query_clone = clone $this->db_query;
 		$total_rows = $db_query_clone->clear_order_by()->clear_select()->select('count(*) as count')->set_fetch_as(NULL)->execute()->get('count');
 		unset($db_query_clone);
-		$total_pages = ceil($total_rows / $rows);	// 結果の全ページ数
+		if($nolimit_rows){
+			// 行数無制限
+			$rows = $total_rows;
+			$total_pages = 1;
+			$offset = 0;
+		}
+		else{
+			$total_pages = ceil($total_rows / $rows);	// 結果の全ページ数
+			if($total_pages < $page)
+				$page = $total_pages;
+			
+			$offset = $page ? $rows * ($page - 1) : 0;
+		}
 		
-		if($total_pages < $page)
-			$page = $total_pages;
-		
-		$offset = $page ? $rows * ($page - 1) : 0;
 		//Log::coredebug("[db pager] total_pages=$total_pages / page=$page / offset=$offset");
 		$r2 = $this->db_query->offset($offset)->limit($rows)->execute();
 		
