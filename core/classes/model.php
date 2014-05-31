@@ -427,7 +427,11 @@ class Model implements Iterator,Countable,ArrayAccess
 		$this->_original = [];
 		foreach($r as $key => $value){
 			$this->_original[$key] = $value;
+			if(array_key_exists($key,$this->_data))
+				unset($this->_data[$key]);
 		}
+		
+		$this->after_load();
 		
 		return $this;
 	}
