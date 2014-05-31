@@ -3,6 +3,7 @@ class Session
 {
 	use Singleton;
 	protected static $config = array();
+	protected static $driver;
 	
 	protected static $flash = array();
 	
@@ -13,11 +14,24 @@ class Session
 		static::$config = $config;
 		
 		$driver_name = Arr::get($config,'driver');
-		if( ! $driver_name )
-			throw new Exception('invalid driver name');
-		$driver_config = Arr::get($config,$driver_name);
+		$driver_config = Arr::get($config,$driver_name ?: '_default');
 		if( ! $driver_config )
 			throw new Exception('driver config not found');
+		// ドライバ名が指定されていた場合のみPHPのデフォルトセッションハンドラを変更する
+		if($driver_name){
+			$driver_class_name = "Session_Driver_".ucfirst(strtolower($driver_name));
+			if( ! class_exists($driver_class_name) ){
+				throw new Exception('driver not found');
+			}
+			if( ! is_subclass_of($driver_class_name, 'SessionHandlerInterface') ){
+				throw new Exception('driver should extend SessionHandlerInterface');
+			}
+			$driver = new $driver_class_name($driver_config);
+			
+			session_set_save_handler($driver);
+		}
+		
+		
 		$cookie_name = Arr::get($driver_config,'cookie_name');
 		if( ! $cookie_name )
 			throw new Exception('cookie name not found');
@@ -25,6 +39,7 @@ class Session
 		session_name($cookie_name);
 		session_set_cookie_params($config['expiration_time'],$config['cookie_path'],$config['cookie_domain']);
 		session_start();
+		
 		Log::coredebug("Session started : ".session_id());
 		
 		// Flashデータをロード
