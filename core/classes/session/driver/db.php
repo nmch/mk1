@@ -17,7 +17,7 @@ class Session_Driver_Db implements SessionHandlerInterface
 	function write($id, $data)
 	{
 		//Log::coredebug("session write",$id,$data);
-		$_check = $this->read($id);
+		$_check = DB::select()->from($this->config['table'])->where('id',$id)->execute()->count();
 		if($_check){
 			DB::update($this->config['table'])->values([
 				'data' => serialize($data),
