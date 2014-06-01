@@ -56,7 +56,7 @@ class Facebook
 	}
 	
 	public static function _oauthRequest($url, $params) {
-		Log::coredebug("[fb] OAuthRequest [$url]",$params);
+		//Log::coredebug("[fb] OAuthRequest [$url]",$params);
 		// json_encode all params values that are not strings
 		foreach ($params as $key => $value) {
 			if (!is_string($value)) {
@@ -64,7 +64,7 @@ class Facebook
 			}
 		}
 		$result = static::makeRequest($url, $params);
-		Log::coredebug("[fb] OAuthRequest result",$result);
+		//Log::coredebug("[fb] OAuthRequest result",$result);
 		return $result;
 	}
 	protected static function makeRequest($url, $params, $ch=null)
@@ -79,7 +79,7 @@ class Facebook
 		$opts[CURLOPT_POSTFIELDS] = $params;
 		$opts[CURLOPT_URL] = $url;
 		$opts[CURLOPT_CAINFO] = __DIR__.'/fb_ca_chain_bundle.crt';
-		Log::coredebug("Facebook makeRequest",$opts);
+		//Log::coredebug("Facebook makeRequest",$opts);
 		curl_setopt_array($ch, $opts);
 		
 		$result = curl_exec($ch);
