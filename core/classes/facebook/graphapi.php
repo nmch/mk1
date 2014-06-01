@@ -59,7 +59,7 @@ class Facebook_Graphapi
 		if(isset($this->params['access_token']) && is_object($this->params['access_token']))
 			$this->params['access_token'] = (string)$this->params['access_token'];
 		
-		Log::coredebug("[facebook graphapi] execute {$this->query}",$this->params);
+		//Log::coredebug("[facebook graphapi] execute {$this->query}",$this->params);
 		$result = Facebook::_oauthRequest(Facebook::getUrl('graph', $this->query),$this->params);
 		$result = json_decode($result, true);
 

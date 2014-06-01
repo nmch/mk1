@@ -6,6 +6,7 @@ class Facebook_Accesstoken
 	
 	function __construct($data,$auto_extend = false)
 	{
+		//Log::coredebug("Facebook_Accesstoken data",$data);
 		if($data instanceof Facebook_Signedrequest){
 			if( ! $data->oauth_token )
 				throw new FacebookException('SignedRequestにアクセストークンがありません');

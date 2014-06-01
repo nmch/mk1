@@ -32,7 +32,10 @@ class Facebook_Code
 			return $this->token;
 		
 		$response_params = Session::get('facebook_code2token_'.$this->code);
-		if( ! $response_params ){
+		if( ! is_array($response_params) ){
+			$response_params = [];
+		}
+		if( ! Arr::get($response_params,'token', Arr::get($response_params,'access_token')) ){	// セッションに保存したデータにトークンがなければコードから変換
 			$params = array(
 				'client_id' => Facebook_Config::getAppId(),
 				'client_secret' => Facebook_Config::getAppSecret(),
@@ -40,7 +43,8 @@ class Facebook_Code
 				'code' => $this->code
 			);
 			$access_token_response = Facebook::_oauthRequest(Facebook::getUrl('graph', '/oauth/access_token'),$params);
-
+			//Log::coredebug("get_access_token : ".$access_token_response);
+			
 			if ( ! $access_token_response )
 				throw new FacebookException('empty result');
 
@@ -49,6 +53,7 @@ class Facebook_Code
 			// code→tokenの変換は一度きりなので、セッションにキャッシュする
 			Session::set('facebook_code2token_'.$this->code,$response_params);
 		}
+		//Log::coredebug("response_params",$response_params);
 		return new Facebook_Accesstoken($response_params);
 	}
 }
