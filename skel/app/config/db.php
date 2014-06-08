@@ -1,11 +1,11 @@
 <?php
-return array(
+return [
 	'active' => 'default',
-	'default' => array(
-		'connection'=> array(
+	'default' => [
+		'connection'=> [
 			'host'	=> '127.0.0.1',
 			'user'	=> 'user',
 			'dbname'=> 'dbname',
-		),
-	),
-);
+		],
+	],
+];
