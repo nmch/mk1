@@ -142,9 +142,8 @@ class Image
 			if($r !== true){
 				throw new ImageErrorException("Load Error",static::ERROR_LOAD_IMAGE,$e);
 			}
+			$this->auto_rotate();
 		}
-		
-		$this->auto_rotate();
 	}
 	function auto_rotate()
 	{
