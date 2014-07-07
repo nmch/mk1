@@ -7,4 +7,4 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php/$1 [L]
 
 
-AddOutputFilterByType DEFLATE text/html text/css application/x-javascript application/javascript text/javascript
+AddOutputFilterByType DEFLATE text/html text/css application/x-javascript application/javascript application/json text/javascript
