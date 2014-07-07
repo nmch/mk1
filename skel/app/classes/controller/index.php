@@ -1,12 +1,12 @@
-<?
+<?php
 /**
  * Indexコントローラ
  * 
  * 
  * 
- * @package App
+ * @package    App
  * @subpackage Controller
- * @author	Hakonet Inc
+ * @author     Hakonet Inc
  */
 class Controller_Index extends Controller_Common
 {
@@ -16,10 +16,10 @@ class Controller_Index extends Controller_Common
 	}
 	function action_404()
 	{
-		return new Response(new View('index/404'),404);
+		return new Response(new View_Common('index/404'),404);
 	}
 	function action_500()
 	{
-		return new Response(new View('index/500'),500);
+		return new Response(new View_Common('index/500'),500);
 	}
 }

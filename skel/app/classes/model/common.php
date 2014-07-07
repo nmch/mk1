@@ -2,11 +2,9 @@
 /**
  * モデル基底クラス
  * 
- * 
- * 
- * @package App
+ * @package    App
  * @subpackage Model
- * @author	Hakonet Inc
+ * @author     Hakonet Inc
  */
 class Model_Common extends Model
 {
