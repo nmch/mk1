@@ -147,45 +147,46 @@ class Image
 	}
 	function auto_rotate()
 	{
-		$image = $this;
-		$orientation = $image->getImageOrientation();
+		$orientation = $this->getImageOrientation();
+		//Log::coredebug("Image auto_rotate : orientation=$orientation");
 		switch ($orientation) {
 			case imagick::ORIENTATION_UNDEFINED:	// 0
 				break;
 			case imagick::ORIENTATION_TOPLEFT:		// 1	そのまま
 				break;
 			case imagick::ORIENTATION_TOPRIGHT:		// 2	左右の鏡像
-				$image->flopImage();
-				$image->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				$this->flopImage();
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
 				break;
 			case imagick::ORIENTATION_BOTTOMRIGHT:	// 3	180度回転
-				$image->rotateImage(new ImagickPixel(), 180);
-				$image->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				$this->rotateImage(new ImagickPixel(), 180);
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
 				break;
 			case imagick::ORIENTATION_BOTTOMLEFT:	// 4	3+鏡像
-				$image->rotateImage(new ImagickPixel(), 270);
-				$image->flopImage();
-				$image->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				$this->rotateImage(new ImagickPixel(), 270);
+				$this->flopImage();
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
 				break;
 			case imagick::ORIENTATION_LEFTTOP:		// 5	6+鏡像
-				$image->rotateImage(new ImagickPixel(), 90);
-				$image->flopImage();
-				$image->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				$this->rotateImage(new ImagickPixel(), 90);
+				$this->flopImage();
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
 				break;
 			case imagick::ORIENTATION_RIGHTTOP:		// 6	右に90度回転
-				$image->rotateImage(new ImagickPixel(), 90);
-				$image->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				$this->rotateImage(new ImagickPixel(), 90);
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
 				break;
 			case imagick::ORIENTATION_RIGHTBOTTOM:	// 7	8+鏡像
-				$image->rotateImage(new ImagickPixel(), 270);
-				$image->flopImage();
-				$image->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				$this->rotateImage(new ImagickPixel(), 270);
+				$this->flopImage();
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
 				break;
 			case imagick::ORIENTATION_LEFTBOTTOM:	// 8	右に270度回転
-				$image->rotateImage(new ImagickPixel(), 270);
-				$image->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				$this->rotateImage(new ImagickPixel(), 270);
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
 				break;
 		}
+		$this->setImageOrientation(imagick::ORIENTATION_UNDEFINED);
 		return $this;
 	}
 	function __call($name , array $arguments)
