@@ -36,14 +36,19 @@ class Facebook_Code
 			$response_params = [];
 		}
 		if( ! Arr::get($response_params,'token', Arr::get($response_params,'access_token')) ){	// セッションに保存したデータにトークンがなければコードから変換
+			
+			// redirect_uriはFacebook::getLoginUrl()を実行したときにセッションにセットされるので
+			// もしセットされていればそれを使う
+			$redirect_uri = Session::get('facebook_redirect_uri') ?: Facebook_Config::getRedirectUrl();
+			
 			$params = array(
 				'client_id' => Facebook_Config::getAppId(),
 				'client_secret' => Facebook_Config::getAppSecret(),
-				'redirect_uri' => Facebook_Config::getRedirectUrl(),
+				'redirect_uri' => $redirect_uri,
 				'code' => $this->code
 			);
 			$access_token_response = Facebook::_oauthRequest(Facebook::getUrl('graph', '/oauth/access_token'),$params);
-			//Log::coredebug("get_access_token : ".$access_token_response);
+			Log::coredebug("Facebook_Code::get_access_token() access_token_response : ".$access_token_response);
 			
 			if ( ! $access_token_response )
 				throw new FacebookException('empty result');

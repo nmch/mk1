@@ -148,15 +148,20 @@ class Facebook
 	{
 		return static::establishCSRFTokenState();
 	}
-	public static function getLoginUrl($params=array()) {
+	
+	public static function getLoginUrl($params=array())
+	{
 		$state = static::establishCSRFTokenState();
 		//$currentUrl = $this->getCurrentUrl();
-
+		
 		$params = Arr::merge(Config::get('facebook.login'),$params);
 		if ($params['scope'] && is_array($params['scope'])) {
 			$params['scope'] = implode(',', $params['scope']);
 		}
-
+		
+		// redirect_uriをセッションに保存しておく (トークン取得時に再利用する)
+		Session::set('facebook_redirect_uri',Arr::get($params, 'redirect_uri'));
+		
 		return static::getUrl(
 			'www',
 			'dialog/oauth',
