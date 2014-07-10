@@ -6,7 +6,7 @@ return array(
 	'cookie_domain' 	=> '',
 	'cookie_path'		=> '/',
 	'expire_on_close'	=> false,
-	'expiration_time'	=> 0,
+	'expiration_time'	=> 86400 * 365 * 2,
 	'flash_id'			=> 'flash',
 	'flash_auto_expire'	=> true,
 	'flash_expire_after_get' => true,

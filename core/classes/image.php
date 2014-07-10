@@ -133,7 +133,7 @@ class Image
 		return Arr::get(static::$ext_to_mime_map, strtolower( array_reverse(explode('.',$ext))[0] ));
 	}
 	
-	function __construct($filepath = NULL)
+	function __construct($filepath = NULL,$do_not_auto_rotate = false)
 	{
 		$this->img = new Imagick;
 		
@@ -142,12 +142,31 @@ class Image
 			if($r !== true){
 				throw new ImageErrorException("Load Error",static::ERROR_LOAD_IMAGE,$e);
 			}
-			$this->auto_rotate();
+			if( ! $do_not_auto_rotate ){
+				$this->auto_rotate();
+			}
 		}
 	}
-	function auto_rotate()
+	function auto_rotate($use_exif_read_data = false)
 	{
-		$orientation = $this->getImageOrientation();
+		if($use_exif_read_data && function_exists('exif_read_data')){
+			// ImageMagickのgetImageOrientation()は未定義のOrientationに対して6を返すバグ?があるので
+			// 一度テンポラリファイルに保存してからexif_read_data()で判定する
+			try {
+				$tmp_filename = tempnam(NULL, 'IMG');
+				$this->writeImage($tmp_filename);
+				//file_put_contents($tmp_filename, $this->getImageBlob());
+				$orientation = Arr::get(exif_read_data($tmp_filename), 'Orientation', imagick::ORIENTATION_TOPLEFT);
+				unlink($tmp_filename);
+			} catch(Exception $e){
+				Log::error("Image::auto_rotate()でエラーが発生しました",$e);
+			}
+		}
+		
+		if(empty($orientation)){
+			$orientation = $this->getImageOrientation();
+		}
+		
 		//Log::coredebug("Image auto_rotate : orientation=$orientation");
 		switch ($orientation) {
 			case imagick::ORIENTATION_UNDEFINED:	// 0
@@ -186,7 +205,7 @@ class Image
 				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
 				break;
 		}
-		$this->setImageOrientation(imagick::ORIENTATION_UNDEFINED);
+		$this->setImageOrientation(imagick::ORIENTATION_TOPLEFT);
 		return $this;
 	}
 	function __call($name , array $arguments)

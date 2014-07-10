@@ -39,6 +39,7 @@ class Session
 		session_name($cookie_name);
 		session_set_cookie_params($config['expiration_time'],$config['cookie_path'],$config['cookie_domain']);
 		session_start();
+		//Log::coredebug("Session Params",session_get_cookie_params());
 		
 		Log::coredebug("Session started : ".session_id());
 		
