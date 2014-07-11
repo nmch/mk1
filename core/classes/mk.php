@@ -73,9 +73,14 @@ class Mk
 		return ($var instanceof \Closure) ? $var() : $var;
 	}
 	
-	static function make_random_code($length = 32)
+	/**
+	 * ランダム文字列を生成する
+	 */
+	static function make_random_code($length = 32, $char_seed = [])
 	{
-		$char_seed = array_merge(range('a','z'),range('A','Z'),range('0','9'));
+		if( ! $char_seed ){
+			$char_seed = array_merge(range('a','z'),range('A','Z'),range('0','9'));
+		}
 		
 		$code = "";
 		for($i = 0;$i < $length;$i++){

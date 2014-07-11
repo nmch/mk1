@@ -531,16 +531,18 @@ class Model implements Iterator,Countable,ArrayAccess
 		}
 	}
 	
-	protected static function make_unique_code($column_name, $length = 32)
+	/**
+	 * 指定カラムでユニークとなるコードを生成する
+	 *
+	 * 保存は行わない
+	 *
+	 * @throws Exception
+	 */
+	protected static function make_unique_code($column_name, $length = 32, $char_seed = [])
 	{
-		$char_seed = array_merge(range('a','z'),range('A','Z'),range('0','9'));
-		
 		$unique_code = "";
 		for($c = 0;$c < 100;$c++){
-			$unique_code_candidate = "";
-			for($i = 0;$i < $length;$i++){
-				$unique_code_candidate .= $char_seed[ mt_rand(0,count($char_seed) - 1) ];
-			}
+			$unique_code_candidate = Mk::make_random_code($length, $char_seed);
 			
 			$r = DB::select($column_name)->from(static::table())->where($column_name,$unique_code_candidate)->execute();
 			if( $r->count() == 0){
