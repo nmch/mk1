@@ -133,7 +133,7 @@ class Image
 		return Arr::get(static::$ext_to_mime_map, strtolower( array_reverse(explode('.',$ext))[0] ));
 	}
 	
-	function __construct($filepath = NULL)
+	function __construct($filepath = NULL,$do_not_auto_rotate = false)
 	{
 		$this->img = new Imagick;
 		
@@ -142,7 +142,71 @@ class Image
 			if($r !== true){
 				throw new ImageErrorException("Load Error",static::ERROR_LOAD_IMAGE,$e);
 			}
+			if( ! $do_not_auto_rotate ){
+				$this->auto_rotate();
+			}
 		}
+	}
+	function auto_rotate($use_exif_read_data = false)
+	{
+		if($use_exif_read_data && function_exists('exif_read_data')){
+			// ImageMagickのgetImageOrientation()は未定義のOrientationに対して6を返すバグ?があるので
+			// 一度テンポラリファイルに保存してからexif_read_data()で判定する
+			try {
+				$tmp_filename = tempnam(NULL, 'IMG');
+				$this->writeImage($tmp_filename);
+				//file_put_contents($tmp_filename, $this->getImageBlob());
+				$orientation = Arr::get(exif_read_data($tmp_filename), 'Orientation', imagick::ORIENTATION_TOPLEFT);
+				unlink($tmp_filename);
+			} catch(Exception $e){
+				Log::error("Image::auto_rotate()でエラーが発生しました",$e);
+			}
+		}
+		
+		if(empty($orientation)){
+			$orientation = $this->getImageOrientation();
+		}
+		
+		//Log::coredebug("Image auto_rotate : orientation=$orientation");
+		switch ($orientation) {
+			case imagick::ORIENTATION_UNDEFINED:	// 0
+				break;
+			case imagick::ORIENTATION_TOPLEFT:		// 1	そのまま
+				break;
+			case imagick::ORIENTATION_TOPRIGHT:		// 2	左右の鏡像
+				$this->flopImage();
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				break;
+			case imagick::ORIENTATION_BOTTOMRIGHT:	// 3	180度回転
+				$this->rotateImage(new ImagickPixel(), 180);
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				break;
+			case imagick::ORIENTATION_BOTTOMLEFT:	// 4	3+鏡像
+				$this->rotateImage(new ImagickPixel(), 270);
+				$this->flopImage();
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				break;
+			case imagick::ORIENTATION_LEFTTOP:		// 5	6+鏡像
+				$this->rotateImage(new ImagickPixel(), 90);
+				$this->flopImage();
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				break;
+			case imagick::ORIENTATION_RIGHTTOP:		// 6	右に90度回転
+				$this->rotateImage(new ImagickPixel(), 90);
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				break;
+			case imagick::ORIENTATION_RIGHTBOTTOM:	// 7	8+鏡像
+				$this->rotateImage(new ImagickPixel(), 270);
+				$this->flopImage();
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				break;
+			case imagick::ORIENTATION_LEFTBOTTOM:	// 8	右に270度回転
+				$this->rotateImage(new ImagickPixel(), 270);
+				$this->setimageorientation(imagick::ORIENTATION_TOPLEFT);
+				break;
+		}
+		$this->setImageOrientation(imagick::ORIENTATION_TOPLEFT);
+		return $this;
 	}
 	function __call($name , array $arguments)
 	{

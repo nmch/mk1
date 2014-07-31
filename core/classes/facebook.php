@@ -14,12 +14,7 @@ class Facebook
 		'graph_video' => 'https://graph-video.facebook.com/',
 		'www'         => 'https://www.facebook.com/',
 	);
-	public static $CURL_OPTS = array(
-		CURLOPT_CONNECTTIMEOUT => 10,
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_TIMEOUT        => 60,
-		CURLOPT_USERAGENT      => 'facebook-php-3.2',
-	);
+	public static $CURL_OPTS = [];
 	
 	protected $appId;
 	protected $appSecret;
@@ -50,6 +45,16 @@ class Facebook
 		 */
 	}
 	
+	static function set_curl_opt($key, $value)
+	{
+		static::$CURL_OPTS[$key] = $value;
+	}
+	
+	static function get_curl_opt($key)
+	{
+		return Arr::get(static::$CURL_OPTS,$key);
+	}
+	
 	public static function _oauthRequest($url, $params) {
 		//Log::coredebug("[fb] OAuthRequest [$url]",$params);
 		// json_encode all params values that are not strings
@@ -58,27 +63,30 @@ class Facebook
 				$params[$key] = json_encode($value);
 			}
 		}
-		return static::makeRequest($url, $params);
+		$result = static::makeRequest($url, $params);
+		//Log::coredebug("[fb] OAuthRequest result",$result);
+		return $result;
 	}
-	protected static function makeRequest($url, $params, $ch=null) {
+	protected static function makeRequest($url, $params, $ch=null)
+	{
 		if (!$ch) {
 			$ch = curl_init();
 		}
-
-		$opts = self::$CURL_OPTS;
 		if(is_array($params))
 			$params = http_build_query($params, null, '&');
+		$opts = Config::get('facebook.curl_options');
 		$opts[CURLOPT_POST] = true;
 		$opts[CURLOPT_POSTFIELDS] = $params;
 		$opts[CURLOPT_URL] = $url;
 		$opts[CURLOPT_CAINFO] = __DIR__.'/fb_ca_chain_bundle.crt';
+		//Log::coredebug("Facebook makeRequest",$opts);
 		curl_setopt_array($ch, $opts);
 		
 		$result = curl_exec($ch);
-
+		
 		if (curl_errno($ch) == 60)  // CURLE_SSL_CACERT
 			throw new FacebookException('Invalid or no certificate authority found, using bundled information');
-
+		
 		if ($result === false) {
 			$e = new FacebookException(array(
 				'error_code' => curl_errno($ch),
@@ -140,15 +148,20 @@ class Facebook
 	{
 		return static::establishCSRFTokenState();
 	}
-	public static function getLoginUrl($params=array()) {
+	
+	public static function getLoginUrl($params=array())
+	{
 		$state = static::establishCSRFTokenState();
 		//$currentUrl = $this->getCurrentUrl();
-
+		
 		$params = Arr::merge(Config::get('facebook.login'),$params);
 		if ($params['scope'] && is_array($params['scope'])) {
 			$params['scope'] = implode(',', $params['scope']);
 		}
-
+		
+		// redirect_uriをセッションに保存しておく (トークン取得時に再利用する)
+		Session::set('facebook_redirect_uri',Arr::get($params, 'redirect_uri'));
+		
 		return static::getUrl(
 			'www',
 			'dialog/oauth',

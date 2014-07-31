@@ -15,14 +15,16 @@ class Task_Migration extends Task
 			//echo "last_seq=$last_seq\n";
 		}
 		
-		$migration_files = glob(PROJECTPATH.'migration/[0-9][0-9][0-9]_*');
+		$migration_files = glob(PROJECTPATH.'migration/[0-9]*_*');
 		if($migration_files){
 			sort($migration_files);
 			foreach($migration_files as $migration_file){
 				list($seq,$name) = explode('_',pathinfo($migration_file,PATHINFO_BASENAME),2);
-				if(strlen($seq) != 3)
+				if( ! is_numeric($seq) ){
+					Log::error("シーケンス [{$seq}] は数値で指定して下さい");
 					continue;
-				$seq = (int)$seq;
+				}
+				$seq = intval($seq);
 				
 				if($seq <= $last_seq){
 					echo "[skip $seq] ";

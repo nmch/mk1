@@ -11,10 +11,13 @@ class View
 	
 	function __construct($template_filename = NULL,$data = array(),$do_not_clear_flash = false)
 	{
+		$this->af = Actionform::instance();
 		$this->do_not_clear_flash = $do_not_clear_flash;
 		
+		$this->af->_view_class_name = strtolower(get_called_class());
+		
 		if( ! $template_filename ){
-			$template_filename = implode('/',array_slice(explode('_',strtolower(get_called_class())),1));
+			$template_filename = implode('/',array_slice(explode('_',$this->af->_view_class_name),1));
 		}
 		$this->template_filename = $template_filename.'.'.Config::get('smarty.extension');
 		
@@ -55,7 +58,6 @@ class View
 		}
 		
 		//Log::debug("compile_dir = ",$this->smarty->compile_dir);
-		$this->af = Actionform::instance();
 		$this->data = $data;
 		$this->set_view();
 		$this->before();

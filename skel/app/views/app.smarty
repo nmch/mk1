@@ -5,13 +5,13 @@
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
 	<meta http-equiv="Content-Style-Type" content="text/css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>{capture name="title"}{block name=title}{/block}{/capture}{$smarty.capture.title|default:''|addstr:"":" - "}タイトル</title>
-	<link rel="stylesheet" href="/assets/less/bootstrap/bootstrap.less">
+	<title>{capture name="title"}{block name=title}{/block}{/capture}{$smarty.capture.title|default:''|addstr:"":" - "}{Config::get('app.name')}</title>
+	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/assets/css/common.css">
 	{block name=cssfiles}{/block}
 	<style>{block name=css}{/block}</style>
 	
-	<script src="/assets/js/jquery-1.10.2.min.js"></script>
+	<script src="/assets/js/jquery-1.11.1.min.js"></script>
 	<script src="/assets/js/bootstrap.min.js"></script>
 	<script src="/assets/js/jquery.ah-placeholder.js"></script>
 	<script src="/assets/js/common.js"></script>
@@ -30,7 +30,7 @@
 			<span class="icon-bar"></span>
 		</button>
 		
-		<a class="navbar-brand" href="/">APP</a>
+		<a class="navbar-brand" href="/">{Config::get('app.name')}</a>
 	</div>
 	<div class="collapse navbar-collapse navbar-ex1-collapse">
 		<ul class="nav navbar-nav">
@@ -55,12 +55,26 @@
 		<p class='alert alert-{$message_type}'>{$message}</p>
 	{/foreach}
 {/foreach}
+
+{* バリデーションエラー *}
+{if $af->validation_results()}
+	{foreach from=$af->validation_results() key=validation_name item=results}
+		{foreach from=$results key=name item=result}
+			{if $result}
+			<p class='alert alert-danger'>
+				{$result.rules.name|default:''|addstr:'':' : '}
+				{$result.message|default:''}
+			</p>
+			{/if}
+		{/foreach}
+	{/foreach}
+{/if}
 </div>
 
 {block name="contents"}{/block}
 
 <hr>
-<div class="footer" style="color:gray; text-align:center">App</div>
+<div class="footer" style="color:gray; text-align:center">{Config::get('app.name')}</div>
 
 <script>{Config::get('app.ga_tag') nofilter}</script>
 

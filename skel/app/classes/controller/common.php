@@ -2,9 +2,9 @@
 /**
  * コントローラ基底クラス
  * 
- * @package App
+ * @package    App
  * @subpackage Controller
- * @author	Hakonet Inc
+ * @author     Hakonet Inc
  */
 class Controller_Common extends Controller
 {

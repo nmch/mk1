@@ -16,11 +16,10 @@ class Mk
 	function __construct()
 	{
 		// 実行環境の決定
-		self::$env = self::PRODUCTION;			//何も指定されていない場合のデフォルト動作はPRODUCTION
-		if( ! empty($_SERVER['FUEL_ENV']) )
-			self::$env = $_SERVER['FUEL_ENV'];
-		if( ! empty($_SERVER['MK_ENV']) )
-			self::$env = $_SERVER['MK_ENV'];
+		self::$env = self::PRODUCTION;						//何も指定されていない場合のデフォルト動作はPRODUCTION
+		self::$env = getenv('FUEL_ENV')    ?: self::$env;
+		self::$env = getenv('MK_ENV')      ?: self::$env;
+		self::$env = get_cfg_var('MK_ENV') ?: self::$env;	// AWS EBSのEC2でCLI実行した場合
 		
 		self::$include_path_list = self::get_include_path_list();
 		$this->config = Config::instance();
@@ -73,9 +72,14 @@ class Mk
 		return ($var instanceof \Closure) ? $var() : $var;
 	}
 	
-	static function make_random_code($length = 32)
+	/**
+	 * ランダム文字列を生成する
+	 */
+	static function make_random_code($length = 32, $char_seed = [])
 	{
-		$char_seed = array_merge(range('a','z'),range('A','Z'),range('0','9'));
+		if( ! $char_seed ){
+			$char_seed = array_merge(range('a','z'),range('A','Z'),range('0','9'));
+		}
 		
 		$code = "";
 		for($i = 0;$i < $length;$i++){

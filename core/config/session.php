@@ -1,31 +1,36 @@
 <?php
 return array(
+	// 共通設定
 	'auto_initialize'	=> true,
-	'driver'			=> 'file',
+	'driver'			=> '',
 	'cookie_domain' 	=> '',
 	'cookie_path'		=> '/',
 	'expire_on_close'	=> false,
-	'expiration_time'	=> 0,
+	'expiration_time'	=> 86400 * 365 * 2,
 	'flash_id'			=> 'flash',
 	'flash_auto_expire'	=> true,
 	'flash_expire_after_get' => true,
-	'file'				=> array(
+	
+	// PHPデフォルトセッションハンドラ
+	'_default' => [
 		'cookie_name'		=> 'mkfid',
 		'path'				=>	'/tmp',
 		'gc_probability'	=>	5
-	),
-	'memcached'			=> array(
+	],
+	
+	// memcached
+	'memcached' => [
 		'cookie_name'		=> 'mkmid',
-		'servers'			=> array(
-								'default' => array('host' => '127.0.0.1', 'port' => 11211, 'weight' => 100)
-							),
-	),
-	'db'			=> array(
+		'servers'			=> ['default' => ['host' => '127.0.0.1', 'port' => 11211, 'weight' => 100]],
+	],
+	
+	// DB
+	'db' => [
 		'cookie_name'		=> 'mkdid',
 		'database'			=> null,
 		'table'				=> 'sessions',
 		'gc_probability'	=> 5
-	),
+	],
 );
 
 
