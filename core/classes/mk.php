@@ -16,10 +16,11 @@ class Mk
 	function __construct()
 	{
 		// 実行環境の決定
-		self::$env = self::PRODUCTION;						//何も指定されていない場合のデフォルト動作はPRODUCTION
-		self::$env = getenv('FUEL_ENV')    ?: self::$env;
-		self::$env = getenv('MK_ENV')      ?: self::$env;
-		self::$env = get_cfg_var('MK_ENV') ?: self::$env;	// AWS EBSのEC2でCLI実行した場合
+		self::$env = self::PRODUCTION;								// 何も指定されていない場合のデフォルト動作はPRODUCTION
+		self::$env = getenv('FUEL_ENV')           ?: self::$env;	// 環境変数
+		self::$env = getenv('MK_ENV')             ?: self::$env;	// 環境変数
+		self::$env = get_cfg_var('MK_ENV')        ?: self::$env;	// AWS EBSのEC2でCLI実行した場合
+		self::$env = Arr::get($_SERVER, 'MK_ENV') ?: self::$env;	// サーバ変数
 		
 		self::$include_path_list = self::get_include_path_list();
 		$this->config = Config::instance();
@@ -38,6 +39,11 @@ class Mk
 		
 		if(Config::get('session.auto_initialize') && php_sapi_name() != 'cli')
 			self::$session = Session::instance();
+	}
+	
+	static function env()
+	{
+		return static::$env;
 	}
 	
 	/**
