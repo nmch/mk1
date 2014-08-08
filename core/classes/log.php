@@ -47,13 +47,12 @@ class Log
 	 */
 	static function make_log_string($data)
 	{
-		$message = $data['message'];
-		if( ! is_scalar($message) ){
-			$message = var_export($message,true);
+		if( ! is_scalar($data['message']) ){
+			$data['message'] = var_export($data['message'],true);
 		}
 		
 		$log_str = $log_format = Config::get('log.log_format');
-		if(preg_match_all('/\{([^}]+)}/',$log_format,$vars)){
+		if(preg_match_all('/\{([a-z0-9_]+|@[^}]+)}/',$log_format,$vars)){
 			foreach($vars[1] as $var){
 				$var_value = '';
 				
@@ -96,6 +95,7 @@ class Log
 			
 			foreach($messages as $message){
 				$timestamp_unixtime = time();
+				// キーで使える文字はmake_log_string()内で[a-z0-9_]に制限されている
 				$log_data = [
 					'timestamp_unixtime'=> $timestamp_unixtime,
 					'timestamp_string'	=> date(static::$date_format, $timestamp_unixtime),
@@ -117,6 +117,7 @@ class Log
 			unset($messages);
 		}
 		catch (Exception $e){
+			echo $e;
 		}
 	}
 	
