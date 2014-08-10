@@ -378,11 +378,13 @@ class Actionform
 	}
 	public function get_config($name)
 	{
-		return Arr::get($this->config,$name);
+		return Config::get('form.'.$name);
+		//return Arr::get($this->config,$name);
 	}
 	private function set_config($name,$value)
 	{
-		Arr::set($this->config,$name,$value);
+		Config::set('form.'.$name, $value);
+		//Arr::set($this->config,$name,$value);
 		return $this;
 	}
 	public function referer()
