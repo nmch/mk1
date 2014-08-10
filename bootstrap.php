@@ -76,6 +76,9 @@ if(isset($_SERVER['UNITTESTMODE'])){
 	echo "APPPATH=".APPPATH."\n";
 	echo "PKGPATH=".PKGPATH."\n";
 	*/
+	// DB初期化
+	DB::query("drop schema public cascade")->execute();
+	DB::query("create schema public")->execute();
 	// マイグレーション実行
 	Task_Coretask::refine('migration');
 	
