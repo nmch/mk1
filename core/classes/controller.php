@@ -1,9 +1,12 @@
-<?
+<?php
+/**
+ * コントローラ
+ */
 class Controller
 {
 	protected $af;
 	protected $request;
-			
+	
 	function __construct($options = array())
 	{
 		if(isset($options['request']))
@@ -17,4 +20,9 @@ class Controller
 	}
 	function before() {}
 	function after() {}
+	
+	function execute($name , array $arguments = [])
+	{
+		return call_user_func_array(array($this,$name), $arguments);
+	}
 }

@@ -36,7 +36,7 @@ class Request
 			}
 		}
 		
-		$controller_return_var = call_user_func_array(array($controller,$controller_method_name),$controller_method_options);
+		$controller_return_var = call_user_func_array([$controller,'execute'],[$controller_method_name,$controller_method_options]);
 		
 		if($controller_return_var === NULL)
 			return;
