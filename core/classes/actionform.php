@@ -449,9 +449,14 @@ class Actionform
 	{
 		return array_merge($this->values_default,$this->values);
 	}
-	function get_validated_values($name)
+	/**
+	 * validated_valuesを得る
+	 *
+	 * @param string キー (省略した場合はvalidated_values全体を返す)
+	 */
+	function get_validated_values($name = NULL)
 	{
-		return Arr::get($this->validated_values,$name,[]);
+		return $name ? Arr::get($this->validated_values,$name,[]) : $this->validated_values;
 	}
 	
 	/**
