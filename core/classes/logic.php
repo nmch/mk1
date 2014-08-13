@@ -4,14 +4,8 @@
  */
 class Logic
 {
-	function __construct()
+	protected static function af()
 	{
-		$this->before();
+		return Actionform::instance();
 	}
-	function __destruct()
-	{
-		$this->after();
-	}
-	function before() {}
-	function after() {}
 }
