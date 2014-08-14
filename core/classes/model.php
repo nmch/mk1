@@ -1,4 +1,7 @@
-<?
+<?php
+/**
+ * Model
+ */
 class Model implements Iterator,Countable,ArrayAccess 
 {
 	/*
@@ -403,8 +406,10 @@ class Model implements Iterator,Countable,ArrayAccess
 				return $query->get();
 			}
 			else{
-				if( ! $id_field )
+				//Log::info("[Model] find single record $id",debug_backtrace());
+				if( ! $id_field ){
 					$id_field = static::primary_key();
+				}
 				$r = $query->where($id_field,$id)->get_one();
 				if( $r === NULL ){
 					throw new RecordNotFoundException;
