@@ -1,4 +1,7 @@
-<?
+<?php
+/**
+ * DB返り値ハンドラ
+ */
 class Database_Resultset implements Iterator,Countable,ArrayAccess
 {
 	private $result_resource;
@@ -65,6 +68,11 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 	{
 		return $this->get($column,$this->rows ? ($this->rows - 1) : NULL);
 	}
+	/**
+	 * 結果データを1レコード1オブジェクトの形式で格納した配列を返す
+	 *
+	 * correct_data()を参照時まで遅延できるが、データ行数ぶんpg_result()が実行される。
+	 */
 	function as_object_array($array_key = NULL)
 	{
 		$list = [];
@@ -76,6 +84,11 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 		}
 		return $list;
 	}
+	/**
+	 * 結果データを1レコード1配列の形式で格納した配列を返す
+	 *
+	 * 全カラムに対してcorrect_data()が実行されるが、データ取得はpg_fetch_all()で一括して行う。
+	 */
 	function as_array($correct_values = false, $array_key = NULL)
 	{
 		// Database_Type::retrieve()から、加工なしで返ることを期待して呼ばれているので注意
@@ -148,28 +161,34 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 			if(is_object($data)){
 				$data->set($name,static::correct_value($data->$name,$field['type']),true);
 			}
-			else if(is_array($data))
+			else if(is_array($data)){
 				$data[$name] = static::correct_value($data[$name],$field['type']);
+			}
 		}
 		return $data;
 	}
 	protected static function correct_value($value,$type)
 	{
 		$type = Database_Type::get($type);
-		if( ! $type )
+		if( ! $type ){
 			throw new MkException('invalid type');
+		}
 		
 		//Log::coredebug("correct_value : $value",$type);
 		switch($type['typcategory']){
 			case 'B':
-				if( ! $value )
+				$value = ($value === 't' ? true : ($value === 'f' ? false : NULL));
+				/*
+				if( ! $value ){
 					$value = NULL;
+				}
 				else{
-					if($value == 't')
+					if($value === 't')
 						$value = true;
 					else
 						$value = false;
 				}
+				*/
 				break;
 			case 'A':
 				if($value){
@@ -189,7 +208,7 @@ class Database_Resultset implements Iterator,Countable,ArrayAccess
 		//Log::coredebug("correct value [$value] as $type");
 		return $value;
 	}
-			
+	
 	function rewind() {
 		pg_result_seek($this->result_resource,0);
 		$this->position = 0;
