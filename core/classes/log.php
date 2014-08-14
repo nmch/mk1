@@ -1,4 +1,7 @@
-<?
+<?php
+/**
+ * ログ
+ */
 class Log
 {
 	use Singleton;
