@@ -1,4 +1,7 @@
-<?
+<?php
+/**
+ * DB データ型
+ */
 class Database_Type
 {
 	protected static $type;
