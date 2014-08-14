@@ -51,7 +51,12 @@ class Log
 	static function make_log_string($data)
 	{
 		if( ! is_scalar($data['message']) ){
-			$data['message'] = var_export($data['message'],true);
+			if(is_object($data['message']) && method_exists($data['message'], '__toString')){
+				$data['message'] = (string)$data['message'];
+			}
+			else{
+				$data['message'] = var_export($data['message'],true);
+			}
 		}
 		
 		$log_str = $log_format = Config::get('log.log_format');
