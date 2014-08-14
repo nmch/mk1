@@ -107,7 +107,8 @@ else{
 		$uri = '/';
 	else
 		$uri = $request_uri_from_server;
-	Log::coredebug("[bootstrap] REQUEST_URI=$uri");
+	$request_method = Arr::get($_SERVER,'REQUEST_METHOD');
+	Log::info("[REQUEST] $request_method $uri");
 	
 	Error::add_error_handler(function($e){
 		$af = Actionform::instance();
