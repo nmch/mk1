@@ -539,11 +539,10 @@ class Model implements Iterator,Countable,ArrayAccess
 	/**
 	 * 指定カラムでユニークとなるコードを生成する
 	 *
-	 * 保存は行わない
-	 *
+	 * @returns string
 	 * @throws Exception
 	 */
-	protected static function make_unique_code($column_name, $length = 32, $char_seed = [])
+	public static function make_unique_code($column_name, $length = 32, $char_seed = [])
 	{
 		$unique_code = "";
 		for($c = 0;$c < 100;$c++){
@@ -555,8 +554,9 @@ class Model implements Iterator,Countable,ArrayAccess
 				break;
 			}
 		}
-		if( ! $unique_code )
+		if( ! $unique_code ){
 			throw new Exception('generate unique id failed');
+		}
 		
 		return $unique_code;
 	}
