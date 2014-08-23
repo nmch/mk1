@@ -3,6 +3,13 @@ class Task_Migration extends Task
 {
 	function run()
 	{
+		$argv = func_get_args();
+		
+		// initオプション
+		if(in_array('init', $argv)){
+			DB::delete_all_tables();
+		}
+		
 		$last_seq = 0;
 		$table_existing_check = DB::query("select * from information_schema.tables where table_schema='public' and table_name='migrations'")->execute();
 		if($table_existing_check->count() == 0){

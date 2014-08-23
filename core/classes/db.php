@@ -67,13 +67,12 @@ class DB
 	}
 	
 	/**
-	 * publicスキーマに存在する全テーブルを削除する
+	 * スキーマに存在する全テーブルを削除する
 	 */
-	static function delete_all_tables()
+	static function delete_all_tables($schema = 'public')
 	{
-		Database_Schema::clear_cache();
-		$schema = Database_Schema::get();
-		DB::query("drop table ".implode(',',array_keys($schema))." CASCADE")->execute();
+		DB::query("drop schema $schema cascade")->execute();
+		DB::query("create schema $schema")->execute();
 		Database_Schema::clear_cache();
 	}
 	
