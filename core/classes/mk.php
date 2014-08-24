@@ -16,11 +16,15 @@ class Mk
 	function __construct()
 	{
 		// 実行環境の決定
-		self::$env = self::PRODUCTION;								// 何も指定されていない場合のデフォルト動作はPRODUCTION
-		self::$env = getenv('FUEL_ENV')           ?: self::$env;	// 環境変数
-		self::$env = getenv('MK_ENV')             ?: self::$env;	// 環境変数
-		self::$env = get_cfg_var('MK_ENV')        ?: self::$env;	// AWS EBSのEC2でCLI実行した場合
-		self::$env = Arr::get($_SERVER, 'MK_ENV') ?: self::$env;	// サーバ変数
+		static::$env = static::PRODUCTION;								// 何も指定されていない場合のデフォルト動作はPRODUCTION
+		static::$env = getenv('FUEL_ENV')           ?: static::$env;	// 環境変数
+		static::$env = getenv('MK_ENV')             ?: static::$env;	// 環境変数
+		static::$env = get_cfg_var('MK_ENV')        ?: static::$env;	// AWS EBSのEC2でCLI実行した場合
+		static::$env = Arr::get($_SERVER, 'MK_ENV') ?: static::$env;	// サーバ変数
+		// 本番環境以外では実行環境の書き換えに対応
+		if( ! static::is_production() ){
+			static::$env = Arr::get($_REQUEST, 'MK_ENV') ?: static::$env;
+		}
 		
 		self::$include_path_list = self::get_include_path_list();
 		$this->config = Config::instance();
@@ -53,7 +57,7 @@ class Mk
 	 */
 	static function is_production()
 	{
-		return (strncmp(strtolower(self::$env), 'production', strlen('production')) === 0);
+		return (strncmp(strtolower(self::$env), static::PRODUCTION, strlen(static::PRODUCTION)) === 0);
 	}
 	
 	// 優先度 低→高の並び
