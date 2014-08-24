@@ -13,6 +13,8 @@ class Model_Common extends Model
 	protected static $_primary_key = '__primary_key__';
 	protected static $_properties = [
 	];
+	public static $_join = [
+	];
 	protected static $_conditions = [
 		[
 			'label'		=> 'order_by',
