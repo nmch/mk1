@@ -66,12 +66,6 @@ $mk = Mk::instance();
 
 // ユニットテストモード
 if(isset($_SERVER['UNITTESTMODE'])){
-	// ユニットテスト時、環境名がtest以外だった場合はその環境名に-testをつけた環境名にする。
-	if(Mk::env() !== 'test'){
-		$new_env = Mk::env().'-test';
-		Mk::env($new_env);
-	}
-	
 	/*
 	echo "FWNAME=".FWNAME."\n";
 	echo "FWPATH=".FWPATH."\n";

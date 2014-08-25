@@ -21,6 +21,10 @@ class Mk
 		static::$env = getenv('MK_ENV')             ?: static::$env;	// 環境変数
 		static::$env = get_cfg_var('MK_ENV')        ?: static::$env;	// AWS EBSのEC2でCLI実行した場合
 		static::$env = Arr::get($_SERVER, 'MK_ENV') ?: static::$env;	// サーバ変数
+		// ユニットテスト時、環境名がtest以外だった場合はその環境名に-testをつけた環境名にする。
+		if(isset($_SERVER['UNITTESTMODE']) && static::$env !== 'test'){
+			static::$env = Mk::env().'-test';
+		}
 		// 本番環境以外では実行環境の書き換えに対応
 		if( ! static::is_production() ){
 			static::$env = Arr::get($_REQUEST, 'MK_ENV') ?: static::$env;
