@@ -70,7 +70,6 @@ if(isset($_SERVER['UNITTESTMODE'])){
 	if(Mk::env() !== 'test'){
 		$new_env = Mk::env().'-test';
 		Mk::env($new_env);
-		echo "env = ".Mk::env();
 	}
 	
 	/*
