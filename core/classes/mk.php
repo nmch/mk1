@@ -45,8 +45,11 @@ class Mk
 			self::$session = Session::instance();
 	}
 	
-	static function env()
+	static function env($env = NULL)
 	{
+		if($env){
+			static::$env = $env;
+		}
 		return static::$env;
 	}
 	
