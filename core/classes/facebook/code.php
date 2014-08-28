@@ -13,11 +13,13 @@ class Facebook_Code
 			Log::coredebug("code=$code / state=$state",Facebook::getCSRFTokenState());
 		}
 		*/
-		if( ! $code || ! $state )
+		if( ! $code || ! $state ){
 			throw new FacebookException('empty code');
+		}
 		//Log::coredebug("code=$code / state=$state",Facebook::getCSRFTokenState());
-		if($state != Facebook::getCSRFTokenState())
+		if($state != Facebook::getCSRFTokenState()){
 			throw new FacebookException('invalid state');
+		}
 		
 		$this->code = $code;
 		
@@ -28,8 +30,9 @@ class Facebook_Code
 	}
 	function get_access_token()
 	{
-		if($this->token)
+		if($this->token){
 			return $this->token;
+		}
 		
 		$response_params = Session::get('facebook_code2token_'.$this->code);
 		if( ! is_array($response_params) ){
@@ -47,6 +50,7 @@ class Facebook_Code
 				'redirect_uri' => $redirect_uri,
 				'code' => $this->code
 			);
+			Log::coredebug("Facebook_Code::get_access_token() request : ",Facebook::getUrl('graph', '/oauth/access_token'),$params);
 			$access_token_response = Facebook::_oauthRequest(Facebook::getUrl('graph', '/oauth/access_token'),$params);
 			Log::coredebug("Facebook_Code::get_access_token() access_token_response : ".$access_token_response);
 			
