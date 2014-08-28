@@ -337,7 +337,7 @@ class Model implements Iterator,Countable,ArrayAccess
 			if(Arr::get($schema,'has_pkey'))
 				$primary_key = Arr::get($schema,'primary_key',array());
 			else
-				throw new MkException('empty primary key');
+				throw new MkException('empty primary key on '.static::table());
 		}
 		else
 			$primary_key = static::$_primary_key;
