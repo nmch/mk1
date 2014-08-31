@@ -26,8 +26,11 @@ class Database_Schema
 		static::$schema = NULL;
 		
 		$cache_dir = Cache::cache_dir(NULL,'core_db');
-		if(is_dir($cache_dir))
+		Log::coredebug("Database_Schema::clear_cache() cache_dir=$cache_dir",Mk::env());
+		if(is_dir($cache_dir)){
 			File::rm($cache_dir);
+			Log::coredebug("cache clear success");
+		}
 	}
 	
 	static function retrieve()
