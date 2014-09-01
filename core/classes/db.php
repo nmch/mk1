@@ -43,19 +43,21 @@ class DB
 	
 	static function get_database_connection($connection = NULL)
 	{
-		if( ! is_object($connection) )
+		if( ! is_object($connection) ){
 			$connection = Database_Connection::instance($connection);
-		if( ! $connection instanceof Database_Connection )
+		}
+		if( ! $connection instanceof Database_Connection ){
 			throw new MkException('invalid connection');
+		}
 		
 		return $connection;
 	}
 	
-	static function copy_from($table_name , $rows, $connection = NULL)
+	static function copy_from($table_name, $rows, $connection = NULL, $delimiter = "\t", $null_as = '')
 	{
 		//Log::coredebug($table_name,$rows);
 		$dbconn = static::get_database_connection($connection);
-		return $dbconn->copy_from($table_name , $rows);
+		return $dbconn->copy_from($table_name, $rows, $delimiter, $null_as);
 	}
 	
 	/**

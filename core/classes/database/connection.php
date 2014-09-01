@@ -46,9 +46,9 @@ class Database_Connection
 	{
 		return pg_escape_literal($this->connection, $value);
 	}
-	function copy_from($table_name , $rows)
+	function copy_from($table_name, $rows, $delimiter = "\t", $null_as = '')
 	{
-		return pg_copy_from($this->connection, $table_name , $rows);
+		return pg_copy_from($this->connection, $table_name , $rows, $delimiter, $null_as);
 	}
 	function query($sql,$parameters = array())
 	{
