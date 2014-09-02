@@ -88,7 +88,7 @@ class Facebook
 			throw new FacebookException('Invalid or no certificate authority found, using bundled information');
 		
 		if ($result === false) {
-			Log::error("Facebook Request Error",curl_errno($ch));
+			Log::error("Facebook Request Error : ".curl_errno($ch),curl_error($ch));
 			$e = new FacebookException(array(
 				'error_code' => curl_errno($ch),
 				'error' => array(
