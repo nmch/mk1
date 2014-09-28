@@ -508,7 +508,8 @@ class Actionform
 	
 	function is_ssl()
 	{
-		return ($this->server_vars('HTTPS') === 'on');
+		// #3271 AWS対応
+		return ($this->server_vars('HTTPS') === 'on' || $this->server_vars('HTTP_X_FORWARDED_PROTO') === 'https');
 	}
 	
 	function is_ajax_request()
