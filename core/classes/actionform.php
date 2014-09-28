@@ -288,90 +288,97 @@ class Actionform
 			}
 		}
 	}
-	function __construct()
+	
+	/**
+	 * コンストラクタ
+	 *
+	 * @param boolean $clean_init trueにするとフォーム入力($_GET, $_POST, $_FILES)を自動的に読み込まない
+	 */
+	function __construct($clean_init = false)
 	{
 		$this->config = Config::get('form',[]);
 		
-		$this->values = array_merge($_GET ?: array(),$_POST ?: array());
-		//echo "<PRE>values = "; print_r($this->values); echo "</PRE>";
-		//$this->af_filter = new \Model_ActionformFilter;
-		//$this->request_method = Arr::get($_SERVER,'REQUEST_METHOD','');
-		$this->referer = Arr::get($_SERVER,'HTTP_REFERER');
-		$this->useragent = Arr::get($_SERVER,'HTTP_USER_AGENT');
-		$this->server_vars = $_SERVER;
-		
-		// アップロードされたファイル
-		if(is_array($_FILES) && count($_FILES)){
-			foreach($_FILES as $file_key => $file){
-				if(is_array($file['tmp_name'])){
-					$files = [];
-					foreach($file['tmp_name'] as $file_index => $file_tmpname){
-						if(is_uploaded_file($file_tmpname) ){
-							$files[$file_index] = [
-								'tmp_name' => $file_tmpname,
-								'name'  => Arr::get($file,"name.{$file_index}"),
-								'type'  => Arr::get($file,"type.{$file_index}"),
-								'error' => Arr::get($file,"error.{$file_index}"),
-								'size'  => Arr::get($file,"size.{$file_index}"),
-							];
+		if( ! $clean_init ){
+			$this->values = array_merge($_GET ?: array(),$_POST ?: array());
+			//echo "<PRE>values = "; print_r($this->values); echo "</PRE>";
+			//$this->af_filter = new \Model_ActionformFilter;
+			//$this->request_method = Arr::get($_SERVER,'REQUEST_METHOD','');
+			$this->referer = Arr::get($_SERVER,'HTTP_REFERER');
+			$this->useragent = Arr::get($_SERVER,'HTTP_USER_AGENT');
+			$this->server_vars = $_SERVER;
+			
+			// アップロードされたファイル
+			if(is_array($_FILES) && count($_FILES)){
+				foreach($_FILES as $file_key => $file){
+					if(is_array($file['tmp_name'])){
+						$files = [];
+						foreach($file['tmp_name'] as $file_index => $file_tmpname){
+							if(is_uploaded_file($file_tmpname) ){
+								$files[$file_index] = [
+									'tmp_name' => $file_tmpname,
+									'name'  => Arr::get($file,"name.{$file_index}"),
+									'type'  => Arr::get($file,"type.{$file_index}"),
+									'error' => Arr::get($file,"error.{$file_index}"),
+									'size'  => Arr::get($file,"size.{$file_index}"),
+								];
+							}
 						}
+						$this->set( $file_key, $files );
 					}
-					$this->set( $file_key, $files );
-				}
-				else{
-					if(is_uploaded_file($file['tmp_name']) )
-						$this->set( $file_key, $file );
+					else{
+						if(is_uploaded_file($file['tmp_name']) )
+							$this->set( $file_key, $file );
+					}
 				}
 			}
-		}
-		
-		if($this->get_config('import_db_schemas')){
-			foreach(Database_Schema::get() as $table_name => $table){
-				foreach(Arr::get($table,'columns') as $col_name => $col){
-					$rule = [
-						'name' => Arr::get($col,'desc'),
-						'filter' => '',
-						'typecat' => Arr::get($col,'type_cat'),
-					];
-					switch($rule['typecat']){
-						case 'N':
-							$rule['filter'] = ['hankaku','only0to9'];
-							
-							$this->set_config('global.key.'.$col_name.'_from', [
-								'name' => $rule['name'].' FROM',
-								'filter' => $rule['filter'],
-							]);
-							$this->set_config('global.key.'.$col_name.'_to', [
-								'name' => $rule['name'].' TO',
-								'filter' => $rule['filter'],
-							]);
-							break;
-						case 'D':
-							$rule['filter'] = ['hankaku','hantozen','trim'];
-							
-							$this->set_config('global.key.'.$col_name.'_from', [
-								'name' => $rule['name'].' FROM',
-								'filter' => $rule['filter'],
-							]);
-							$this->set_config('global.key.'.$col_name.'_to', [
-								'name' => $rule['name'].' TO',
-								'filter' => $rule['filter'],
-							]);
-							break;
-						case 'B':
-						case 'S':
-						case 'A':
-							$rule['filter'] = ['hankaku','hantozen','trim','empty2null'];
-							break;
-						case 'U':	//ユーザ定義型
-							break;
-						default:
-							Log::coredebug("[af] Unknown {$col_name} typecat: ",Arr::get($col,'type_cat'));
+			
+			if($this->get_config('import_db_schemas')){
+				foreach(Database_Schema::get() as $table_name => $table){
+					foreach(Arr::get($table,'columns') as $col_name => $col){
+						$rule = [
+							'name' => Arr::get($col,'desc'),
+							'filter' => '',
+							'typecat' => Arr::get($col,'type_cat'),
+						];
+						switch($rule['typecat']){
+							case 'N':
+								$rule['filter'] = ['hankaku','only0to9'];
+								
+								$this->set_config('global.key.'.$col_name.'_from', [
+									'name' => $rule['name'].' FROM',
+									'filter' => $rule['filter'],
+								]);
+								$this->set_config('global.key.'.$col_name.'_to', [
+									'name' => $rule['name'].' TO',
+									'filter' => $rule['filter'],
+								]);
+								break;
+							case 'D':
+								$rule['filter'] = ['hankaku','hantozen','trim'];
+								
+								$this->set_config('global.key.'.$col_name.'_from', [
+									'name' => $rule['name'].' FROM',
+									'filter' => $rule['filter'],
+								]);
+								$this->set_config('global.key.'.$col_name.'_to', [
+									'name' => $rule['name'].' TO',
+									'filter' => $rule['filter'],
+								]);
+								break;
+							case 'B':
+							case 'S':
+							case 'A':
+								$rule['filter'] = ['hankaku','hantozen','trim','empty2null'];
+								break;
+							case 'U':	//ユーザ定義型
+								break;
+							default:
+								Log::coredebug("[af] Unknown {$col_name} typecat: ",Arr::get($col,'type_cat'));
+						}
+						$this->set_config('global.key.'.$col_name, $rule);
 					}
-					$this->set_config('global.key.'.$col_name, $rule);
 				}
 			}
-			//Log::debug( $this->get_config('global') );
 		}
 		
 		return $this;

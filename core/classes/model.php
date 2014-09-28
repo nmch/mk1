@@ -74,15 +74,20 @@ class Model implements Iterator,Countable,ArrayAccess
 	/**
 	 * Modelに定義されたカラムをもとにしてデータをセットする
 	 * 
-	 * 与えられたデータにキーが存在しないデータはNULLとしてセットされる
+	 * @param array|object データ
+	 * @param boolean 与えられたデータにキーが存在しないデータはNULLとしてセットされる
 	 */
-	function set_all_data($data)
+	function set_all_data($data, $empty2null = true)
 	{
 		foreach($this->columns() as $key){
-			if(is_object($data))
+			if(is_object($data)){
 				$this->$key = $data->$key;
-			if(is_array($data))
-				$this->$key = array_key_exists($key,$data) ? $data[$key] : NULL;
+			}
+			if(is_array($data)){
+				if(array_key_exists($key,$data) || $empty2null){
+					$this->$key = Arr::get($data, $key);
+				}
+			}
 		}
 		return $this;
 	}
@@ -337,7 +342,7 @@ class Model implements Iterator,Countable,ArrayAccess
 			if(Arr::get($schema,'has_pkey'))
 				$primary_key = Arr::get($schema,'primary_key',array());
 			else
-				throw new MkException('empty primary key');
+				throw new MkException('empty primary key on '.static::table());
 		}
 		else
 			$primary_key = static::$_primary_key;
