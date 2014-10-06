@@ -209,10 +209,16 @@ class Database_Query
 		$sql = "DELETE ";
 		$sql .= " FROM ".implode(',',$this->_query_from);
 		$where = $this->build_where();
-		if($where)
+		if($where){
 			$sql .= " WHERE $where";
-		if($this->_query_limit)
+		}
+		if($this->_query_limit){
 			$sql .= " LIMIT $this->_query_limit";
+		}
+		if($this->_query_returning){
+			$sql .= " RETURNING ".(is_array($this->_query_returning) ? implode(',',$this->_query_returning) : $this->_query_returning);
+		}
+		
 		return $sql;
 	}
 	/**
