@@ -197,6 +197,19 @@ class Model implements Iterator,Countable,ArrayAccess
 		return array_merge($this->_original,$this->_data);
 	}
 	
+	/**
+	 * 指定されたカラムまたはデータのどれかが変更されたかをチェックする
+	 */
+	function is_changed($column = NULL)
+	{
+		if($column && array_key_exists($column, $this->_data)){
+			return true;
+		}
+		if($column === NULL && count($this->_data)){
+			return true;
+		}
+	}
+	
 	function get_diff()
 	{
 		$diff = array();
