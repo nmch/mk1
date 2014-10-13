@@ -380,7 +380,7 @@ class Model implements Iterator,Countable,ArrayAccess
 		
 		$parent = get_parent_class(get_called_class());
 		if($parent){
-			$join = array_merge($parent::_get_join_items(), $join);
+			$join = array_merge($join, $parent::_get_join_items());
 		}
 		
 		return $join;
