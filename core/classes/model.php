@@ -371,16 +371,28 @@ class Model implements Iterator,Countable,ArrayAccess
 		$model_query = static::_build_select_query();	// Model_Queryにjoinやadd_fieldを加える
 		return $model_query->get_query();				// Database_Queryを得る
 	}
+	protected static function _get_join_items()
+	{
+		$join = isset(static::$_join) ? static::$_join : [];
+		if( ! is_array($join) ){
+			$join = [$join];
+		}
+		
+		$parent = get_parent_class(get_called_class());
+		if($parent){
+			$join = array_merge($parent::_get_join_items(), $join);
+		}
+		
+		return $join;
+	}
 	protected static function _build_select_query()
 	{
 		$query = new Model_Query(get_called_class());
 		$query->select('*');
 		
-		if(isset(static::$_join)){
-			$join = static::$_join;
-			if(is_array(static::$_join))
-				$join = implode(" ",static::$_join);
-			$query->join($join);
+		$join = static::_get_join_items();
+		if($join){
+			$query->join(implode(" ",$join));
 		}
 		
 		if( ! empty(static::$_add_field) ){
