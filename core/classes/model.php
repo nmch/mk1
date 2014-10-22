@@ -63,6 +63,13 @@ class Model implements Iterator,Countable,ArrayAccess
 		//echo "set $name ($force_original) to "; print_r($value); print_r($this->_data);
 		return $this;
 	}
+	function set_array(array $data,$force_original = false)
+	{
+		foreach($data as $key => $value){
+			$this->set($key, $value, $force_original);
+		}
+		return $this;
+	}
 	function __get($name)
 	{
 		return $this->get($name);
