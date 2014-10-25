@@ -452,6 +452,13 @@ class Actionform
 		else
 			return $default;
 	}
+	/**
+	 * Arr::get()を使って値を得る
+	 */
+	function getarr($name,$default = NULL)
+	{
+		return Arr::get($this->as_array(), $name, $default);
+	}
 	function as_array()
 	{
 		return array_merge($this->values_default,$this->values);
