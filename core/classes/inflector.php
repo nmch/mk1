@@ -1,6 +1,23 @@
 <?php
-// from FuelPHP 1.5
+/**
+ * Part of the Fuel framework.
+ *
+ * @package    Fuel
+ * @version    1.7
+ * @author     Fuel Development Team
+ * @license    MIT License
+ * @copyright  2010 - 2014 Fuel Development Team
+ * @link       http://fuelphp.com
+ */
 
+/**
+ * Some of this code was written by Flinn Mueller.
+ *
+ * @package		Fuel
+ * @category	Core
+ * @copyright	Flinn Mueller
+ * @link		http://docs.fuelphp.com/classes/inlector.html
+ */
 class Inflector
 {
 
@@ -171,7 +188,14 @@ class Inflector
 	 */
 	public static function camelize($underscored_word)
 	{
-		return preg_replace('/(^|_)(.)/e', "strtoupper('\\2')", strval($underscored_word));
+		return preg_replace_callback(
+			'/(^|_)(.)/',
+			function ($parm)
+			{
+				return strtoupper($parm[2]);
+			},
+			strval($underscored_word)
+		);
 	}
 
 	/**
@@ -182,7 +206,7 @@ class Inflector
 	 */
 	public static function underscore($camel_cased_word)
 	{
-		return strtolower(preg_replace('/([A-Z]+)([A-Z])/', '\1_\2', preg_replace('/([a-z\d])([A-Z])/', '\1_\2', strval($camel_cased_word))));
+		return \Str::lower(preg_replace('/([A-Z]+)([A-Z])/', '\1_\2', preg_replace('/([a-z\d])([A-Z])/', '\1_\2', strval($camel_cased_word))));
 	}
 
 	/**
@@ -214,21 +238,21 @@ class Inflector
 	 * Only works with UTF8 input and and only outputs 7 bit ASCII characters.
 	 *
 	 * @param   string  $str              the text
-	 * @param   string  $sep              the separator (either - or _)
+	 * @param   string  $sep              the separator
 	 * @param   bool    $lowercase        wether to convert to lowercase
 	 * @param   bool    $allow_non_ascii  wether to allow non ascii
 	 * @return  string                    the new title
 	 */
 	public static function friendly_title($str, $sep = '-', $lowercase = false, $allow_non_ascii = false)
 	{
-		// Allow underscore, otherwise default to dash
-		$sep = $sep === '_' ? '_' : '-';
-
 		// Remove tags
 		$str = \Security::strip_tags($str);
 
 		// Decode all entities to their simpler forms
 		$str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
+
+		// Replace apostrophes.
+		$str = preg_replace("#[\’]#", '-', $str);
 
 		// Remove all quotes.
 		$str = preg_replace("#[\"\']#", '', $str);
@@ -252,7 +276,7 @@ class Inflector
 
 		if ($lowercase === true)
 		{
-			$str = strtolower($str);
+			$str = \Str::lower($str);
 		}
 
 		return $str;
@@ -336,7 +360,7 @@ class Inflector
 		{
 			$class_name = substr($class_name, 6);
 		}
-		return strtolower(static::pluralize(static::underscore($class_name)));
+		return \Str::lower(static::pluralize(static::underscore($class_name)));
 	}
 
 	/**
@@ -373,7 +397,7 @@ class Inflector
 	 */
 	public static function foreign_key($class_name, $use_underscore = true)
 	{
-		$class_name = static::denamespace(strtolower($class_name));
+		$class_name = static::denamespace(\Str::lower($class_name));
 		if (strncasecmp($class_name, 'Model_', 6) === 0)
 		{
 			$class_name = substr($class_name, 6);
@@ -389,7 +413,7 @@ class Inflector
 	 */
 	public static function is_countable($word)
 	{
-		return ! (\in_array(strtolower(\strval($word)), static::$uncountable_words));
+		return ! (\in_array(\Str::lower(\strval($word)), static::$uncountable_words));
 	}
 }
 

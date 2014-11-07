@@ -12,6 +12,7 @@ class Mk
 	public $config;
 	public static $include_path_list;
 	public static $session;
+	public static $encoding = 'UTF-8';
 	
 	function __construct()
 	{
