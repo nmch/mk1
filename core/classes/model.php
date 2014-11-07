@@ -481,6 +481,10 @@ class Model implements Iterator, Countable, ArrayAccess
 		if( $parent ){
 			$join = array_merge($join, $parent::_get_join_items());
 		}
+		$join = array_unique($join);
+		ksort($join);
+
+		//Log::debug(get_called_class(),$join);
 
 		return $join;
 	}
