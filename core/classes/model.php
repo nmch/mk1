@@ -162,7 +162,7 @@ class Model implements Iterator, Countable, ArrayAccess
 
 	function __clone()
 	{
-		$this->_data = array_merge($this->_original, $this->_data);
+		$this->_data     = array_merge($this->_original, $this->_data);
 		$this->_original = [];
 		$this->_unset($this->primary_key());
 	}
@@ -172,9 +172,9 @@ class Model implements Iterator, Countable, ArrayAccess
 	 *
 	 * データは保存されない。
 	 *
-	 * @param type $ignore_list
+	 * @param array $ignore_list
 	 *
-	 * @return \static
+	 * @return Model
 	 */
 	function duplicate($ignore_list = [])
 	{
@@ -196,7 +196,7 @@ class Model implements Iterator, Countable, ArrayAccess
 	 *
 	 * duplicate()がデータを保存しないのに対し、これはデータを保存し新しいIDができる
 	 *
-	 * @param type $ignore_list
+	 * @param array $ignore_list
 	 *
 	 * @return \static
 	 */
@@ -229,7 +229,7 @@ class Model implements Iterator, Countable, ArrayAccess
 				$target = $query->get_one();
 				if( $target === NULL && Arr::get($options, 'autogen') ){
 					// autogenモードの場合は自動的にオブジェクトを作って返す (saveはしない)
-					$target = new $options['model_to'];
+					$target                       = new $options['model_to'];
 					$target->{$options['key_to']} = $this->{$options['key_from']};
 				}
 
@@ -248,6 +248,10 @@ class Model implements Iterator, Countable, ArrayAccess
 
 	/**
 	 * 指定されたカラムまたはデータのどれかが変更されたかをチェックする
+	 *
+	 * @param null|string $column
+	 *
+	 * @return bool
 	 */
 	function is_changed($column = NULL)
 	{
@@ -303,8 +307,8 @@ class Model implements Iterator, Countable, ArrayAccess
 			//データがある場合のみ更新する
 			if( count($data) ){
 				$query_update = DB::update($this->table())->values($data)->where($primary_key, $this->get($primary_key))->returning('*');
-				$sql_select = static::_build_select_query()->clear_from()->from('model_save_query')->get_sql();
-				$sql_update = $query_update->get_sql();
+				$sql_select   = static::_build_select_query()->clear_from()->from('model_save_query')->get_sql();
+				$sql_update   = $query_update->get_sql();
 				$query_update->clear_query_type()->set_sql("with model_save_query as ($sql_update) $sql_select");
 				//echo "SQL = "; print_r($query_update->get_sql(true));
 				$r = $query_update->execute();
@@ -313,8 +317,8 @@ class Model implements Iterator, Countable, ArrayAccess
 		else{
 			//挿入の場合、データがなくてもdefault valuesが挿入される
 			$query_insert = DB::insert($this->table())->values($data)->returning('*');
-			$sql_select = static::_build_select_query()->clear_from()->from('model_save_query')->get_sql();
-			$sql_insert = $query_insert->get_sql();
+			$sql_select   = static::_build_select_query()->clear_from()->from('model_save_query')->get_sql();
+			$sql_insert   = $query_insert->get_sql();
 			$query_insert->clear_query_type()->set_sql("with model_save_query as ($sql_insert) $sql_select");
 			//echo "SQL = "; print_r($query_insert->get_sql(true));
 			$r = $query_insert->execute();
@@ -324,7 +328,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		if( $r ){
 			$this->_original_before_save = $this->_original;
 
-			$new_data = $r->get();
+			$new_data         = $r->get();
 			$this->_save_diff = [];
 
 			//echo "new_data = "; print_r($new_data);
@@ -514,10 +518,10 @@ class Model implements Iterator, Countable, ArrayAccess
 	 */
 	static function find()
 	{
-		$argc = func_num_args();
-		$args = func_get_args();
-		$id = Arr::get($args, '0');
-		$id_field = Arr::get($args, '1');
+		$argc              = func_num_args();
+		$args              = func_get_args();
+		$id                = Arr::get($args, '0');
+		$id_field          = Arr::get($args, '1');
 		$ignore_conditions = Arr::get($args, '2');
 
 		$query = static::_build_select_query();
@@ -547,9 +551,9 @@ class Model implements Iterator, Countable, ArrayAccess
 
 	function reload()
 	{
-		$query = $this->_build_select_query();
+		$query    = $this->_build_select_query();
 		$id_field = static::primary_key();
-		$r = $query->where($id_field, $this->$id_field)->get_one();
+		$r        = $query->where($id_field, $this->$id_field)->get_one();
 		if( $r === NULL ){
 			throw new RecordNotFoundException;
 		}
@@ -600,8 +604,8 @@ class Model implements Iterator, Countable, ArrayAccess
 			}
 
 			$data_type = Arr::get($property, 'type', NULL);        // int4, timestamp, text
-			$type_cat = Arr::get($property, 'type_cat', NULL);    // S, N, A, U
-			$value = $this->$key;
+			$type_cat  = Arr::get($property, 'type_cat', NULL);    // S, N, A, U
+			$value     = $this->$key;
 
 			switch($type_cat){
 				case 'N':
@@ -752,7 +756,7 @@ class Model implements Iterator, Countable, ArrayAccess
 	function rewind()
 	{
 		$this->_iter_keylist = $this->keys();
-		$this->_iter_curkey = 0;
+		$this->_iter_curkey  = 0;
 	}
 
 	function current()

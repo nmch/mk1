@@ -3,15 +3,15 @@
 /**
  * ログ
  *
- * @method void emergency($level, $message)
- * @method void alert($level, $message)
- * @method void critical($level, $message)
- * @method void error($level, $message)
- * @method void warning($level, $message)
- * @method void notice($level, $message)
- * @method void info($level, $message)
- * @method void debug($level, $message)
- * @method void coredebug($level, $message)
+ * @method static void emergency($message)
+ * @method static void alert($message)
+ * @method static void critical($message)
+ * @method static void error($message)
+ * @method static void warning($message)
+ * @method static void notice($message)
+ * @method static void info($message)
+ * @method static void debug($message)
+ * @method static void coredebug($message)
  */
 class Log
 {
@@ -37,7 +37,7 @@ class Log
 		$drivers = Config::get('log.drivers', []);
 		if( is_array($drivers) ){
 			foreach($drivers as $driver_name => $threshold){
-				$driver_name = 'Log_' . ucfirst($driver_name);
+				$driver_name                   = 'Log_' . ucfirst($driver_name);
 				static::$drivers[$driver_name] = [
 					'threshold' => $threshold,
 					'driver'    => new $driver_name,
@@ -100,7 +100,7 @@ class Log
 		try {
 			$log = static::instance();
 
-			$level = strtoupper($level);
+			$level            = strtoupper($level);
 			$level_const_name = 'Log::' . $level;
 			if( ! defined($level_const_name) ){
 				throw new MkException('undefined log level');
@@ -118,7 +118,7 @@ class Log
 			foreach($messages as $message){
 				$timestamp_unixtime = time();
 				// キーで使える文字はmake_log_string()内で[a-z0-9_]に制限されている
-				$log_data = [
+				$log_data        = [
 					'timestamp_unixtime' => $timestamp_unixtime,
 					'timestamp_string'   => date(static::$date_format, $timestamp_unixtime),
 					'level'              => $level,

@@ -1,47 +1,53 @@
 <?
+
 class Database_Schema
 {
-	protected static $_attributes = array();
+	protected static $_attributes = [];
 	protected static $schema;
-	
-	static function get($name = NULL,$default = NULL)
+
+	static function get($name = NULL, $default = NULL)
 	{
 		if( ! static::$schema ){
 			// キャッシュからの読み込みを試す
-			static::$schema = Cache::get('schema','core_db');
+			static::$schema = Cache::get('schema', 'core_db');
 			if( ! static::$schema ){
 				static::$schema = static::retrieve();
-				Cache::set('schema','core_db',static::$schema);
+				Cache::set('schema', 'core_db', static::$schema);
 			}
 		}
-		
-		return $name ? Arr::get(static::$schema,$name,$default) : static::$schema;
+
+		return $name ? Arr::get(static::$schema, $name, $default) : static::$schema;
 	}
-	
+
 	/**
 	 * DBスキーマのキャッシュを消去する
 	 */
 	static function clear_cache()
 	{
 		static::$schema = NULL;
-		
-		$cache_dir = Cache::cache_dir(NULL,'core_db');
-		Log::coredebug("Database_Schema::clear_cache() cache_dir=$cache_dir",Mk::env());
-		if(is_dir($cache_dir)){
+
+		$cache_dir = Cache::cache_dir(NULL, 'core_db');
+		Log::coredebug("Database_Schema::clear_cache() cache_dir=$cache_dir", Mk::env());
+		if( is_dir($cache_dir) ){
 			File::rm($cache_dir);
 			Log::coredebug("cache clear success");
 		}
 	}
-	
+
+	/**
+	 * @return array
+	 * @throws DatabaseQueryError
+	 * @throws MkException
+	 */
 	static function retrieve()
 	{
-		$primary_keys = array();
-		$constrains = DB::select("conrelid,conkey")->from('pg_constraint')->where('contype','p')->execute();
+		$primary_keys = [];
+		$constrains   = DB::select("conrelid,conkey")->from('pg_constraint')->where('contype', 'p')->execute();
 		foreach($constrains as $const){
 			$primary_keys[$const['conrelid']] = $const['conkey'];
 		}
-		
-		$q = "
+
+		$q                   = "
 			select
 				c.oid as table_oid,
 				relname as table,
@@ -64,27 +70,28 @@ class Database_Schema
 			and n.nspname='public'
 			and attnum >= 0 and attisdropped is not true
 		";
-		$attributes = DB::query($q)->execute();
+		$attributes          = DB::query($q)->execute();
 		static::$_attributes = $attributes;
-		
-		$tables = array();
+
+		$tables = [];
 		foreach($attributes as $attr){
-			if(empty($tables[$attr['table']])){
-				$tables[$attr['table']] = array(
-					'name' => $attr['table'],
-					'has_pkey' => $attr['table_has_pkey'],
+			if( empty($tables[$attr['table']]) ){
+				$tables[$attr['table']] = [
+					'name'        => $attr['table'],
+					'has_pkey'    => $attr['table_has_pkey'],
 					'description' => $attr['desc'],
-					'columns' => array(),
-					'primary_key' => array(),
-				);
+					'columns'     => [],
+					'primary_key' => [],
+				];
 			}
 			$tables[$attr['table']]['columns'][$attr['name']] = $attr;
-			if(isset($primary_keys[$attr['table_oid']]) && in_array($attr['num'],$primary_keys[$attr['table_oid']])){
+			if( isset($primary_keys[$attr['table_oid']]) && in_array($attr['num'], $primary_keys[$attr['table_oid']]) ){
 				$tables[$attr['table']]['columns'][$attr['name']]['primary_key'] = true;
-				$tables[$attr['table']]['primary_key'][] = $attr['name'];
+				$tables[$attr['table']]['primary_key'][]                         = $attr['name'];
 				//Log::coredebug("find primary key {$attr['name']}");
 			}
 		}
+
 		return $tables;
 	}
 }
