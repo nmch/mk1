@@ -4,6 +4,7 @@
  */
 class Controller
 {
+	/** @var Actionform $af */
 	protected $af;
 	protected $request;
 	

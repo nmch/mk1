@@ -139,6 +139,15 @@ class Actionform
 		return $validation;
 	}
 
+	/**
+	 * バリデーション実行
+	 *
+	 * @param string $name
+	 *
+	 * @return Actionform
+	 * @throws MkException
+	 * @throws ValidateErrorException
+	 */
 	public function validate($name = NULL)
 	{
 		$validation = $this->get_validation_rules($name);

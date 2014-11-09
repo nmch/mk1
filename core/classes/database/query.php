@@ -316,6 +316,7 @@ class Database_Query
 
 					// Split the condition
 					list($column, $op, $value) = $condition;
+					$op = trim($op);
 					//Log::coredebug($column,$op,$value);
 
 					if( $value === NULL ){
@@ -363,6 +364,13 @@ class Database_Query
 						$value = $db->quote($min).' AND '.$db->quote($max);
 					}
 					*/
+
+					// col in (select sql)に対応する
+					if($value instanceof Database_Query){
+						$value = DB::expr('('.$value->get_sql().')');
+						$op = 'IN';
+					}
+
 					if( $value instanceof Database_Expression ){
 						$sql .= $column . ' ' . $op . ' ' . (string)$value;
 					}

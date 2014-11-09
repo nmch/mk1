@@ -3,6 +3,7 @@ require_once('Smarty/libs/Smarty.class.php');
 
 class View
 {
+	/** @var Actionform $af */
 	var $af;
 	var $smarty;
 	var $template_filename;
