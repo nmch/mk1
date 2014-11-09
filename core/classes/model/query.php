@@ -1,4 +1,16 @@
 <?
+
+/**
+ * Class Model_Query
+ *
+ *
+ * @method Model_Query where()
+ * @method Model_Query and_where()
+ * @method Model_Query or_where()
+ * @method Model_Query where_open()
+ * @method Model_Query where_close()
+ * @see Database_Query
+ */
 class Model_Query
 {
 	private $model;
@@ -31,7 +43,7 @@ class Model_Query
 			return $this;
 		}
 		
-		$conditions = forward_static_call(array($this->model,'conditions'));
+		$conditions = forward_static_call([$this->model,'conditions']);
 		
 		foreach($conditions as $index => $condition){
 			if( ! is_numeric($index) ){
@@ -122,7 +134,7 @@ class Model_Query
 	 */
 	function execute()
 	{
-		return call_user_func_array(array($this,'get'), func_get_args());
+		return call_user_func_array([$this,'get'], func_get_args());
 	}
 	function get_one($throw_exception_if_not_exist = false)
 	{
@@ -135,7 +147,7 @@ class Model_Query
 	
 	function __call($name , array $arguments)
 	{
-		$r = call_user_func_array(array($this->query,$name), $arguments);
+		$r = call_user_func_array([$this->query,$name], $arguments);
 		if($r instanceof Database_Query){
 			// Database_Queryのメソッドから$this、つまりDatabase_Queryのインスタンスがかえってきた場合はそれを模倣するようModel_Queryを返す
 			return $this;
