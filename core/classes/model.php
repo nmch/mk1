@@ -549,15 +549,24 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 	}
 
-	function reload()
+	/**
+	 * データを再ロードする
+	 *
+	 * @see Model::after_load()
+	 * @throws MkException
+	 * @throws RecordNotFoundException
+	 * @return Model
+	 */
+	function reload(array $ignore_conditions = NULL)
 	{
 		$query    = $this->_build_select_query();
 		$id_field = static::primary_key();
-		$r        = $query->where($id_field, $this->$id_field)->get_one();
+		$r        = $query->where($id_field, $this->$id_field)->ignore_conditions($ignore_conditions)->get_one();
 		if( $r === NULL ){
 			throw new RecordNotFoundException;
 		}
 
+		// 取得したデータをoriginalに入れ、dataは削除する
 		$this->_original = [];
 		foreach($r as $key => $value){
 			$this->_original[$key] = $value;
