@@ -366,9 +366,24 @@ class Database_Query
 					*/
 
 					// col in (select sql)に対応する
-					if($value instanceof Database_Query){
-						$value = DB::expr('('.$value->get_sql().')');
-						$op = 'IN';
+					if( $value instanceof Database_Query ){
+						list($_insql_sql, $_insql_parameters) = $value->get_sql(true);
+						// パラメータが$1から始まっているので、置き換える
+//						Log::coredebug("_insql_sql={$_insql_sql} / _insql_parameters=",$_insql_parameters);
+						$_insql_search = [];
+						$_insql_replace = [];
+						foreach($_insql_parameters as $_insql_parameter_index => $_insql_parameter_value){
+							$_insql_search[] = '$' . ($_insql_parameter_index + 1);
+							$_insql_replace[] = '$' . $this->parameter($_insql_parameter_value);
+						}
+						$_insql_search = array_reverse($_insql_search);
+						$_insql_replace = array_reverse($_insql_replace);
+						$_insql_sql = str_replace($_insql_search, $_insql_replace, $_insql_sql);
+//						Log::coredebug($_insql_search,$_insql_replace);
+//						Log::coredebug("replaced sql={$_insql_sql}");
+
+						$value = DB::expr('(' . $_insql_sql . ')');
+						$op    = 'IN';
 					}
 
 					if( $value instanceof Database_Expression ){
@@ -404,9 +419,16 @@ class Database_Query
 
 	function parameter($value)
 	{
-		$this->_parameters[$this->_parameters_index - 1] = $value;
+		if( is_array($value) ){
+			foreach($value as $_value){
+				$this->parameter($_value);
+			}
+		}
+		else{
+			$this->_parameters[$this->_parameters_index - 1] = $value;
 
-		return $this->_parameters_index++;
+			return $this->_parameters_index++;
+		}
 	}
 
 	function clear_parameter_index()
