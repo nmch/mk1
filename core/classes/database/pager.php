@@ -25,7 +25,7 @@ class Database_Pager
 	 */
 	function execute()
 	{
-		$rows         = $this->get('rows');                                        // 1ページあたりの行数
+		$rows         = $this->get('rows');                                     // 1ページあたりの行数
 		$nolimit_rows = ($rows === 'nolimit' || $this->get('nolimit_rows'));    // 1ページあたりの行数を無制限にするフラグ
 		$page         = (int)$this->get('page');                                // 指定ページ(1 origin)
 		$page         = $page ?: 1;
