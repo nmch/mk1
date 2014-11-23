@@ -6,15 +6,18 @@ class Database_Pager
 	var $db_query;
 	/** @var Actionform $options */
 	var $options;
+	/** @var array $query_options */
+	var $query_options;
 
-	function __construct(&$db_query, &$options)
+	function __construct(&$db_query, &$options, $query_options = [])
 	{
 		if( ! is_object($options) ){
 			$options = (object)$options;
 		}
 
-		$this->db_query = $db_query;
-		$this->options  = $options;
+		$this->db_query      = $db_query;
+		$this->options       = $options;
+		$this->query_options = $query_options;
 	}
 
 	/**
@@ -33,13 +36,21 @@ class Database_Pager
 		//Log::coredebug("[db pager] rows=$rows / page=$page");
 
 		if( $this->db_query instanceof Model_Query ){
-			$db_query_clone = clone $this->db_query->get_query();
+			$query_for_total = clone $this->db_query->get_query();
 		}
 		else{
-			$db_query_clone = clone $this->db_query;
+			$query_for_total = clone $this->db_query;
 		}
-		$total_rows = $db_query_clone->clear_order_by()->clear_select()->select('count(*) as count')->set_fetch_as(NULL)->execute()->get('count');
-		unset($db_query_clone);
+		$query_for_total->clear_order_by()->clear_select()->select('count(*) as count')->set_fetch_as(NULL);
+		if( isset($this->query_options['add_col_to_total']) && is_array($this->query_options['add_col_to_total']) ){
+			foreach($this->query_options['add_col_to_total'] as $add_item){
+				$query_for_total->select($add_item);
+			}
+		}
+
+		$result     = $query_for_total->execute();
+		$total_rows = $result->get('count');
+		unset($query_for_total);
 		if( $nolimit_rows ){
 			// 行数無制限
 			$rows        = $total_rows;
