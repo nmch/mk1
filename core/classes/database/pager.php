@@ -42,14 +42,20 @@ class Database_Pager
 			$query_for_total = clone $this->db_query;
 		}
 		$query_for_total->clear_order_by()->clear_select()->select('count(*) as count')->set_fetch_as(NULL);
-		if( isset($this->query_options['add_col_to_total']) && is_array($this->query_options['add_col_to_total']) ){
-			foreach($this->query_options['add_col_to_total'] as $add_item){
-				$query_for_total->select($add_item);
+
+		// 合計数といっしょに計算する内容の追加
+		$add_col_to_total = Arr::get($this->query_options, 'add_col_to_total');
+		if( $add_col_to_total && ! is_array($add_col_to_total) ){
+			$add_col_to_total = [$add_col_to_total];
+		}
+		if( $add_col_to_total ){
+			foreach($add_col_to_total as $add_key => $add_item){
+				$query_for_total->select("{$add_item} as {$add_key}");
 			}
 		}
 
-		$result     = $query_for_total->execute();
-		$total_rows = $result->get('count');
+		$total_result = $query_for_total->execute();
+		$total_rows   = $total_result->get('count');
 		unset($query_for_total);
 		if( $nolimit_rows ){
 			// 行数無制限
@@ -77,6 +83,13 @@ class Database_Pager
 			'is_first_page' => ($page <= 1),
 			'is_last_page'  => ($page >= $total_pages),
 		];
+
+		// 合計数といっしょに計算した内容の追加
+		if( $add_col_to_total ){
+			foreach($add_col_to_total as $add_key => $add_item){
+				$paging_data[$add_key] = $total_result->get($add_key);
+			}
+		}
 
 		/*
 		$this->set('total_rows',$total_rows);

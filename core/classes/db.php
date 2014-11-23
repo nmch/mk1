@@ -122,9 +122,9 @@ class DB
 		Database_Schema::clear_cache();
 	}
 
-	static function pager($db_query, $options)
+	static function pager($db_query, $options, $query_options = [])
 	{
-		return new Database_Pager($db_query, $options);
+		return new Database_Pager($db_query, $options, $query_options);
 	}
 
 	static function in_transaction($connection = NULL)
