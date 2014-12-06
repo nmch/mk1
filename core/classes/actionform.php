@@ -267,7 +267,7 @@ class Actionform
 	 * @param string $value
 	 * @param string $filter
 	 * @param array  $option
-
+	 *
 	 * @throws MkException
 	 * @return string
 	 */
@@ -384,7 +384,9 @@ class Actionform
 							'filter'  => '',
 							'typecat' => Arr::get($col, 'type_cat'),
 						];
+						/** @see https://www.postgresql.jp/document/9.3/html/catalog-pg-type.html */
 						switch($rule['typecat']){
+							// 数値型
 							case 'N':
 								$rule['filter'] = ['hankaku', 'only0to9'];
 
@@ -399,6 +401,7 @@ class Actionform
 									]
 								);
 								break;
+							// 日付時刻型
 							case 'D':
 								$rule['filter'] = ['hankaku', 'hantozen', 'trim'];
 
@@ -413,15 +416,25 @@ class Actionform
 									]
 								);
 								break;
-							case 'B':
-							case 'S':
-							case 'A':
+
+							case 'B': // 論理値型
+							case 'S': // 文字列型
+							case 'A': // 配列型
 								$rule['filter'] = ['hankaku', 'hantozen', 'trim', 'empty2null'];
 								break;
-							case 'U':    //ユーザ定義型
+
+							case 'C': // 複合型
+							case 'U': // ユーザ定義型
+							case 'E': // 列挙型
+							case 'G': // 幾何学型
+							case 'P': // 仮想型
+							case 'I': // ネットワークアドレス型
+							case 'R': // 範囲型
+							case 'T': // 時間間隔型
+							case 'V': // ビット列型
 								break;
 							default:
-								Log::coredebug("[af] Unknown {$col_name} typecat: ", Arr::get($col, 'type_cat'));
+								Log::coredebug("[af] Unknown {$col_name} typecat: ", Arr::get($col, 'type_cat'), $col);
 						}
 						$this->set_config('global.key.' . $col_name, $rule);
 					}
