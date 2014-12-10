@@ -61,7 +61,7 @@ class Actionform
 	}
 
 	//public function save($name,$model_list = array())
-	public function save($name, $model = NULL)
+	public function save($name, $model = null)
 	{
 		$this->validate($name);
 		//Log::coredebug("validated_values = ",$this->validated_values);
@@ -118,7 +118,7 @@ class Actionform
 		return $obj;
 	}
 
-	private function get_validation_rules($name = NULL)
+	private function get_validation_rules($name = null)
 	{
 		if( ! $name ){
 			$validation = $this->get_config('global');
@@ -148,7 +148,7 @@ class Actionform
 	 * @throws MkException
 	 * @throws ValidateErrorException
 	 */
-	public function validate($name = NULL)
+	public function validate($name = null)
 	{
 		$validation = $this->get_validation_rules($name);
 
@@ -229,7 +229,7 @@ class Actionform
 					//Log::coredebug("store validated_values $key",$value);
 					$validated_values[$key] = $value;    //配列の場合がある
 				}
-				$validation_results[$key] = NULL;
+				$validation_results[$key] = null;
 			} catch(ValidateErrorException $e){
 				Log::coredebug("[af] validation error key=[$key] msg=" . $e->getMessage());
 				$validation_results[$key] = [
@@ -251,8 +251,12 @@ class Actionform
 		return $this;
 	}
 
-	public function validation_results()
+	public function validation_results($results = null)
 	{
+		if(is_array($results)){
+			$this->validation_results = $results;
+		}
+
 		return $this->validation_results;
 	}
 
@@ -481,7 +485,7 @@ class Actionform
 		return $this;
 	}
 
-	function set($name, $value = NULL, $set_default = false)
+	function set($name, $value = null, $set_default = false)
 	{
 		if( is_array($name) || $name instanceof ArrayAccess ){
 			foreach($name as $key => $value){
@@ -502,7 +506,7 @@ class Actionform
 		return $this;
 	}
 
-	function get_default($name = NULL)
+	function get_default($name = null)
 	{
 		if( ! $name ){
 			return $this->values_default;
@@ -512,7 +516,7 @@ class Actionform
 		}
 	}
 
-	function set_default($name, $value = NULL)
+	function set_default($name, $value = null)
 	{
 		return $this->set($name, $value, true);
 	}
@@ -522,7 +526,7 @@ class Actionform
 		return $this->get($name);
 	}
 
-	function get($name, $default = NULL)
+	function get($name, $default = null)
 	{
 		if( array_key_exists($name, $this->values) ){
 			return $this->values[$name];
@@ -540,7 +544,7 @@ class Actionform
 	/**
 	 * Arr::get()を使って値を得る
 	 */
-	function getarr($name, $default = NULL)
+	function getarr($name, $default = null)
 	{
 		return Arr::get($this->as_array(), $name, $default);
 	}
@@ -557,7 +561,7 @@ class Actionform
 	 *
 	 * @return array|mixed
 	 */
-	function get_validated_values($name = NULL)
+	function get_validated_values($name = null)
 	{
 		return $name ? Arr::get($this->validated_values, $name, []) : $this->validated_values;
 	}
@@ -597,7 +601,7 @@ class Actionform
 			);
 		}
 
-		return NULL;
+		return null;
 	}
 
 	/**
@@ -646,5 +650,33 @@ class Actionform
 		Log::coredebug("set message($type) : $message");
 
 		Session::set_flash('messages', $messages);
+	}
+
+	/**
+	 * 与えられたModelのカラムと同じ名前の配列全てを統合し、レコードと同じ形の配列にする
+	 *
+	 * @param Model $model モデル名
+	 *
+	 * @return array
+	 */
+	function make_records_array(Model $model, $default_items = [])
+	{
+		$list = [];
+		foreach($model->columns() as $col){
+			if( ! $this->key_exists($col) || ! is_array($this->$col) ){
+				continue;
+			}
+			foreach($this->$col as $index => $value){
+				$list[$index][$col] = $value;
+			}
+		}
+		if( $default_items ){
+			foreach($list as $key => $item){
+				$list[$key] = $item + $default_items;
+
+			}
+		}
+
+		return $list;
 	}
 }
