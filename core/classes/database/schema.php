@@ -69,6 +69,7 @@ class Database_Schema
 			where c.relkind='r'
 			and n.nspname='public'
 			and attnum >= 0 and attisdropped is not true
+			order by attnum
 		";
 		$attributes          = DB::query($q)->execute();
 		static::$_attributes = $attributes;
