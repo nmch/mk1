@@ -86,7 +86,7 @@ class Database_Connection
 		while( $r = pg_get_result($this->connection) ){
 			if( $r !== false ){
 				$query_result = $r;
-				$error_msg    = pg_result_error($query_result);
+				$error_msg    = trim(pg_result_error($query_result));
 				if( $error_msg !== '' ){
 					$error_details = [
 						'message'                       => $error_msg
