@@ -3,10 +3,12 @@
 class Database_Connection
 {
 	/** @var Database_Connection[] $instances */
-	static  $instances         = [];
+	static $instances = [];
 	/** @var resource $connection */
 	private $connection;
 	private $savepoint_counter = 0;
+	/** @var array 最後のエラー(最後のクエリが成功した場合は空配列) */
+	private $last_error_details = [];
 
 	function __construct($config)
 	{
@@ -39,7 +41,7 @@ class Database_Connection
 	 *
 	 * @return Database_Connection
 	 */
-	static function instance($name = NULL)
+	static function instance($name = null)
 	{
 		if( ! $name ){
 			$name = Config::get('db.active');
@@ -71,18 +73,49 @@ class Database_Connection
 	function query($sql, $parameters = [])
 	{
 		Log::coredebug("[dbconn] SQL {$this->connection} = $sql / " . var_export($parameters, true));
-		if( $parameters ){
-			$r = pg_query_params($this->connection, $sql, $parameters);
+
+		// クエリ送信
+			if( $parameters ){
+				pg_send_query_params($this->connection, $sql, $parameters);
+			}
+			else{
+				pg_send_query($this->connection, $sql);
+			}
+
+		// 結果を全て取得して、エラーがあれば例外スロー、なければ最後の結果を返す
+		while( $r = pg_get_result($this->connection) ){
+			if( $r !== false ){
+				$query_result = $r;
+				$error_msg    = pg_result_error($query_result);
+				if( $error_msg !== '' ){
+					$error_details = [
+						'message'                       => $error_msg
+						, PGSQL_DIAG_SEVERITY           => pg_result_error_field($query_result, PGSQL_DIAG_SEVERITY)
+						, PGSQL_DIAG_SQLSTATE           => pg_result_error_field($query_result, PGSQL_DIAG_SQLSTATE)
+						, PGSQL_DIAG_MESSAGE_PRIMARY    => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_PRIMARY)
+						, PGSQL_DIAG_MESSAGE_DETAIL     => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_DETAIL)
+						, PGSQL_DIAG_MESSAGE_HINT       => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_HINT)
+						, PGSQL_DIAG_STATEMENT_POSITION => pg_result_error_field($query_result, PGSQL_DIAG_STATEMENT_POSITION)
+						, PGSQL_DIAG_CONTEXT            => pg_result_error_field($query_result, PGSQL_DIAG_CONTEXT)
+						, PGSQL_DIAG_SOURCE_FILE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FILE)
+						, PGSQL_DIAG_INTERNAL_POSITION  => pg_result_error_field($query_result, PGSQL_DIAG_INTERNAL_POSITION)
+						, PGSQL_DIAG_INTERNAL_QUERY     => pg_result_error_field($query_result, PGSQL_DIAG_INTERNAL_QUERY)
+						, PGSQL_DIAG_SOURCE_LINE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_LINE)
+						, PGSQL_DIAG_SOURCE_FUNCTION    => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FUNCTION)
+					];
+					Log::error("Query Error",$error_details);
+					$this->last_error_details = $error_details;
+					throw new DatabaseQueryError($error_msg);
+				}
+			}
 		}
-		else{
-			$r = pg_query($this->connection, $sql);
+		$this->last_error_details = [];
+
+		if( empty($query_result) ){
+			throw new DatabaseQueryError("Result is empty");
 		}
 
-		if( $r === false ){
-			throw new DatabaseQueryError(pg_last_error($this->connection));
-		}
-
-		return new Database_Resultset($r);
+		return new Database_Resultset($query_result);
 	}
 
 	function get_transaction_status()
