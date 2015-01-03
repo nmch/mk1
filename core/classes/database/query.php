@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Database_Query
 {
@@ -446,25 +446,6 @@ class Database_Query
 		return $this;
 	}
 
-	function select($columns = [])
-	{
-		if( ! is_array($columns) ){
-			$columns = func_get_args();
-		}
-		$this->_query_type = 'SELECT';
-		//$this->_query_columns = $columns;
-		//$this->_query_columns = array_merge($this->_query_columns,$columns);
-		foreach($columns as $col){
-			$col = trim($col);
-			if( ! in_array($col, $this->_query_columns) ){
-				$this->_query_columns[] = $col;
-			}
-		}
-		//Log::coredebug("select() _query_columns=",$columns,$this->_query_columns);
-		//echo "<PRE>"; debug_print_backtrace(); echo "</PRE>";
-		return $this;
-	}
-
 	function clear_query_type()
 	{
 		$this->_query_type = NULL;
@@ -486,6 +467,39 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * SELECTクエリを作成
+	 *
+	 * @param array $columns
+	 *
+	 * @return $this
+	 */
+	function select($columns = [])
+	{
+		if( ! is_array($columns) ){
+			$columns = func_get_args();
+		}
+		$this->_query_type = 'SELECT';
+		//$this->_query_columns = $columns;
+		//$this->_query_columns = array_merge($this->_query_columns,$columns);
+		foreach($columns as $col){
+			$col = trim($col);
+			if( ! in_array($col, $this->_query_columns) ){
+				$this->_query_columns[] = $col;
+			}
+		}
+		//Log::coredebug("select() _query_columns=",$columns,$this->_query_columns);
+		//echo "<PRE>"; debug_print_backtrace(); echo "</PRE>";
+		return $this;
+	}
+
+	/**
+	 * UPDATEクエリを作成
+	 *
+	 * @param string $table テーブル名
+	 *
+	 * @return $this
+	 */
 	function update($table)
 	{
 		$this->_query_type = 'UPDATE';
@@ -494,6 +508,13 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * INSERTクエリを作成
+	 *
+	 * @param string $table テーブル名
+	 *
+	 * @return $this
+	 */
 	function insert($table)
 	{
 		$this->_query_type = 'INSERT';
@@ -502,6 +523,11 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * DELETEクエリを作成
+	 *
+	 * @return $this
+	 */
 	function delete()
 	{
 		$this->_query_type = 'DELETE';

@@ -4,9 +4,9 @@
  * Class DB
  *
  * @method static Database_Query select()
- * @method static Database_Query insert()
+ * @method static Database_Query insert(string $table)
  * @method static Database_Query delete()
- * @method static Database_Query update()
+ * @method static Database_Query update(string $table)
  */
 class DB
 {
