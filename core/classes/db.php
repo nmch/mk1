@@ -12,6 +12,14 @@ class DB
 {
 	private $connections = [];
 
+	/**
+	 * クエリオブジェクトを作成する
+	 *
+	 * @param       $query
+	 * @param array $parameters
+	 *
+	 * @return Database_Query
+	 */
 	static function query($query, $parameters = [])
 	{
 		return new Database_Query($query, $parameters);

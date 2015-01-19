@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class Database_Query
+ */
 class Database_Query
 {
 	protected $_sql;
@@ -49,11 +52,13 @@ class Database_Query
 	*/
 
 	/**
+	 * クエリを実行する
+	 *
 	 * @param null|Database_Connection $db
 	 *
 	 * @throws DatabaseQueryError
 	 * @throws MkException
-	 * @returns Database_Resultset
+	 * @return Database_Resultset
 	 */
 	public function execute($db = null)
 	{
@@ -99,6 +104,9 @@ class Database_Query
 		return $this->affected_rows;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function set_fetch_as($fetch_as)
 	{
 		$this->fetch_as = $fetch_as;
@@ -111,6 +119,12 @@ class Database_Query
 		return $this->fetch_as;
 	}
 
+	/**
+	 * @param $sql
+	 *
+	 * @return Database_Query
+	 * @throws MkException
+	 */
 	public function set_sql($sql)
 	{
 		if( ! is_string($sql) ){
@@ -135,6 +149,10 @@ class Database_Query
 		}
 	}
 
+	/**
+	 * @return Database_Query
+	 * @throws MkException
+	 */
 	public function compile()
 	{
 		if( empty($this->_query_type) ){
@@ -431,6 +449,9 @@ class Database_Query
 		}
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function clear_parameter_index()
 	{
 		$this->_parameters_index = 1;
@@ -438,6 +459,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function clear_parameter()
 	{
 		$this->_parameters       = [];
@@ -446,6 +470,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function clear_query_type()
 	{
 		$this->_query_type = NULL;
@@ -453,6 +480,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function clear_select()
 	{
 		$this->_query_columns = [];
@@ -460,6 +490,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function clear_from()
 	{
 		$this->_query_from = [];
@@ -472,7 +505,7 @@ class Database_Query
 	 *
 	 * @param array $columns
 	 *
-	 * @return $this
+	 * @return Database_Query
 	 */
 	function select($columns = [])
 	{
@@ -498,7 +531,7 @@ class Database_Query
 	 *
 	 * @param string $table テーブル名
 	 *
-	 * @return $this
+	 * @return Database_Query
 	 */
 	function update($table)
 	{
@@ -513,7 +546,7 @@ class Database_Query
 	 *
 	 * @param string $table テーブル名
 	 *
-	 * @return $this
+	 * @return Database_Query
 	 */
 	function insert($table)
 	{
@@ -526,7 +559,7 @@ class Database_Query
 	/**
 	 * DELETEクエリを作成
 	 *
-	 * @return $this
+	 * @return Database_Query
 	 */
 	function delete()
 	{
@@ -535,6 +568,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function from($from)
 	{
 		$this->_query_from[] = $from;
@@ -542,11 +578,17 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function set(array $values)
 	{
 		return $this->values($values);
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function with($with, $with_query = NULL)
 	{
 		if( is_array($with) ){
@@ -559,6 +601,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function values(array $values)
 	{
 		$this->_query_values = array_merge($this->_query_values, $values);
@@ -566,11 +611,21 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	public function where()
 	{
 		return call_user_func_array([$this, 'and_where'], func_get_args());
 	}
 
+	/**
+	 * @param mixed     $column
+	 * @param mixed $op
+	 * @param mixed $value
+	 *
+	 * @return Database_Query
+	 */
 	public function and_where($column, $op = null, $value = null)
 	{
 		if( $column instanceof \Closure ){
@@ -601,6 +656,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	public function or_where($column, $op = null, $value = null)
 	{
 		if( $column instanceof \Closure ){
@@ -632,11 +690,17 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	public function where_open()
 	{
 		return $this->and_where_open();
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	public function and_where_open()
 	{
 		$this->_query_where[] = ['AND' => '('];
@@ -644,6 +708,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	public function or_where_open()
 	{
 		$this->_query_where[] = ['OR' => '('];
@@ -651,11 +718,17 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	public function where_close()
 	{
 		return $this->and_where_close();
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	public function and_where_close()
 	{
 		$this->_query_where[] = ['AND' => ')'];
@@ -663,6 +736,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	public function or_where_close()
 	{
 		$this->_query_where[] = ['OR' => ')'];
@@ -670,6 +746,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function order_by($column, $direction = null)
 	{
 		//Log::coredebug("[database_query] order_by",$column,$direction);
@@ -687,6 +766,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function clear_order_by()
 	{
 		$this->_query_orderby = [];
@@ -694,6 +776,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function returning($column)
 	{
 		if( is_array($column) ){
@@ -706,6 +791,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function clear_join()
 	{
 		$this->_query_join = [];
@@ -713,6 +801,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function join($join_str)
 	{
 		$this->_query_join[] = $join_str;
@@ -720,6 +811,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function limit($limit)
 	{
 		$this->_query_limit = (int)$limit;
@@ -727,6 +821,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function offset($offset)
 	{
 		$this->_query_offset = (int)$offset;
@@ -734,6 +831,9 @@ class Database_Query
 		return $this;
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function distinct($flag)
 	{
 		$this->_query_distinct = (boolean)$flag;

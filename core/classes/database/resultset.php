@@ -39,17 +39,34 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 		return $this;
 	}
 
+	/**
+	 * 影響を受けた行数を取得する
+	 *
+	 * @return int
+	 */
 	function get_affected_rows()
 	{
 		return pg_affected_rows($this->result_resource);
 	}
 
+	/**
+	 * クエリオブジェクトを取得する
+	 *
+	 * @return Database_Query
+	 */
 	function get_query()
 	{
 		return $this->query;
 	}
 
-	function set_query($query)
+	/**
+	 * クエリオブジェクトを設定する
+	 *
+	 * @param Database_Query $query クエリオブジェクト
+	 *
+	 * @return Database_Query
+	 */
+	function set_query(Database_Query $query)
 	{
 		return $this->query = $query;
 	}

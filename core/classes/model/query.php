@@ -123,6 +123,14 @@ class Model_Query
 		$this->ignore_conditions = array_merge($this->ignore_conditions, $ignore_conditions);
 		return $this;
 	}
+
+	/**
+	 * クエリを実行する
+	 *
+	 * @return Database_Resultset
+	 * @throws DatabaseQueryError
+	 * @throws MkException
+	 */
 	function get()
 	{
 		return $this->get_query()->select('*')->execute();
@@ -131,6 +139,8 @@ class Model_Query
 	 * get()のエイリアス
 	 * 
 	 * Database_Pager::execute()からDatabase_Queryと同じexecute()として呼び出される
+	 *
+	 * @return Database_Resultset
 	 */
 	function execute()
 	{
