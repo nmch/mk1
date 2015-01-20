@@ -244,7 +244,9 @@ class Database_Query
 			$sql .= " DISTINCT ";
 		}
 		$sql .= $this->_query_columns ? implode(',', $this->_query_columns) : '*';
-		$sql .= " FROM " . implode(',', $this->_query_from);
+		if($this->_query_from){
+			$sql .= " FROM " . implode(',', $this->_query_from);
+		}
 		$where = $this->build_where();
 		if( $this->_query_join ){
 			$sql .= ' ' . implode(' ', $this->_query_join);
