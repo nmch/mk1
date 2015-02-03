@@ -589,6 +589,11 @@ class Actionform
 		return key_exists($name);
 	}
 
+	function useragent()
+	{
+		return $this->useragent;
+	}
+
 	function is_mobiledevice()
 	{
 		if( $this->useragent ){
