@@ -9,10 +9,10 @@ class Database_Query
 	protected $_parameters       = [];
 	protected $_parameters_index = 1;
 	protected $fetch_as          = [];
-	protected $affected_rows     = NULL;
+	protected $affected_rows     = null;
 	//protected $result = NULL;
 
-	protected $_query_type       = NULL;
+	protected $_query_type       = null;
 	protected $_query_columns    = [];
 	protected $_query_where      = [];
 	protected $_query_from       = [];
@@ -20,14 +20,14 @@ class Database_Query
 	protected $_query_join       = [];
 	protected $_query_values     = [];
 	protected $_query_orderby    = [];
-	protected $_query_limit      = NULL;
-	protected $_query_offset     = NULL;
-	protected $_query_distinct   = FALSE;
+	protected $_query_limit      = null;
+	protected $_query_offset     = null;
+	protected $_query_distinct   = false;
 	protected $_query_returning  = [];
 	protected $_query_primarykey = [];
 
 
-	public function __construct($sql = NULL, $parameters = [])
+	public function __construct($sql = null, $parameters = [])
 	{
 		$this->_sql        = $sql;
 		$this->_parameters = $parameters;
@@ -105,6 +105,8 @@ class Database_Query
 	}
 
 	/**
+	 * @param $fetch_as
+	 *
 	 * @return Database_Query
 	 */
 	function set_fetch_as($fetch_as)
@@ -244,7 +246,7 @@ class Database_Query
 			$sql .= " DISTINCT ";
 		}
 		$sql .= $this->_query_columns ? implode(',', $this->_query_columns) : '*';
-		if($this->_query_from){
+		if( $this->_query_from ){
 			$sql .= " FROM " . implode(',', $this->_query_from);
 		}
 		$where = $this->build_where();
@@ -256,8 +258,8 @@ class Database_Query
 		}
 		if( $this->_query_orderby ){
 			$sql .= " ORDER BY " . implode(',', array_map(function ($ary) {
-							return implode(' ', $ary);
-						}, $this->_query_orderby
+						return implode(' ', $ary);
+					}, $this->_query_orderby
 					)
 				);
 		}
@@ -304,7 +306,7 @@ class Database_Query
 	function build_where()
 	{
 		//Log::coredebug($this->_query_where,$this->_query_values);
-		$last_condition = NULL;
+		$last_condition = null;
 
 		$sql = '';
 		foreach($this->_query_where as $group){
@@ -339,7 +341,7 @@ class Database_Query
 					$op = trim($op);
 					//Log::coredebug($column,$op,$value);
 
-					if( $value === NULL ){
+					if( $value === null ){
 						if( $op === '=' ){
 							// Convert "val = NULL" to "val IS NULL"
 							$op = 'IS';
@@ -390,35 +392,35 @@ class Database_Query
 						list($_insql_sql, $_insql_parameters) = $value->get_sql(true);
 						// パラメータが$1から始まっているので、置き換える
 //						Log::coredebug("_insql_sql={$_insql_sql} / _insql_parameters=",$_insql_parameters);
-						$_insql_search = [];
+						$_insql_search  = [];
 						$_insql_replace = [];
 						foreach($_insql_parameters as $_insql_parameter_index => $_insql_parameter_value){
-							$_insql_search[] = '$' . ($_insql_parameter_index + 1);
+							$_insql_search[]  = '$' . ($_insql_parameter_index + 1);
 							$_insql_replace[] = '$' . $this->parameter($_insql_parameter_value);
 						}
-						$_insql_search = array_reverse($_insql_search);
+						$_insql_search  = array_reverse($_insql_search);
 						$_insql_replace = array_reverse($_insql_replace);
-						$_insql_sql = str_replace($_insql_search, $_insql_replace, $_insql_sql);
+						$_insql_sql     = str_replace($_insql_search, $_insql_replace, $_insql_sql);
 //						Log::coredebug($_insql_search,$_insql_replace);
 //						Log::coredebug("replaced sql={$_insql_sql}");
 
 						$value = DB::expr('(' . $_insql_sql . ')');
-						$op    = 'IN';
+						$op    = $op === '=' ? 'IN' : $op;
 					}
 
 					if( $value instanceof Database_Expression ){
 						$sql .= $column . ' ' . $op . ' ' . (string)$value;
 					}
 					else{
-						if( $value === NULL ){
+						if( $value === null ){
 							$sql .= $column . ' ' . $op . ' NULL';
 						}
 						else{
-							if( $value === TRUE ){
+							if( $value === true ){
 								$sql .= $column . ' ' . $op . ' TRUE';
 							}
 							else{
-								if( $value === FALSE ){
+								if( $value === false ){
 									$sql .= $column . ' ' . $op . ' FALSE';
 								}
 								else{
@@ -440,9 +442,12 @@ class Database_Query
 	function parameter($value)
 	{
 		if( is_array($value) ){
+			$indexes = [];
 			foreach($value as $_value){
-				$this->parameter($_value);
+				$indexes[] = $this->parameter($_value);
 			}
+
+			return $indexes;
 		}
 		else{
 			$this->_parameters[$this->_parameters_index - 1] = $value;
@@ -477,7 +482,7 @@ class Database_Query
 	 */
 	function clear_query_type()
 	{
-		$this->_query_type = NULL;
+		$this->_query_type = null;
 
 		return $this;
 	}
@@ -571,6 +576,8 @@ class Database_Query
 	}
 
 	/**
+	 * @param string $from
+	 *
 	 * @return Database_Query
 	 */
 	function from($from)
@@ -581,6 +588,8 @@ class Database_Query
 	}
 
 	/**
+	 * @param array $values
+	 *
 	 * @return Database_Query
 	 */
 	function set(array $values)
@@ -589,9 +598,12 @@ class Database_Query
 	}
 
 	/**
+	 * @param string $with
+	 * @param string $with_query
+	 *
 	 * @return Database_Query
 	 */
-	function with($with, $with_query = NULL)
+	function with($with, $with_query = null)
 	{
 		if( is_array($with) ){
 			$this->_query_with = array_merge($this->_query_with, $with);
@@ -604,6 +616,8 @@ class Database_Query
 	}
 
 	/**
+	 * @param array $values
+	 *
 	 * @return Database_Query
 	 */
 	function values(array $values)
@@ -622,7 +636,7 @@ class Database_Query
 	}
 
 	/**
-	 * @param mixed     $column
+	 * @param mixed $column
 	 * @param mixed $op
 	 * @param mixed $value
 	 *
@@ -659,6 +673,10 @@ class Database_Query
 	}
 
 	/**
+	 * @param string $column
+	 * @param string $op
+	 * @param mixed  $value
+	 *
 	 * @return Database_Query
 	 */
 	public function or_where($column, $op = null, $value = null)
@@ -749,6 +767,9 @@ class Database_Query
 	}
 
 	/**
+	 * @param string $column
+	 * @param string $direction
+	 *
 	 * @return Database_Query
 	 */
 	function order_by($column, $direction = null)
@@ -779,6 +800,8 @@ class Database_Query
 	}
 
 	/**
+	 * @param string|array $column
+	 *
 	 * @return Database_Query
 	 */
 	function returning($column)
@@ -804,6 +827,8 @@ class Database_Query
 	}
 
 	/**
+	 * @param string $join_str
+	 *
 	 * @return Database_Query
 	 */
 	function join($join_str)
@@ -814,6 +839,8 @@ class Database_Query
 	}
 
 	/**
+	 * @param integer $limit
+	 *
 	 * @return Database_Query
 	 */
 	function limit($limit)
@@ -824,6 +851,8 @@ class Database_Query
 	}
 
 	/**
+	 * @param string $offset
+	 *
 	 * @return Database_Query
 	 */
 	function offset($offset)
@@ -834,6 +863,8 @@ class Database_Query
 	}
 
 	/**
+	 * @param boolean $flag
+	 *
 	 * @return Database_Query
 	 */
 	function distinct($flag)
