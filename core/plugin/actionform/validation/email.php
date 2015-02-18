@@ -1,4 +1,4 @@
-<?
+<?php
 return function ($value) {
 	if( $value ){
 		if( ! preg_match('/^[^@]+@.+\..+/', $value) ){

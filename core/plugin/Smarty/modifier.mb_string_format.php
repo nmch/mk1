@@ -1,4 +1,4 @@
-<?
+<?php
 function smarty_modifier_mb_string_format($string, $format)
 {
 	$r = sprintf($format, $string);
@@ -8,4 +8,4 @@ function smarty_modifier_mb_string_format($string, $format)
 	else{
 		return $string;
 	}
-} ?>
+}

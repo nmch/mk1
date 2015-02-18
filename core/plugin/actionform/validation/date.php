@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * 日付(YYYY-MM-DDまたはYYYY/MM/DD形式)
  */

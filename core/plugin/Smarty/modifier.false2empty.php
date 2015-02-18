@@ -5,4 +5,4 @@
 function smarty_modifier_false2empty($str)
 {
 	return $str ?: '';
-} ?>
+}

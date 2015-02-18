@@ -1,4 +1,4 @@
-<?
+<?php
 function smarty_modifier_url2a($content)
 {
 	if( preg_match_all('#(http(s)?://([\w-]+\.)+[\w-]+(/[\w-./?%&=]*)?)#', $content, $match) ){
@@ -8,4 +8,4 @@ function smarty_modifier_url2a($content)
 	}
 
 	return $content;
-} ?>
+}

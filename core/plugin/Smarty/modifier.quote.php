@@ -1,4 +1,4 @@
-<?
+<?php
 function smarty_modifier_quote($array)
 {
 	if( ! is_array($array) ){
@@ -9,4 +9,4 @@ function smarty_modifier_quote($array)
 	}
 
 	return $array;
-} ?>
+}
