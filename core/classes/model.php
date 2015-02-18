@@ -32,14 +32,14 @@ class Model implements Iterator, Countable, ArrayAccess
 	protected static $_to_array_exclude = array();
 	*/
 
-	protected static $_primary_keys = [];
-	public    $_data                 = [];
-	protected $_is_new               = true;
-	protected $_original             = [];
-	protected $_original_before_save = [];
-	protected $_iter_keylist         = [];
-		protected $_iter_curkey          = 0;    //save()時にとられるdiff
-protected $_save_diff            = [];
+	protected static $_primary_keys         = [];
+	public           $_data                 = [];
+	protected        $_is_new               = true;
+	protected        $_original             = [];
+	protected        $_original_before_save = [];
+	protected        $_iter_keylist         = [];
+	protected        $_iter_curkey          = 0;    //save()時にとられるdiff
+	protected        $_save_diff            = [];
 
 	function __construct($options = [])
 	{
@@ -50,6 +50,10 @@ protected $_save_diff            = [];
 		$this->after_load();
 
 		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
+	}
+
+	protected function after_load()
+	{
 	}
 
 	static function __callStatic($name, $arguments)
@@ -222,16 +226,6 @@ protected $_save_diff            = [];
 		return $this;
 	}
 
-	function __get($name)
-	{
-		return $this->get($name);
-	}
-
-	function __set($name, $arg)
-	{
-		return $this->set($name, $arg);
-	}
-
 	function set($name, $value, $force_original = false)
 	{
 		if( $this->_is_new || $force_original ){
@@ -246,6 +240,16 @@ protected $_save_diff            = [];
 
 		//echo "set $name ($force_original) to "; print_r($value); print_r($this->_data);
 		return $this;
+	}
+
+	function __get($name)
+	{
+		return $this->get($name);
+	}
+
+	function __set($name, $arg)
+	{
+		return $this->set($name, $arg);
 	}
 
 	function get($name, $default = null, $rel_options = [])
@@ -603,12 +607,72 @@ protected $_save_diff            = [];
 		}
 	}
 
-	protected function after_load()
+	protected function after_save() { }
+
+	/**
+	 * 同じテーブル内で別のIDからデータをコピーする
+	 *
+	 * @param mixed $src_id
+	 * @param array $excludes
+	 * @param array $includes
+	 *
+	 * @return $this
+	 * @throws DatabaseQueryError
+	 * @throws MkException
+	 * @throws RecordNotFoundException
+	 */
+	function copy_from($src_id, array $excludes = [], array $includes = [])
 	{
+		$copy_keys = [];
+		foreach($this->columns() as $col){
+			if( ! in_array($col, $excludes) ){
+				$copy_keys[] = $col;
+			}
+		}
+		if( $copy_keys ){
+			$table = static::table();
+			$pkey  = static::primary_key();
+			$q     = "update {$table} set";
+			foreach($copy_keys as $key){
+				$q .= " {$key}=src.{$key}";
+			}
+			$q .= " from {$table} as src where {$table}.{$pkey}=src.{$pkey} and {$table}.{$pkey}={$src_id}";
+			DB::query($q)->execute();
+			$this->reload();
+		}
+
+		return $this;
 	}
 
-	protected function after_save()
+	/**
+	 * データを再ロードする
+	 *
+	 * @see Model::after_load()
+	 * @throws MkException
+	 * @throws RecordNotFoundException
+	 * @return Model
+	 */
+	function reload(array $ignore_conditions = null)
 	{
+		$query    = $this->_build_select_query();
+		$id_field = static::primary_key();
+		$r        = $query->where($id_field, $this->$id_field)->ignore_conditions($ignore_conditions)->get_one();
+		if( $r === null ){
+			throw new RecordNotFoundException;
+		}
+
+		// 取得したデータをoriginalに入れ、dataは削除する
+		$this->_original = [];
+		foreach($r as $key => $value){
+			$this->_original[$key] = $value;
+			if( array_key_exists($key, $this->_data) ){
+				unset($this->_data[$key]);
+			}
+		}
+
+		$this->after_load();
+
+		return $this;
 	}
 
 	function as_array($array_key = null)
@@ -680,17 +744,6 @@ protected $_save_diff            = [];
 		return $this;
 	}
 
-	/**
-	 * このModelのデータを取得する際のselectクエリを得る
-	 *
-	 * @return Database_Query
-	 */
-	public function get_select_query()
-	{
-		$model_query = static::_build_select_query();    // Model_Queryにjoinやadd_fieldを加える
-		return $model_query->get_query();                // Database_Queryを得る
-	}
-
 	/*
 	public static function instance_from_query_data()
 	{
@@ -701,34 +754,14 @@ protected $_save_diff            = [];
 	 */
 
 	/**
-	 * データを再ロードする
+	 * このModelのデータを取得する際のselectクエリを得る
 	 *
-	 * @see Model::after_load()
-	 * @throws MkException
-	 * @throws RecordNotFoundException
-	 * @return Model
+	 * @return Database_Query
 	 */
-	function reload(array $ignore_conditions = null)
+	public function get_select_query()
 	{
-		$query    = $this->_build_select_query();
-		$id_field = static::primary_key();
-		$r        = $query->where($id_field, $this->$id_field)->ignore_conditions($ignore_conditions)->get_one();
-		if( $r === null ){
-			throw new RecordNotFoundException;
-		}
-
-		// 取得したデータをoriginalに入れ、dataは削除する
-		$this->_original = [];
-		foreach($r as $key => $value){
-			$this->_original[$key] = $value;
-			if( array_key_exists($key, $this->_data) ){
-				unset($this->_data[$key]);
-			}
-		}
-
-		$this->after_load();
-
-		return $this;
+		$model_query = static::_build_select_query();    // Model_Queryにjoinやadd_fieldを加える
+		return $model_query->get_query();                // Database_Queryを得る
 	}
 
 	public function offsetSet($offset, $value)
