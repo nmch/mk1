@@ -21,15 +21,15 @@ class Autoloader
 
 		$filepath_candidates = [];
 		$class_exploded      = explode('_', ltrim(preg_replace_callback('/(_?[A-Z]+[a-z]*)/', function ($splitted) {
-			$str = $splitted[0];
-			if( $str[0] != '_' ){
-				$str = '_' . $str;
-			}
+				$str = $splitted[0];
+				if( $str[0] != '_' ){
+					$str = '_' . $str;
+				}
 
-			return strtolower($str);
-		}, $class
-		), '_'
-		)
+				return strtolower($str);
+			}, $class
+			), '_'
+			)
 		);
 		foreach($class_exploded as $key => $value){
 			$path                  = $key > 0 ? implode('/', array_slice($class_exploded, 0, $key, true)) : '';

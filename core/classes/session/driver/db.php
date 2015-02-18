@@ -25,17 +25,17 @@ class Session_Driver_Db implements SessionHandlerInterface
 		$_check = DB::select()->from($this->config['table'])->where('id', $id)->execute()->count();
 		if( $_check ){
 			DB::update($this->config['table'])->values([
-				'data'       => serialize($data),
-				'updated_at' => 'now()',
-			]
+					'data'       => serialize($data),
+					'updated_at' => 'now()',
+				]
 			)->where('id', $id)->execute();
 		}
 		else{
 			DB::insert($this->config['table'])->values([
-				'id'         => $id,
-				'data'       => serialize($data),
-				'updated_at' => 'now()',
-			]
+					'id'         => $id,
+					'data'       => serialize($data),
+					'updated_at' => 'now()',
+				]
 			)->execute();
 		}
 

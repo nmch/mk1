@@ -12,7 +12,7 @@ class Facebook
 {
 	use Singleton;
 
-	public static $DOMAIN_MAP = [
+	public static    $DOMAIN_MAP        = [
 		'api'         => 'https://api.facebook.com/',
 		'api_video'   => 'https://api-video.facebook.com/',
 		'api_read'    => 'https://api-read.facebook.com/',
@@ -20,17 +20,17 @@ class Facebook
 		'graph_video' => 'https://graph-video.facebook.com/',
 		'www'         => 'https://www.facebook.com/',
 	];
-	public static $CURL_OPTS  = [];
+	public static    $CURL_OPTS         = [];
 	protected static $default_accesstoken;
-	protected static $kSupportedKeys = ['state', 'code', 'access_token', 'user_id'];
-	protected $appId;
-	protected $appSecret;
-	protected $user;
-	protected $signedRequest;
-	protected $state;
-	protected $accessToken       = null;
-	protected $fileUploadSupport = false;
-	protected $trustForwarded    = false;
+	protected static $kSupportedKeys    = ['state', 'code', 'access_token', 'user_id'];
+	protected        $appId;
+	protected        $appSecret;
+	protected        $user;
+	protected        $signedRequest;
+	protected        $state;
+	protected        $accessToken       = null;
+	protected        $fileUploadSupport = false;
+	protected        $trustForwarded    = false;
 
 	function __construct($config = [])
 	{
@@ -100,12 +100,12 @@ class Facebook
 		if( $result === false ){
 			Log::error("Facebook Request Error : " . curl_errno($ch), curl_error($ch));
 			$e = new FacebookException([
-				'error_code' => curl_errno($ch),
-				'error'      => [
-					'message' => curl_error($ch),
-					'type'    => 'CurlException',
-				],
-			]
+					'error_code' => curl_errno($ch),
+					'error'      => [
+						'message' => curl_error($ch),
+						'type'    => 'CurlException',
+					],
+				]
 			);
 			curl_close($ch);
 			throw $e;

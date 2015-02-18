@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Database_Schema
 {

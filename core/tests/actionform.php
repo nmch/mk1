@@ -10,10 +10,10 @@ class test_Actionform extends Testcase
 	function setUp()
 	{
 		$_POST    = array_merge($_POST, [
-			'var_str'     => 'string',
-			'var_int'     => 12345,
-			'var_boolean' => true,
-		]
+				'var_str'     => 'string',
+				'var_int'     => 12345,
+				'var_boolean' => true,
+			]
 		);
 		$this->af = Actionform::instance();
 	}

@@ -27,8 +27,8 @@ class Request
 		Log::coredebug("[$route_class_name] controller = $controller_name / method = $controller_method_name");
 
 		$controller = new $controller_name([
-			'request' => $this,
-		]
+				'request' => $this,
+			]
 		);
 
 		// 実行するメソッドのパラメータをActioformにもセットする

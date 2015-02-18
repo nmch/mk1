@@ -29,9 +29,9 @@ class Route
 				$tmp_uri_exploded = $uri_exploded;
 
 				$controller_name_candidate = implode('_', array_map(function ($str) {
-					return ucfirst($str);
-				}, array_splice($tmp_uri_exploded, 0, count($tmp_uri_exploded) - $c)
-				)
+						return ucfirst($str);
+					}, array_splice($tmp_uri_exploded, 0, count($tmp_uri_exploded) - $c)
+					)
 				);
 				$controller_name_candidate = 'Controller_' . $controller_name_candidate;
 

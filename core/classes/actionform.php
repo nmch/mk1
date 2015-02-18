@@ -4,11 +4,11 @@ class Actionform
 {
 	use Singleton;
 
-	public $validation_results = [];
-	private $config = [];
-	private $values           = [];
-	private $values_default   = [];
-	private $validated_values = [];
+	public  $validation_results = [];
+	private $config             = [];
+	private $values             = [];
+	private $values_default     = [];
+	private $validated_values   = [];
 	private $request_method;
 	private $useragent;
 	private $referer;
@@ -139,6 +139,35 @@ class Actionform
 		return $this;
 	}
 
+	function set($name, $value = null, $set_default = false)
+	{
+		if( is_array($name) || $name instanceof ArrayAccess ){
+			foreach($name as $key => $value){
+				$this->set($key, $value, $set_default);
+			}
+		}
+		else{
+			//echo "<PRE>[af] set $name (default:$set_default)"; var_dump($value); print_r(debug_backtrace(NULL,3));
+
+			if( $set_default ){
+				$this->values_default[$name] = $value;
+			}
+			else{
+				$this->values[$name] = $value;
+			}
+		}
+
+		return $this;
+	}
+
+	//public function save($name,$model_list = array())
+
+	public function get_config($name)
+	{
+		return Config::get('form.' . $name);
+		//return Arr::get($this->config,$name);
+	}
+
 	private function set_config($name, $value)
 	{
 		Config::set('form.' . $name, $value);
@@ -146,8 +175,6 @@ class Actionform
 		//Arr::set($this->config,$name,$value);
 		return $this;
 	}
-
-	//public function save($name,$model_list = array())
 
 	public static function method()
 	{
@@ -380,12 +407,6 @@ class Actionform
 		return $validation;
 	}
 
-	public function get_config($name)
-	{
-		return Config::get('form.' . $name);
-		//return Arr::get($this->config,$name);
-	}
-
 	/**
 	 * 値データに指定キーが存在するか調べる
 	 *
@@ -402,27 +423,6 @@ class Actionform
 		else{
 			return (array_key_exists($name, $this->values) || array_key_exists($name, $this->values_default));
 		}
-	}
-
-	function set($name, $value = null, $set_default = false)
-	{
-		if( is_array($name) || $name instanceof ArrayAccess ){
-			foreach($name as $key => $value){
-				$this->set($key, $value, $set_default);
-			}
-		}
-		else{
-			//echo "<PRE>[af] set $name (default:$set_default)"; var_dump($value); print_r(debug_backtrace(NULL,3));
-
-			if( $set_default ){
-				$this->values_default[$name] = $value;
-			}
-			else{
-				$this->values[$name] = $value;
-			}
-		}
-
-		return $this;
 	}
 
 	function get($name, $default = null)

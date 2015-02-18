@@ -8,7 +8,7 @@ class Mk
 	const TEST        = 'test';
 	const PRODUCTION  = 'production';
 	const STAGE       = 'stage';
-	public static $env = Mk::PRODUCTION;
+	public static $env      = Mk::PRODUCTION;
 	public static $include_path_list;
 	public static $session;
 	public static $encoding = 'UTF-8';
