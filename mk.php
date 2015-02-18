@@ -1,3 +1,3 @@
 #!/bin/env php
-<?
-include __DIR__.'/bootstrap.php';
+<?php
+include __DIR__ . '/bootstrap.php';

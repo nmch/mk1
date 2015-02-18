@@ -75,12 +75,12 @@ class Database_Connection
 		Log::coredebug("[dbconn] SQL {$this->connection} = $sql / " . var_export($parameters, true));
 
 		// クエリ送信
-			if( $parameters ){
-				pg_send_query_params($this->connection, $sql, $parameters);
-			}
-			else{
-				pg_send_query($this->connection, $sql);
-			}
+		if( $parameters ){
+			pg_send_query_params($this->connection, $sql, $parameters);
+		}
+		else{
+			pg_send_query($this->connection, $sql);
+		}
 
 		// 結果を全て取得して、エラーがあれば例外スロー、なければ最後の結果を返す
 		while( $r = pg_get_result($this->connection) ){
@@ -103,7 +103,7 @@ class Database_Connection
 						, PGSQL_DIAG_SOURCE_LINE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_LINE)
 						, PGSQL_DIAG_SOURCE_FUNCTION    => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FUNCTION)
 					];
-					Log::error("Query Error",$error_details);
+					Log::error("Query Error", $error_details);
 					$this->last_error_details = $error_details;
 					throw new DatabaseQueryError($error_msg);
 				}
@@ -116,26 +116,6 @@ class Database_Connection
 		}
 
 		return new Database_Resultset($query_result);
-	}
-
-	function get_transaction_status()
-	{
-		return pg_transaction_status($this->connection);
-	}
-
-	function in_transaction()
-	{
-		return ($this->get_transaction_status() != PGSQL_TRANSACTION_IDLE);
-	}
-
-	function start_transaction()
-	{
-		DB::query("BEGIN")->execute($this);
-	}
-
-	function commit_transaction()
-	{
-		DB::query("COMMIT")->execute($this);
 	}
 
 	function rollback_transaction()
@@ -164,6 +144,21 @@ class Database_Connection
 		return $point_name;
 	}
 
+	function in_transaction()
+	{
+		return ($this->get_transaction_status() != PGSQL_TRANSACTION_IDLE);
+	}
+
+	function get_transaction_status()
+	{
+		return pg_transaction_status($this->connection);
+	}
+
+	function start_transaction()
+	{
+		DB::query("BEGIN")->execute($this);
+	}
+
 	function commit_savepoint($point_name)
 	{
 		if( ! $this->in_transaction() ){
@@ -179,6 +174,11 @@ class Database_Connection
 			$this->savepoint_counter = 0;
 			$this->commit_transaction();
 		}
+	}
+
+	function commit_transaction()
+	{
+		DB::query("COMMIT")->execute($this);
 	}
 
 	function rollback_savepoint($point_name)

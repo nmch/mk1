@@ -1,48 +1,21 @@
 <?
+
 class Response
 {
 	private $body;
 	private $status;
 	private $headers;
 	private $type;
-	
-	function __construct($body = NULL,$status = 200,array $headers = array(),$type = 'html')
+
+	function __construct($body = null, $status = 200, array $headers = [], $type = 'html')
 	{
 		Log::coredebug("[response] status=$status");
-		$this->body = $body;
-		$this->status = $status;
+		$this->body    = $body;
+		$this->status  = $status;
 		$this->headers = $headers;
-		$this->type = $type;
+		$this->type    = $type;
 	}
-	function send()
-	{
-		if( headers_sent() )
-			return NULL;
-		http_response_code($this->status);
-		foreach($this->headers as $key => $header){
-			header($key.':'.$header);
-		}
-		
-		if($this->body instanceof View){
-			$body = $this->body->render();
-			
-			//bodyがResponseオブジェクトだった場合(View::view()がResponseインスタンスを返した場合)、そこから先はそのインスタンスのsend()に任せる
-			if($body instanceof Response)
-				return $body->send();
-		}
-		else
-			$body = $this->body;
-		
-		echo $body;
-	}
-	function set_header($name,$value)
-	{
-		$this->headers[$name] = $value;
-	}
-	function set_status($status)
-	{
-		$this->status = $status;
-	}
+
 	static function redirect($url = '', $method = 'location', $redirect_code = 302)
 	{
 		$response = new static;
@@ -56,20 +29,52 @@ class Response
 //
 //		strpos($url, '*') !== false and $url = \Uri::segment_replace($url);
 
-		if ($method == 'location')
-		{
+		if( $method == 'location' ){
 			$response->set_header('Location', $url);
 		}
-		elseif ($method == 'refresh')
-		{
-			$response->set_header('Refresh', '0;url='.$url);
+		elseif( $method == 'refresh' ){
+			$response->set_header('Refresh', '0;url=' . $url);
 		}
-		else
-		{
+		else{
 			return;
 		}
 
 		$response->send(true);
 		exit;
+	}
+
+	function set_status($status)
+	{
+		$this->status = $status;
+	}
+
+	function set_header($name, $value)
+	{
+		$this->headers[$name] = $value;
+	}
+
+	function send()
+	{
+		if( headers_sent() ){
+			return null;
+		}
+		http_response_code($this->status);
+		foreach($this->headers as $key => $header){
+			header($key . ':' . $header);
+		}
+
+		if( $this->body instanceof View ){
+			$body = $this->body->render();
+
+			//bodyがResponseオブジェクトだった場合(View::view()がResponseインスタンスを返した場合)、そこから先はそのインスタンスのsend()に任せる
+			if( $body instanceof Response ){
+				return $body->send();
+			}
+		}
+		else{
+			$body = $this->body;
+		}
+
+		echo $body;
 	}
 }

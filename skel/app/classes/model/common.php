@@ -1,7 +1,8 @@
 <?php
+
 /**
  * モデル基底クラス
- * 
+ *
  * @package    App
  * @subpackage Model
  * @author     Hakonet Inc

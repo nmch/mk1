@@ -41,7 +41,7 @@ class Database_Pager
 		else{
 			$query_for_total = clone $this->db_query;
 		}
-		$query_for_total->clear_order_by()->clear_select()->select('count(*) as count')->set_fetch_as(NULL);
+		$query_for_total->clear_order_by()->clear_select()->select('count(*) as count')->set_fetch_as(null);
 
 		// 合計数といっしょに計算する内容の追加
 		$add_col_to_total = Arr::get($this->query_options, 'add_col_to_total');
@@ -105,12 +105,19 @@ class Database_Pager
 		return $r2;
 	}
 
-	function __set($name, $value)
+	function get($name)
 	{
-		return $this->set($name, $value);
+		if( method_exists($this->options, 'get') ){
+			return $this->options->get($name);
+		}
+		if( property_exists($this->options, $name) ){
+			return $this->options->$name;
+		}
+
+		return null;
 	}
 
-	function set($name, $value = NULL)
+	function set($name, $value = null)
 	{
 		if( method_exists($this->options, 'set') ){
 			$this->options->set($name, $value);
@@ -122,16 +129,9 @@ class Database_Pager
 		return $this;
 	}
 
-	function get($name)
+	function __set($name, $value)
 	{
-		if( method_exists($this->options, 'get') ){
-			return $this->options->get($name);
-		}
-		if( property_exists($this->options, $name) ){
-			return $this->options->$name;
-		}
-
-		return NULL;
+		return $this->set($name, $value);
 	}
 
 	function __call(string $name, array $arguments)

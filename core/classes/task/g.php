@@ -1,10 +1,12 @@
 <?php
+
 class Task_G
 {
-	function run($type,$name)
+	function run($type, $name)
 	{
-		$this->{"generate_".$type}($name);
+		$this->{"generate_" . $type}($name);
 	}
+
 	function t()
 	{
 		$tables = Database_Schema::retrieve();

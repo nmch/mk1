@@ -1,7 +1,8 @@
 <?php
+
 /**
  * アプリケーション共通ロジック
- * 
+ *
  * @package    App
  * @subpackage Logic
  * @author     Hakonet Inc

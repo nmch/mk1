@@ -12,19 +12,22 @@ class Crypt
 		$this->cipher->setKeyLength(256);
 		$this->cipher->setKey(Config::get('crypt.crypto_key'));
 	}
-	
-	function encode($value, $key = NULL)
+
+	function encode($value, $key = null)
 	{
-		if($key){
+		if( $key ){
 			$this->cipher->setKey($key);
 		}
+
 		return base64_encode($this->cipher->encrypt($value));
 	}
-	function decode($value, $key = NULL)
+
+	function decode($value, $key = null)
 	{
-		if($key){
+		if( $key ){
 			$this->cipher->setKey($key);
 		}
+
 		return $this->cipher->decrypt(base64_decode($value));
 	}
 }

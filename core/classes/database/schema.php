@@ -5,7 +5,7 @@ class Database_Schema
 	protected static $_attributes = [];
 	protected static $schema;
 
-	static function get($name = NULL, $default = NULL)
+	static function get($name = null, $default = null)
 	{
 		if( ! static::$schema ){
 			// キャッシュからの読み込みを試す
@@ -17,21 +17,6 @@ class Database_Schema
 		}
 
 		return $name ? Arr::get(static::$schema, $name, $default) : static::$schema;
-	}
-
-	/**
-	 * DBスキーマのキャッシュを消去する
-	 */
-	static function clear_cache()
-	{
-		static::$schema = NULL;
-
-		$cache_dir = Cache::cache_dir(NULL, 'core_db');
-		Log::coredebug("Database_Schema::clear_cache() cache_dir=$cache_dir", Mk::env());
-		if( is_dir($cache_dir) ){
-			File::rm($cache_dir);
-			Log::coredebug("cache clear success");
-		}
 	}
 
 	/**
@@ -48,28 +33,28 @@ class Database_Schema
 		}
 
 		$q                   = "
-			select
-				c.oid as table_oid,
-				relname as table,
-				relhaspkey as table_has_pkey,
-				attname as name,
-				attnum as num,
-				attndims as dims,
-				attnotnull as not_null,
-				typname as type,
-				typlen as len,
-				typcategory as type_cat,
-				description as desc
-			FROM PG_CLASS as c
+			SELECT
+				c.oid AS table_oid,
+				relname AS table,
+				relhaspkey AS table_has_pkey,
+				attname AS name,
+				attnum AS num,
+				attndims AS dims,
+				attnotnull AS not_null,
+				typname AS type,
+				typlen AS len,
+				typcategory AS type_cat,
+				description AS desc
+			FROM pg_class AS c
 			JOIN pg_namespace			n ON n.oid = c.relnamespace
-			JOIN PG_ATTRIBUTE			a ON a.ATTRELID = c.OID 
-			JOIN PG_TYPE				t ON t.OID = a.ATTTYPID 
-			LEFT JOIN pg_description	d ON objoid = c.oid and objsubid=a.attnum
-			
-			where c.relkind='r'
-			and n.nspname='public'
-			and attnum >= 0 and attisdropped is not true
-			order by attnum
+			JOIN pg_attribute			a ON a.attrelid = c.oid
+			JOIN pg_type				t ON t.oid = a.atttypid
+			LEFT JOIN pg_description	d ON objoid = c.oid AND objsubid=a.attnum
+
+			WHERE c.relkind='r'
+			AND n.nspname='public'
+			AND attnum >= 0 AND attisdropped IS NOT TRUE
+			ORDER BY attnum
 		";
 		$attributes          = DB::query($q)->execute();
 		static::$_attributes = $attributes;
@@ -94,5 +79,20 @@ class Database_Schema
 		}
 
 		return $tables;
+	}
+
+	/**
+	 * DBスキーマのキャッシュを消去する
+	 */
+	static function clear_cache()
+	{
+		static::$schema = null;
+
+		$cache_dir = Cache::cache_dir(null, 'core_db');
+		Log::coredebug("Database_Schema::clear_cache() cache_dir=$cache_dir", Mk::env());
+		if( is_dir($cache_dir) ){
+			File::rm($cache_dir);
+			Log::coredebug("cache clear success");
+		}
 	}
 }

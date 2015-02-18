@@ -11,7 +11,7 @@ class Session
 	function __construct()
 	{
 		$config         = array_merge([
-			], Config::get('session')
+		], Config::get('session')
 		);
 		static::$config = $config;
 
@@ -52,9 +52,13 @@ class Session
 		}
 	}
 
-	static function __callStatic($name, $arguments)
+	static function get($name, $default = null)
 	{
-		return call_user_func([self::instance(), $name], $arguments);
+		$value = Arr::get($_SESSION, $name, $default);
+
+		//Log::coredebug("[session] get $name : ",$value);
+		return $value;
+		//return array_key_exists($name,$_SESSION) ? $_SESSION[$name] : $default;
 	}
 
 	/**
@@ -63,6 +67,31 @@ class Session
 	static function flash_id()
 	{
 		return static::$config['flash_id'];
+	}
+
+	static function __callStatic($name, $arguments)
+	{
+		return call_user_func([self::instance(), $name], $arguments);
+	}
+
+	/**
+	 * フラッシュセッションデータを得る
+	 *
+	 * フラッシュデータは常にstatic::$flashからのみ読み込む
+	 *
+	 * @param string $name    key
+	 * @param mixed  $default default value
+	 *
+	 * @return array|mixed
+	 */
+	static function get_flash($name = null, $default = null)
+	{
+		if( $name ){
+			return Arr::get(static::$flash, $name, $default);
+		}
+		else{
+			return static::$flash;
+		}
 	}
 
 	/**
@@ -85,37 +114,6 @@ class Session
 	}
 
 	/**
-	 * フラッシュセッションデータを得る
-	 *
-	 * フラッシュデータは常にstatic::$flashからのみ読み込む
-	 *
-	 * @param string $name    key
-	 * @param mixed  $default default value
-	 *
-	 * @return array|mixed
-	 */
-	static function get_flash($name = NULL, $default = NULL)
-	{
-		if( $name ){
-			return Arr::get(static::$flash, $name, $default);
-		}
-		else{
-			return static::$flash;
-		}
-	}
-
-	/**
-	 * フラッシュセッションデータを削除する
-	 *
-	 * ロードされたフラッシュデータはセッションからは消去される。
-	 * Viewから呼び出される。
-	 */
-	static function clear_flash()
-	{
-		static::delete(static::flash_id());
-	}
-
-	/**
 	 * @param string $name  key
 	 * @param mixed  $value value
 	 *
@@ -133,13 +131,15 @@ class Session
 		return $_SESSION[$name];
 	}
 
-	static function get($name, $default = NULL)
+	/**
+	 * フラッシュセッションデータを削除する
+	 *
+	 * ロードされたフラッシュデータはセッションからは消去される。
+	 * Viewから呼び出される。
+	 */
+	static function clear_flash()
 	{
-		$value = Arr::get($_SESSION, $name, $default);
-
-		//Log::coredebug("[session] get $name : ",$value);
-		return $value;
-		//return array_key_exists($name,$_SESSION) ? $_SESSION[$name] : $default;
+		static::delete(static::flash_id());
 	}
 
 	static function delete($name)

@@ -1,7 +1,8 @@
 <?php
+
 /**
  * 日次タスク
- * 
+ *
  * @package    App
  * @subpackage Task
  * @author     Hakonet Inc

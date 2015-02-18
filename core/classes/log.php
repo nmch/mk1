@@ -16,11 +16,6 @@
 class Log
 {
 	use Singleton;
-	static private $drivers = [];
-	static         $threshold;
-	static         $date_format;
-	static         $makelogstr_function;
-
 	const ALL       = 0;
 	const COREDEBUG = 100;
 	const DEBUG     = 200;
@@ -31,6 +26,10 @@ class Log
 	const CRITICAL  = 600;
 	const ALERT     = 650;
 	const EMERGENCY = 700;
+	static         $threshold;
+	static         $date_format;
+	static         $makelogstr_function;
+	static private $drivers = [];
 
 	function __construct()
 	{
@@ -107,7 +106,7 @@ class Log
 			}
 			$level_num = constant($level_const_name);
 			if( $level_num < static::$threshold ){
-				return FALSE;
+				return false;
 			}
 
 			$messages = [$message];

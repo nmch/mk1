@@ -7,10 +7,10 @@ class View
 	protected $af;
 	protected $smarty;
 	protected $template_filename;
-	private   $do_not_clear_flash = false;
 	protected $data;
+	private   $do_not_clear_flash = false;
 
-	function __construct($template_filename = NULL, $data = [], $do_not_clear_flash = false)
+	function __construct($template_filename = null, $data = [], $do_not_clear_flash = false)
 	{
 		$this->af                 = Actionform::instance();
 		$this->do_not_clear_flash = $do_not_clear_flash;
@@ -68,8 +68,15 @@ class View
 	{
 	}
 
-	public function view()
+	function before()
 	{
+	}
+
+	function nofilter()
+	{
+		$this->set_smarty_environment('default_modifiers', []);
+
+		return $this;
 	}
 
 	function set_smarty_environment($name, $value)
@@ -79,11 +86,15 @@ class View
 		return $this;
 	}
 
-	function nofilter()
+	function __toString()
 	{
-		$this->set_smarty_environment('default_modifiers', []);
+		try {
+			return $this->render();
+		} catch(Exception $e){
+			Log::error("Smarty error : {$e->getMessage()} at {$e->getFile()} (line:{$e->getLine()})");
 
-		return $this;
+			return '';
+		}
 	}
 
 	function render()
@@ -117,33 +128,22 @@ class View
 		return $this->smarty->fetch($this->template_filename);
 	}
 
-	function template_exists($template_filename)
-	{
-		return $this->smarty->templateExists($template_filename);
-	}
-
-	function __toString()
-	{
-		try {
-			return $this->render();
-		} catch(Exception $e){
-			Log::error("Smarty error : {$e->getMessage()} at {$e->getFile()} (line:{$e->getLine()})");
-
-			return '';
-		}
-	}
-
-	function __destruct()
-	{
-		$this->after();
-	}
-
-	function before()
+	public function view()
 	{
 	}
 
 	function after_view()
 	{
+	}
+
+	function template_exists($template_filename)
+	{
+		return $this->smarty->templateExists($template_filename);
+	}
+
+	function __destruct()
+	{
+		$this->after();
 	}
 
 	function after()

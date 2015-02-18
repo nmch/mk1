@@ -8,18 +8,11 @@ class Database_Type
 	protected static $type;
 	protected static $type_hashed_by_oid;
 
-	static function get($name = NULL, $default = NULL)
+	static function get($name = null, $default = null)
 	{
 		static::make_cache();
 
 		return $name ? Arr::get(static::$type, $name, $default) : static::$type;
-	}
-
-	static function get_by_oid($oid = NULL, $default = NULL)
-	{
-		static::make_cache();
-
-		return $oid ? Arr::get(static::$type_hashed_by_oid, $oid, $default) : static::$type_hashed_by_oid;
 	}
 
 	static function make_cache()
@@ -52,5 +45,12 @@ class Database_Type
 		unset($r);
 
 		return $type_list;
+	}
+
+	static function get_by_oid($oid = null, $default = null)
+	{
+		static::make_cache();
+
+		return $oid ? Arr::get(static::$type_hashed_by_oid, $oid, $default) : static::$type_hashed_by_oid;
 	}
 }

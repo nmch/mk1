@@ -1,4 +1,4 @@
 <?
-return array(
-	'cache_dir' => PROJECTPATH.'tmp/cache/',
-);
+return [
+	'cache_dir' => PROJECTPATH . 'tmp/cache/',
+];

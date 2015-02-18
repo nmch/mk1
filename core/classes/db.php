@@ -13,19 +13,6 @@ class DB
 	private $connections = [];
 
 	/**
-	 * クエリオブジェクトを作成する
-	 *
-	 * @param       $query
-	 * @param array $parameters
-	 *
-	 * @return Database_Query
-	 */
-	static function query($query, $parameters = [])
-	{
-		return new Database_Query($query, $parameters);
-	}
-
-	/**
 	 * @param $name
 	 * @param $args
 	 *
@@ -55,6 +42,26 @@ class DB
 		return $dbconn->escape_literal($value);
 	}
 
+	/**
+	 * データベース接続を取得する
+	 *
+	 * @param string|Database_Connection|null $connection
+	 *
+	 * @return Database_Connection
+	 * @throws MkException
+	 */
+	static function get_database_connection($connection = null)
+	{
+		if( ! is_object($connection) ){
+			$connection = Database_Connection::instance($connection);
+		}
+		if( ! $connection instanceof Database_Connection ){
+			throw new MkException('invalid connection');
+		}
+
+		return $connection;
+	}
+
 	static function expr($expr)
 	{
 		return new Database_Expression($expr);
@@ -69,14 +76,14 @@ class DB
 		}
 		if( $typecat == 'S' ){
 			$data = array_map(function ($str) {
-					return '"' . pg_escape_string($str) . '"';
-				}, $data
+				return '"' . pg_escape_string($str) . '"';
+			}, $data
 			);
 		}
 		else{
 			$data = array_map(function ($str) {
-					return is_numeric($str) ? $str : 'NULL';
-				}, $data
+				return is_numeric($str) ? $str : 'NULL';
+			}, $data
 			);
 		}
 		$str = '{' . implode($delimiter, $data) . '}';
@@ -84,27 +91,7 @@ class DB
 		return $str;
 	}
 
-	/**
-	 * データベース接続を取得する
-	 *
-	 * @param string|Database_Connection|null $connection
-	 *
-	 * @return Database_Connection
-	 * @throws MkException
-	 */
-	static function get_database_connection($connection = NULL)
-	{
-		if( ! is_object($connection) ){
-			$connection = Database_Connection::instance($connection);
-		}
-		if( ! $connection instanceof Database_Connection ){
-			throw new MkException('invalid connection');
-		}
-
-		return $connection;
-	}
-
-	static function copy_from($table_name, $rows, $connection = NULL, $delimiter = "\t", $null_as = '')
+	static function copy_from($table_name, $rows, $connection = null, $delimiter = "\t", $null_as = '')
 	{
 		//Log::coredebug($table_name,$rows);
 		$dbconn = static::get_database_connection($connection);
@@ -130,42 +117,55 @@ class DB
 		Database_Schema::clear_cache();
 	}
 
+	/**
+	 * クエリオブジェクトを作成する
+	 *
+	 * @param       $query
+	 * @param array $parameters
+	 *
+	 * @return Database_Query
+	 */
+	static function query($query, $parameters = [])
+	{
+		return new Database_Query($query, $parameters);
+	}
+
 	static function pager($db_query, $options, $query_options = [])
 	{
 		return new Database_Pager($db_query, $options, $query_options);
 	}
 
-	static function in_transaction($connection = NULL)
+	static function in_transaction($connection = null)
 	{
 		return static::get_database_connection($connection)->in_transaction();
 	}
 
-	static function start_transaction($connection = NULL)
+	static function start_transaction($connection = null)
 	{
 		return static::get_database_connection($connection)->start_transaction();
 	}
 
-	static function commit_transaction($connection = NULL)
+	static function commit_transaction($connection = null)
 	{
 		return static::get_database_connection($connection)->commit_transaction();
 	}
 
-	static function rollback_transaction($connection = NULL)
+	static function rollback_transaction($connection = null)
 	{
 		return static::get_database_connection($connection)->rollback_transaction();
 	}
 
-	static function place_savepoint($connection = NULL)
+	static function place_savepoint($connection = null)
 	{
 		return static::get_database_connection($connection)->place_savepoint();
 	}
 
-	static function commit_savepoint($point_name, $connection = NULL)
+	static function commit_savepoint($point_name, $connection = null)
 	{
 		return static::get_database_connection($connection)->commit_savepoint($point_name);
 	}
 
-	static function rollback_savepoint($point_name, $connection = NULL)
+	static function rollback_savepoint($point_name, $connection = null)
 	{
 		return static::get_database_connection($connection)->rollback_savepoint($point_name);
 	}

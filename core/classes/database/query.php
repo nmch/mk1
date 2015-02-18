@@ -93,64 +93,6 @@ class Database_Query
 		}
 	}
 
-	function get_affected_rows()
-	{
-		/*
-		if($this->result instanceof Database_Resultset)
-			return $this->result->get_affected_rows();
-		else
-			return NULL;
-		*/
-		return $this->affected_rows;
-	}
-
-	/**
-	 * @param $fetch_as
-	 *
-	 * @return Database_Query
-	 */
-	function set_fetch_as($fetch_as)
-	{
-		$this->fetch_as = $fetch_as;
-
-		return $this;
-	}
-
-	function get_fetch_as()
-	{
-		return $this->fetch_as;
-	}
-
-	/**
-	 * @param $sql
-	 *
-	 * @return Database_Query
-	 * @throws MkException
-	 */
-	public function set_sql($sql)
-	{
-		if( ! is_string($sql) ){
-			throw new MkException('sql must be a string');
-		}
-		$this->_sql = $sql;
-
-		return $this;
-	}
-
-	public function get_sql($with_parameters = false)
-	{
-		if( $this->_query_type ){
-			$this->compile();
-		}
-
-		if( $with_parameters ){
-			return [$this->_sql, $this->_parameters];
-		}
-		else{
-			return $this->_sql;
-		}
-	}
-
 	/**
 	 * @return Database_Query
 	 * @throws MkException
@@ -162,6 +104,44 @@ class Database_Query
 		}
 		$this->clear_parameter_index();
 		$this->_sql = $this->{'compile_' . $this->_query_type}();
+
+		return $this;
+	}
+
+	/**
+	 * @return Database_Query
+	 */
+	function clear_parameter_index()
+	{
+		$this->_parameters_index = 1;
+
+		return $this;
+	}
+
+	function get_affected_rows()
+	{
+		/*
+		if($this->result instanceof Database_Resultset)
+			return $this->result->get_affected_rows();
+		else
+			return NULL;
+		*/
+		return $this->affected_rows;
+	}
+
+	function get_fetch_as()
+	{
+		return $this->fetch_as;
+	}
+
+	/**
+	 * @param $fetch_as
+	 *
+	 * @return Database_Query
+	 */
+	function set_fetch_as($fetch_as)
+	{
+		$this->fetch_as = $fetch_as;
 
 		return $this;
 	}
@@ -198,109 +178,21 @@ class Database_Query
 		return $sql;
 	}
 
-	public function compile_insert()
+	function parameter($value)
 	{
-		$table = is_array($this->_query_from) ? reset($this->_query_from) : $this->_query_from;
-		if( ! $table ){
-			throw new Exception('table required');
-		}
+		if( is_array($value) ){
+			$indexes = [];
+			foreach($value as $_value){
+				$indexes[] = $this->parameter($_value);
+			}
 
-		$sql = "INSERT INTO $table ";
-		if( ! $this->_query_values ){
-			$sql .= "DEFAULT VALUES";
+			return $indexes;
 		}
 		else{
-			$sql .= '(' . implode(',', array_keys($this->_query_values)) . ')';
-			$ary = [];
-			foreach($this->_query_values as $value){
-				$ary[] = '$' . $this->parameter($value);
-			}
-			$sql .= ' VALUES (' . implode(',', $ary) . ')';
-		}
+			$this->_parameters[$this->_parameters_index - 1] = $value;
 
-		$where = $this->build_where();
-		if( $where ){
-			$sql .= " WHERE $where";
+			return $this->_parameters_index++;
 		}
-
-		if( $this->_query_returning ){
-			$sql .= " RETURNING " . (is_array($this->_query_returning) ? implode(',', $this->_query_returning) : $this->_query_returning);
-		}
-
-		return $sql;
-	}
-
-	public function compile_select()
-	{
-		//Log::coredebug("_query_columns=",$this->_query_columns);
-		$sql = '';
-		if( $this->_query_with ){
-			$sql_with = [];
-			foreach($this->_query_with as $with){
-				$sql_with[] = Arr::get($with, 'name') . ' AS (' . Arr::get($with, 'query') . ')';
-			}
-			$sql .= "WITH " . implode(',', $sql_with) . " ";
-		}
-		$sql .= "SELECT ";
-		if( $this->_query_distinct ){
-			$sql .= " DISTINCT ";
-		}
-		$sql .= $this->_query_columns ? implode(',', $this->_query_columns) : '*';
-		if( $this->_query_from ){
-			$sql .= " FROM " . implode(',', $this->_query_from);
-		}
-		$where = $this->build_where();
-		if( $this->_query_join ){
-			$sql .= ' ' . implode(' ', $this->_query_join);
-		}
-		if( $where ){
-			$sql .= " WHERE $where";
-		}
-		if( $this->_query_orderby ){
-			$sql .= " ORDER BY " . implode(',', array_map(function ($ary) {
-						return implode(' ', $ary);
-					}, $this->_query_orderby
-					)
-				);
-		}
-		if( $this->_query_limit ){
-			$sql .= " LIMIT $this->_query_limit";
-		}
-		if( $this->_query_offset ){
-			$sql .= " OFFSET $this->_query_offset";
-		}
-
-		//Log::coredebug("[db query] sql=$sql");
-		return $sql;
-	}
-
-	public function compile_delete()
-	{
-		$sql = "DELETE ";
-		$sql .= " FROM " . implode(',', $this->_query_from);
-		$where = $this->build_where();
-		if( $where ){
-			$sql .= " WHERE $where";
-		}
-		if( $this->_query_limit ){
-			$sql .= " LIMIT $this->_query_limit";
-		}
-		if( $this->_query_returning ){
-			$sql .= " RETURNING " . (is_array($this->_query_returning) ? implode(',', $this->_query_returning) : $this->_query_returning);
-		}
-
-		return $sql;
-	}
-
-	/**
-	 * where条件が設定されているか
-	 *
-	 * @return boolean
-	 */
-	function condition_where_exists()
-	{
-		//Log::coredebug("condition_where_exists=",$this->_query_where,!empty($this->_query_where));
-		return ( ! empty($this->_query_where));
 	}
 
 	function build_where()
@@ -439,31 +331,139 @@ class Database_Query
 		return $sql;
 	}
 
-	function parameter($value)
+	public function get_sql($with_parameters = false)
 	{
-		if( is_array($value) ){
-			$indexes = [];
-			foreach($value as $_value){
-				$indexes[] = $this->parameter($_value);
-			}
+		if( $this->_query_type ){
+			$this->compile();
+		}
 
-			return $indexes;
+		if( $with_parameters ){
+			return [$this->_sql, $this->_parameters];
 		}
 		else{
-			$this->_parameters[$this->_parameters_index - 1] = $value;
-
-			return $this->_parameters_index++;
+			return $this->_sql;
 		}
 	}
 
 	/**
+	 * @param $sql
+	 *
 	 * @return Database_Query
+	 * @throws MkException
 	 */
-	function clear_parameter_index()
+	public function set_sql($sql)
 	{
-		$this->_parameters_index = 1;
+		if( ! is_string($sql) ){
+			throw new MkException('sql must be a string');
+		}
+		$this->_sql = $sql;
 
 		return $this;
+	}
+
+	public function compile_insert()
+	{
+		$table = is_array($this->_query_from) ? reset($this->_query_from) : $this->_query_from;
+		if( ! $table ){
+			throw new Exception('table required');
+		}
+
+		$sql = "INSERT INTO $table ";
+		if( ! $this->_query_values ){
+			$sql .= "DEFAULT VALUES";
+		}
+		else{
+			$sql .= '(' . implode(',', array_keys($this->_query_values)) . ')';
+			$ary = [];
+			foreach($this->_query_values as $value){
+				$ary[] = '$' . $this->parameter($value);
+			}
+			$sql .= ' VALUES (' . implode(',', $ary) . ')';
+		}
+
+		$where = $this->build_where();
+		if( $where ){
+			$sql .= " WHERE $where";
+		}
+
+		if( $this->_query_returning ){
+			$sql .= " RETURNING " . (is_array($this->_query_returning) ? implode(',', $this->_query_returning) : $this->_query_returning);
+		}
+
+		return $sql;
+	}
+
+	public function compile_select()
+	{
+		//Log::coredebug("_query_columns=",$this->_query_columns);
+		$sql = '';
+		if( $this->_query_with ){
+			$sql_with = [];
+			foreach($this->_query_with as $with){
+				$sql_with[] = Arr::get($with, 'name') . ' AS (' . Arr::get($with, 'query') . ')';
+			}
+			$sql .= "WITH " . implode(',', $sql_with) . " ";
+		}
+		$sql .= "SELECT ";
+		if( $this->_query_distinct ){
+			$sql .= " DISTINCT ";
+		}
+		$sql .= $this->_query_columns ? implode(',', $this->_query_columns) : '*';
+		if( $this->_query_from ){
+			$sql .= " FROM " . implode(',', $this->_query_from);
+		}
+		$where = $this->build_where();
+		if( $this->_query_join ){
+			$sql .= ' ' . implode(' ', $this->_query_join);
+		}
+		if( $where ){
+			$sql .= " WHERE $where";
+		}
+		if( $this->_query_orderby ){
+			$sql .= " ORDER BY " . implode(',', array_map(function ($ary) {
+						return implode(' ', $ary);
+					}, $this->_query_orderby
+					)
+				);
+		}
+		if( $this->_query_limit ){
+			$sql .= " LIMIT $this->_query_limit";
+		}
+		if( $this->_query_offset ){
+			$sql .= " OFFSET $this->_query_offset";
+		}
+
+		//Log::coredebug("[db query] sql=$sql");
+		return $sql;
+	}
+
+	public function compile_delete()
+	{
+		$sql = "DELETE ";
+		$sql .= " FROM " . implode(',', $this->_query_from);
+		$where = $this->build_where();
+		if( $where ){
+			$sql .= " WHERE $where";
+		}
+		if( $this->_query_limit ){
+			$sql .= " LIMIT $this->_query_limit";
+		}
+		if( $this->_query_returning ){
+			$sql .= " RETURNING " . (is_array($this->_query_returning) ? implode(',', $this->_query_returning) : $this->_query_returning);
+		}
+
+		return $sql;
+	}
+
+	/**
+	 * where条件が設定されているか
+	 *
+	 * @return boolean
+	 */
+	function condition_where_exists()
+	{
+		//Log::coredebug("condition_where_exists=",$this->_query_where,!empty($this->_query_where));
+		return ( ! empty($this->_query_where));
 	}
 
 	/**
@@ -549,6 +549,18 @@ class Database_Query
 	}
 
 	/**
+	 * @param string $from
+	 *
+	 * @return Database_Query
+	 */
+	function from($from)
+	{
+		$this->_query_from[] = $from;
+
+		return $this;
+	}
+
+	/**
 	 * INSERTクエリを作成
 	 *
 	 * @param string $table テーブル名
@@ -576,18 +588,6 @@ class Database_Query
 	}
 
 	/**
-	 * @param string $from
-	 *
-	 * @return Database_Query
-	 */
-	function from($from)
-	{
-		$this->_query_from[] = $from;
-
-		return $this;
-	}
-
-	/**
 	 * @param array $values
 	 *
 	 * @return Database_Query
@@ -595,6 +595,18 @@ class Database_Query
 	function set(array $values)
 	{
 		return $this->values($values);
+	}
+
+	/**
+	 * @param array $values
+	 *
+	 * @return Database_Query
+	 */
+	function values(array $values)
+	{
+		$this->_query_values = array_merge($this->_query_values, $values);
+
+		return $this;
 	}
 
 	/**
@@ -611,18 +623,6 @@ class Database_Query
 		else{
 			$this->_query_with[] = ['name' => $with, 'query' => $with_query];
 		}
-
-		return $this;
-	}
-
-	/**
-	 * @param array $values
-	 *
-	 * @return Database_Query
-	 */
-	function values(array $values)
-	{
-		$this->_query_values = array_merge($this->_query_values, $values);
 
 		return $this;
 	}
@@ -673,6 +673,26 @@ class Database_Query
 	}
 
 	/**
+	 * @return Database_Query
+	 */
+	public function and_where_open()
+	{
+		$this->_query_where[] = ['AND' => '('];
+
+		return $this;
+	}
+
+	/**
+	 * @return Database_Query
+	 */
+	public function and_where_close()
+	{
+		$this->_query_where[] = ['AND' => ')'];
+
+		return $this;
+	}
+
+	/**
 	 * @param string $column
 	 * @param string $op
 	 * @param mixed  $value
@@ -713,45 +733,9 @@ class Database_Query
 	/**
 	 * @return Database_Query
 	 */
-	public function where_open()
-	{
-		return $this->and_where_open();
-	}
-
-	/**
-	 * @return Database_Query
-	 */
-	public function and_where_open()
-	{
-		$this->_query_where[] = ['AND' => '('];
-
-		return $this;
-	}
-
-	/**
-	 * @return Database_Query
-	 */
 	public function or_where_open()
 	{
 		$this->_query_where[] = ['OR' => '('];
-
-		return $this;
-	}
-
-	/**
-	 * @return Database_Query
-	 */
-	public function where_close()
-	{
-		return $this->and_where_close();
-	}
-
-	/**
-	 * @return Database_Query
-	 */
-	public function and_where_close()
-	{
-		$this->_query_where[] = ['AND' => ')'];
 
 		return $this;
 	}
@@ -764,6 +748,22 @@ class Database_Query
 		$this->_query_where[] = ['OR' => ')'];
 
 		return $this;
+	}
+
+	/**
+	 * @return Database_Query
+	 */
+	public function where_open()
+	{
+		return $this->and_where_open();
+	}
+
+	/**
+	 * @return Database_Query
+	 */
+	public function where_close()
+	{
+		return $this->and_where_close();
 	}
 
 	/**

@@ -1,6 +1,6 @@
 <?
-return array(
-	'crypto_key'  => NULL,
-	'crypto_iv'   => NULL,
-	'crypto_hmac' => NULL,
-);
+return [
+	'crypto_key'  => null,
+	'crypto_iv'   => null,
+	'crypto_hmac' => null,
+];

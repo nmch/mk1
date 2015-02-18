@@ -33,14 +33,24 @@ class Model implements Iterator, Countable, ArrayAccess
 	*/
 
 	protected static $_primary_keys = [];
-
+	public    $_data                 = [];
 	protected $_is_new               = true;
 	protected $_original             = [];
 	protected $_original_before_save = [];
 	protected $_iter_keylist         = [];
-	protected $_iter_curkey          = 0;
-	protected $_save_diff            = [];    //save()時にとられるdiff
-	public    $_data                 = [];
+		protected $_iter_curkey          = 0;    //save()時にとられるdiff
+protected $_save_diff            = [];
+
+	function __construct($options = [])
+	{
+		if( empty($options['deferred_init']) ){
+			$this->_is_new = false;
+		}
+
+		$this->after_load();
+
+		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
+	}
 
 	static function __callStatic($name, $arguments)
 	{
@@ -49,6 +59,172 @@ class Model implements Iterator, Countable, ArrayAccess
 
 			return static::find(reset($arguments), $column_name);
 		}
+	}
+
+	/**
+	 * 特定の行を取得する
+	 *
+	 * find(ID, ID_FIELD, IGNORE_CONDITION_LABELS)
+	 * ID_FIELDがfalse判定の場合はプライマリキーを使用する
+	 */
+	static function find()
+	{
+		$argc              = func_num_args();
+		$args              = func_get_args();
+		$id                = Arr::get($args, '0');
+		$id_field          = Arr::get($args, '1');
+		$ignore_conditions = Arr::get($args, '2');
+
+		$query = static::_build_select_query();
+		$query->ignore_conditions($ignore_conditions);
+
+		if( $argc ){
+			if( $id === 'all' ){    // 型判定なし(==)で比較すると文字列を比較する際に文字列が数値にキャストされてしまう。そのため$idに0が入っているとtrueになるので注意。
+				return $query->get();
+			}
+			else{
+				//Log::info("[Model] find single record $id",debug_backtrace());
+				if( ! $id_field ){
+					$id_field = static::primary_key();
+				}
+				$r = $query->where($id_field, $id)->get_one();
+				if( $r === null ){
+					throw new RecordNotFoundException;
+				}
+
+				return $r;
+			}
+		}
+		else{
+			return $query;
+		}
+	}
+
+	protected static function _build_select_query()
+	{
+		$query = new Model_Query(get_called_class());
+		$query->select('*');
+
+		$join = static::_get_join_items();
+		if( $join ){
+			$query->join(implode(" ", $join));
+		}
+
+		if( ! empty(static::$_add_field) ){
+			$query->select(static::$_add_field);
+		}
+
+		return $query;
+	}
+
+	protected static function _get_join_items()
+	{
+		$join = isset(static::$_join) ? static::$_join : [];
+		if( ! is_array($join) ){
+			$join = [$join];
+		}
+
+		$parent = get_parent_class(get_called_class());
+		if( $parent ){
+			$join = array_merge($join, $parent::_get_join_items());
+		}
+		$join = array_unique($join);
+		ksort($join);
+
+		//Log::debug(get_called_class(),$join);
+
+		return $join;
+	}
+
+	static function primary_key()
+	{
+		if( empty(static::$_primary_key) ){
+			//スキーマからプライマリキーを取得
+			$schema = Database_Schema::get(static::table(), []);
+			if( Arr::get($schema, 'has_pkey') ){
+				$primary_key = Arr::get($schema, 'primary_key', []);
+			}
+			else{
+				throw new MkException('empty primary key on ' . static::table());
+			}
+		}
+		else{
+			$primary_key = static::$_primary_key;
+		}
+
+		if( is_array($primary_key) ){
+			if( count($primary_key) == 0 ){
+				throw new MkException('empty primary key');
+			}
+			if( count($primary_key) != 1 ){
+				throw new MkException('too many primary keys');
+			}
+
+			$primary_key = reset($primary_key);
+		}
+
+		static::$_primary_keys[get_called_class()] = $primary_key;
+
+		return $primary_key;
+	}
+
+	static function table()
+	{
+		return isset(static::$_table_name) ? static::$_table_name : Inflector::tableize(get_called_class());
+	}
+
+	/**
+	 * データ取得時の強制条件を取得する
+	 *
+	 * Model_Query::get() から呼ばれる
+	 */
+	static function conditions()
+	{
+		return isset(static::$_conditions) ? static::$_conditions : [];
+	}
+
+	static function get_all()
+	{
+		return static::find('all');
+	}
+
+	/**
+	 * 指定カラムでユニークとなるコードを生成する
+	 *
+	 * @returns string
+	 * @throws Exception
+	 */
+	public static function make_unique_code($column_name, $length = 32, $char_seed = [])
+	{
+		$unique_code = "";
+		for($c = 0; $c < 100; $c++){
+			$unique_code_candidate = Mk::make_random_code($length, $char_seed);
+
+			$r = DB::select($column_name)->from(static::table())->where($column_name, $unique_code_candidate)->execute();
+			if( $r->count() == 0 ){
+				$unique_code = $unique_code_candidate;
+				break;
+			}
+		}
+		if( ! $unique_code ){
+			throw new Exception('generate unique id failed');
+		}
+
+		return $unique_code;
+	}
+
+	function set_array(array $data, $force_original = false)
+	{
+		foreach($data as $key => $value){
+			$this->set($key, $value, $force_original);
+		}
+
+		return $this;
+	}
+
+	function __get($name)
+	{
+		return $this->get($name);
 	}
 
 	function __set($name, $arg)
@@ -72,23 +248,63 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $this;
 	}
 
-	function set_array(array $data, $force_original = false)
+	function get($name, $default = null, $rel_options = [])
 	{
-		foreach($data as $key => $value){
-			$this->set($key, $value, $force_original);
+		if( array_key_exists($name, $this->_data) ){
+			return $this->_data[$name];
+		}
+		else{
+			if( array_key_exists($name, $this->_original) ){
+				return $this->_original[$name];
+			}
+			else{
+				if( isset(static::$_belongs_to) && array_key_exists($name, static::$_belongs_to) ){
+					return $this->get_related('belongs_to', Arr::merge(static::$_belongs_to[$name], $rel_options));
+				}
+				else{
+					if( isset(static::$_has_many) && array_key_exists($name, static::$_has_many) ){
+						return $this->get_related('has_many', Arr::merge(static::$_has_many[$name], $rel_options));
+					}
+					else{
+						return $default;
+					}
+				}
+			}
+		}
+	}
+
+	function get_related($relation_type, $options)
+	{
+		//Log::coredebug("rel : $relation_type",$options);
+		$query = null;
+
+		if( $relation_type == 'belongs_to' || $relation_type == 'has_many' ){
+			$query = forward_static_call_array([$options['model_to'], 'find'], [])->where($options['key_to'], $this->$options['key_from']);
+			if( isset($options['condition']) && is_array($options['condition']) ){
+				foreach($options['condition'] as $condition){
+					if( isset($condition['method']) && isset($condition['args']) ){
+						//Log::coredebug("[model rel] call {$condition['method']}",$condition['args']);
+						call_user_func_array([$query, $condition['method']], $condition['args']);
+					}
+				}
+			}
 		}
 
-		return $this;
-	}
+		switch($relation_type){
+			case 'belongs_to':
+				$target = $query->get_one();
+				if( $target === null && Arr::get($options, 'autogen') ){
+					// autogenモードの場合は自動的にオブジェクトを作って返す (saveはしない)
+					$target                       = new $options['model_to'];
+					$target->{$options['key_to']} = $this->{$options['key_from']};
+				}
 
-	function __get($name)
-	{
-		return $this->get($name);
-	}
-
-	function get_all_data()
-	{
-		return array_merge($this->_original, $this->_data);
+				return $target;
+			case 'has_many':
+				return $query->get();
+			default:
+				throw new MkException('invalid relation type');
+		}
 	}
 
 	/**
@@ -115,34 +331,21 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $this;
 	}
 
-	function get($name, $default = NULL, $rel_options = [])
+	function columns()
 	{
-		if( array_key_exists($name, $this->_data) ){
-			return $this->_data[$name];
-		}
-		else{
-			if( array_key_exists($name, $this->_original) ){
-				return $this->_original[$name];
-			}
-			else{
-				if( isset(static::$_belongs_to) && array_key_exists($name, static::$_belongs_to) ){
-					return $this->get_related('belongs_to', Arr::merge(static::$_belongs_to[$name], $rel_options));
-				}
-				else{
-					if( isset(static::$_has_many) && array_key_exists($name, static::$_has_many) ){
-						return $this->get_related('has_many', Arr::merge(static::$_has_many[$name], $rel_options));
-					}
-					else{
-						return $default;
-					}
-				}
-			}
-		}
+		$schema = $this->schema();
+
+		return array_keys($schema['columns']);
 	}
 
-	function is_exist($name)
+	function schema()
 	{
-		return (array_key_exists($name, $this->_data) || array_key_exists($name, $this->_original));
+		return Database_Schema::get($this->table());
+	}
+
+	function __unset($name)
+	{
+		$this->_unset($name);
 	}
 
 	function _unset($name)
@@ -155,16 +358,27 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 	}
 
-	function __unset($name)
-	{
-		$this->_unset($name);
-	}
-
 	function __clone()
 	{
 		$this->_data     = array_merge($this->_original, $this->_data);
 		$this->_original = [];
 		$this->_unset($this->primary_key());
+	}
+
+	/**
+	 * 現在のデータの内容を新しいレコードに保存して、新しいオブジェクトを返す
+	 *
+	 * duplicate()がデータを保存しないのに対し、これはデータを保存し新しいIDができる
+	 *
+	 * @param array $ignore_list
+	 *
+	 * @return \static
+	 */
+	function get_clone($ignore_list = [])
+	{
+		$new_obj = $this->duplicate($ignore_list);
+
+		return $new_obj->save();
 	}
 
 	/**
@@ -191,90 +405,9 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $new;
 	}
 
-	/**
-	 * 現在のデータの内容を新しいレコードに保存して、新しいオブジェクトを返す
-	 *
-	 * duplicate()がデータを保存しないのに対し、これはデータを保存し新しいIDができる
-	 *
-	 * @param array $ignore_list
-	 *
-	 * @return \static
-	 */
-	function get_clone($ignore_list = [])
-	{
-		$new_obj = $this->duplicate($ignore_list);
-
-		return $new_obj->save();
-	}
-
-	function get_related($relation_type, $options)
-	{
-		//Log::coredebug("rel : $relation_type",$options);
-		$query = NULL;
-
-		if( $relation_type == 'belongs_to' || $relation_type == 'has_many' ){
-			$query = forward_static_call_array([$options['model_to'], 'find'], [])->where($options['key_to'], $this->$options['key_from']);
-			if( isset($options['condition']) && is_array($options['condition']) ){
-				foreach($options['condition'] as $condition){
-					if( isset($condition['method']) && isset($condition['args']) ){
-						//Log::coredebug("[model rel] call {$condition['method']}",$condition['args']);
-						call_user_func_array([$query, $condition['method']], $condition['args']);
-					}
-				}
-			}
-		}
-
-		switch($relation_type){
-			case 'belongs_to':
-				$target = $query->get_one();
-				if( $target === NULL && Arr::get($options, 'autogen') ){
-					// autogenモードの場合は自動的にオブジェクトを作って返す (saveはしない)
-					$target                       = new $options['model_to'];
-					$target->{$options['key_to']} = $this->{$options['key_from']};
-				}
-
-				return $target;
-			case 'has_many':
-				return $query->get();
-			default:
-				throw new MkException('invalid relation type');
-		}
-	}
-
-	function as_array($array_key = NULL)
+	function get_all_data()
 	{
 		return array_merge($this->_original, $this->_data);
-	}
-
-	/**
-	 * 指定されたカラムまたはデータのどれかが変更されたかをチェックする
-	 *
-	 * @param null|string $column
-	 *
-	 * @return bool
-	 */
-	function is_changed($column = NULL)
-	{
-		if( $column && array_key_exists($column, $this->_data) ){
-			return true;
-		}
-		if( $column === NULL && count($this->_data) ){
-			return true;
-		}
-	}
-
-	function get_diff()
-	{
-		$diff = [];
-		foreach($this->_data as $key => $value){
-			if( isset($this->_original[$key]) && $this->_original[$key] === $value ){
-				continue;
-			}
-			$diff[0][$key] = array_key_exists($key, $this->_original) ? $this->_original[$key] : NULL;
-			$diff[1][$key] = $value;
-		}
-
-		return $diff;
 	}
 
 	function save()
@@ -302,7 +435,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		//echo "this->_data = "; print_r($this->_data);
 		//echo "data = "; print_r($data);
 
-		$r = NULL;
+		$r = null;
 		if( $this->get($primary_key) ){
 			//データがある場合のみ更新する
 			if( count($data) ){
@@ -364,8 +497,154 @@ class Model implements Iterator, Countable, ArrayAccess
 	{
 	}
 
+	protected function _typecheck($throw = null, $skip_unchanged_item = true)
+	{
+		$schema = Database_Schema::get($this->table());
+		//Log::coredebug("typecheck",static::$_schema['columns']);
+		if( empty($schema['columns']) ){
+			return;
+		}
+
+		foreach($schema['columns'] as $key => $property){
+			//Log::coredebug("[model typecheck] $key",$property);
+			//echo "[model typecheck] $key"; print_r($property);
+			/*
+			if( is_numeric($key) && ! is_array($property) ){
+				$key = $property;
+				if($key == static::$_primary_key){
+					$property = array(
+						'data_type' => 'integer',
+					);
+				}
+				else
+					$property = array();
+			}
+			*/
+			if( $skip_unchanged_item && ! array_key_exists($key, $this->_data) ){
+				continue;
+			}
+
+			$data_type = Arr::get($property, 'type', null);        // int4, timestamp, text
+			$type_cat  = Arr::get($property, 'type_cat', null);    // S, N, A, U
+			$value     = $this->$key;
+
+			switch($type_cat){
+				case 'N':
+					if( ! is_numeric($value) ){
+						$value = null;
+					}
+					break;
+//					if( is_numeric($value) && -32768 <= $value && $value <= 32767){
+//					if(is_numeric($value) && -2147483648 <= $value && $value <= 2147483647){
+//					if(is_numeric($value) && -9223372036854775808 <= $value && $value <= 9223372036854775807){
+				case 'D':
+					// UNIXタイムスタンプだった場合は変換する
+					if( is_numeric($value) ){
+						$value = date(DATE_ATOM, $value);
+					}
+					// 日付として空文字列は受け付けられないので、NULLにする
+					if( $value === "" ){
+						$value = null;
+					}
+					break;
+				case 'B':
+					if( is_numeric($value) ){
+						$value = (boolean)$value;
+					}
+					else{
+						if( is_string($value) ){
+							//文字列表現だった場合は先頭1文字(t/f)もしくはon/offで判別
+							$str = strtolower($value);
+							if( (strlen($str) && $str[0] == 't') || strtolower($str) === 'on' ){
+								$value = true;
+							}
+							else{
+								if( (strlen($str) && $str[0] == 'f') || strtolower($str) === 'off' ){
+									$value = false;
+								}
+								else{
+									$value = null;
+								}
+							}
+						}
+					}
+					if( $value === true ){
+						$value = 't';
+					}
+					else{
+						if( $value === false ){
+							$value = 'f';
+						}
+						else{
+							$value = null;
+						}
+					}
+					break;
+				case 'A':
+					//Log::debug($property);
+					$type_detail = Database_Type::get($data_type);
+					//Log::debug($type_detail);
+					$elem_type = Database_Type::get_by_oid($type_detail['typelem']);
+					//Log::debug($elem_type);
+					if( is_array($value) ){
+						$value = DB::array_to_pgarraystr($value, $type_detail['typdelim'], $elem_type['typcategory']);
+					}
+					break;
+				case 'U':
+					if( $data_type === 'json' ){
+						$value = $value === null ? null : json_encode($value);
+					}
+					break;
+			}
+			if( $this->$key !== $value ){
+				//Log::coredebug("typecheck $key ($data_type) {$this->$key} → $value");
+				$this->$key = $value;
+			}
+		}
+	}
+
+	protected function after_load()
+	{
+	}
+
 	protected function after_save()
 	{
+	}
+
+	function as_array($array_key = null)
+	{
+		return array_merge($this->_original, $this->_data);
+	}
+
+	/**
+	 * 指定されたカラムまたはデータのどれかが変更されたかをチェックする
+	 *
+	 * @param null|string $column
+	 *
+	 * @return bool
+	 */
+	function is_changed($column = null)
+	{
+		if( $column && array_key_exists($column, $this->_data) ){
+			return true;
+		}
+		if( $column === null && count($this->_data) ){
+			return true;
+		}
+	}
+
+	function get_diff()
+	{
+		$diff = [];
+		foreach($this->_data as $key => $value){
+			if( isset($this->_original[$key]) && $this->_original[$key] === $value ){
+				continue;
+			}
+			$diff[0][$key] = array_key_exists($key, $this->_original) ? $this->_original[$key] : null;
+			$diff[1][$key] = $value;
+		}
+
+		return $diff;
 	}
 
 	function delete()
@@ -394,73 +673,11 @@ class Model implements Iterator, Countable, ArrayAccess
 	{
 	}
 
-	protected function after_load()
-	{
-	}
-
-	function __construct($options = [])
-	{
-		if( empty($options['deferred_init']) ){
-			$this->_is_new = false;
-		}
-
-		$this->after_load();
-
-		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
-	}
-
 	function drop_isnew_flag()
 	{
 		$this->_is_new = false;
 
 		return $this;
-	}
-
-	static function table()
-	{
-		return isset(static::$_table_name) ? static::$_table_name : Inflector::tableize(get_called_class());
-	}
-
-	/**
-	 * データ取得時の強制条件を取得する
-	 *
-	 * Model_Query::get() から呼ばれる
-	 */
-	static function conditions()
-	{
-		return isset(static::$_conditions) ? static::$_conditions : [];
-	}
-
-	static function primary_key()
-	{
-		if( empty(static::$_primary_key) ){
-			//スキーマからプライマリキーを取得
-			$schema = Database_Schema::get(static::table(), []);
-			if( Arr::get($schema, 'has_pkey') ){
-				$primary_key = Arr::get($schema, 'primary_key', []);
-			}
-			else{
-				throw new MkException('empty primary key on ' . static::table());
-			}
-		}
-		else{
-			$primary_key = static::$_primary_key;
-		}
-
-		if( is_array($primary_key) ){
-			if( count($primary_key) == 0 ){
-				throw new MkException('empty primary key');
-			}
-			if( count($primary_key) != 1 ){
-				throw new MkException('too many primary keys');
-			}
-
-			$primary_key = reset($primary_key);
-		}
-
-		static::$_primary_keys[get_called_class()] = $primary_key;
-
-		return $primary_key;
 	}
 
 	/**
@@ -474,80 +691,14 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $model_query->get_query();                // Database_Queryを得る
 	}
 
-	protected static function _get_join_items()
+	/*
+	public static function instance_from_query_data()
 	{
-		$join = isset(static::$_join) ? static::$_join : [];
-		if( ! is_array($join) ){
-			$join = [$join];
-		}
-
-		$parent = get_parent_class(get_called_class());
-		if( $parent ){
-			$join = array_merge($join, $parent::_get_join_items());
-		}
-		$join = array_unique($join);
-		ksort($join);
-
-		//Log::debug(get_called_class(),$join);
-
-		return $join;
+		$db_query = forward_static_call_array('DB::query',func_get_args());
+		return $db_query->set_fetch_as(get_called_class())->execute();
 	}
-
-	protected static function _build_select_query()
-	{
-		$query = new Model_Query(get_called_class());
-		$query->select('*');
-
-		$join = static::_get_join_items();
-		if( $join ){
-			$query->join(implode(" ", $join));
-		}
-
-		if( ! empty(static::$_add_field) ){
-			$query->select(static::$_add_field);
-		}
-
-		return $query;
-	}
-
-	/**
-	 * 特定の行を取得する
-	 *
-	 * find(ID, ID_FIELD, IGNORE_CONDITION_LABELS)
-	 * ID_FIELDがfalse判定の場合はプライマリキーを使用する
+	 * 
 	 */
-	static function find()
-	{
-		$argc              = func_num_args();
-		$args              = func_get_args();
-		$id                = Arr::get($args, '0');
-		$id_field          = Arr::get($args, '1');
-		$ignore_conditions = Arr::get($args, '2');
-
-		$query = static::_build_select_query();
-		$query->ignore_conditions($ignore_conditions);
-
-		if( $argc ){
-			if( $id === 'all' ){    // 型判定なし(==)で比較すると文字列を比較する際に文字列が数値にキャストされてしまう。そのため$idに0が入っているとtrueになるので注意。
-				return $query->get();
-			}
-			else{
-				//Log::info("[Model] find single record $id",debug_backtrace());
-				if( ! $id_field ){
-					$id_field = static::primary_key();
-				}
-				$r = $query->where($id_field, $id)->get_one();
-				if( $r === NULL ){
-					throw new RecordNotFoundException;
-				}
-
-				return $r;
-			}
-		}
-		else{
-			return $query;
-		}
-	}
 
 	/**
 	 * データを再ロードする
@@ -557,12 +708,12 @@ class Model implements Iterator, Countable, ArrayAccess
 	 * @throws RecordNotFoundException
 	 * @return Model
 	 */
-	function reload(array $ignore_conditions = NULL)
+	function reload(array $ignore_conditions = null)
 	{
 		$query    = $this->_build_select_query();
 		$id_field = static::primary_key();
 		$r        = $query->where($id_field, $this->$id_field)->ignore_conditions($ignore_conditions)->get_one();
-		if( $r === NULL ){
+		if( $r === null ){
 			throw new RecordNotFoundException;
 		}
 
@@ -580,151 +731,6 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $this;
 	}
 
-	static function get_all()
-	{
-		return static::find('all');
-	}
-
-	protected function _typecheck($throw = NULL, $skip_unchanged_item = true)
-	{
-		$schema = Database_Schema::get($this->table());
-		//Log::coredebug("typecheck",static::$_schema['columns']);
-		if( empty($schema['columns']) ){
-			return;
-		}
-
-		foreach($schema['columns'] as $key => $property){
-			//Log::coredebug("[model typecheck] $key",$property);
-			//echo "[model typecheck] $key"; print_r($property);
-			/*
-			if( is_numeric($key) && ! is_array($property) ){
-				$key = $property;
-				if($key == static::$_primary_key){
-					$property = array(
-						'data_type' => 'integer',
-					);
-				}
-				else
-					$property = array();
-			}
-			*/
-			if( $skip_unchanged_item && ! array_key_exists($key, $this->_data) ){
-				continue;
-			}
-
-			$data_type = Arr::get($property, 'type', NULL);        // int4, timestamp, text
-			$type_cat  = Arr::get($property, 'type_cat', NULL);    // S, N, A, U
-			$value     = $this->$key;
-
-			switch($type_cat){
-				case 'N':
-					if( ! is_numeric($value) ){
-						$value = NULL;
-					}
-					break;
-//					if( is_numeric($value) && -32768 <= $value && $value <= 32767){
-//					if(is_numeric($value) && -2147483648 <= $value && $value <= 2147483647){
-//					if(is_numeric($value) && -9223372036854775808 <= $value && $value <= 9223372036854775807){
-				case 'D':
-					// UNIXタイムスタンプだった場合は変換する
-					if( is_numeric($value) ){
-						$value = date(DATE_ATOM, $value);
-					}
-					// 日付として空文字列は受け付けられないので、NULLにする
-					if( $value === "" ){
-						$value = NULL;
-					}
-					break;
-				case 'B':
-					if( is_numeric($value) ){
-						$value = (boolean)$value;
-					}
-					else{
-						if( is_string($value) ){
-							//文字列表現だった場合は先頭1文字(t/f)もしくはon/offで判別
-							$str = strtolower($value);
-							if( (strlen($str) && $str[0] == 't') || strtolower($str) === 'on' ){
-								$value = true;
-							}
-							else{
-								if( (strlen($str) && $str[0] == 'f') || strtolower($str) === 'off' ){
-									$value = false;
-								}
-								else{
-									$value = NULL;
-								}
-							}
-						}
-					}
-					if( $value === true ){
-						$value = 't';
-					}
-					else{
-						if( $value === false ){
-							$value = 'f';
-						}
-						else{
-							$value = NULL;
-						}
-					}
-					break;
-				case 'A':
-					//Log::debug($property);
-					$type_detail = Database_Type::get($data_type);
-					//Log::debug($type_detail);
-					$elem_type = Database_Type::get_by_oid($type_detail['typelem']);
-					//Log::debug($elem_type);
-					if( is_array($value) ){
-						$value = DB::array_to_pgarraystr($value, $type_detail['typdelim'], $elem_type['typcategory']);
-					}
-					break;
-				case 'U':
-					if( $data_type === 'json' ){
-						$value = $value === NULL ? NULL : json_encode($value);
-					}
-					break;
-			}
-			if( $this->$key !== $value ){
-				//Log::coredebug("typecheck $key ($data_type) {$this->$key} → $value");
-				$this->$key = $value;
-			}
-		}
-	}
-
-	/**
-	 * 指定カラムでユニークとなるコードを生成する
-	 *
-	 * @returns string
-	 * @throws Exception
-	 */
-	public static function make_unique_code($column_name, $length = 32, $char_seed = [])
-	{
-		$unique_code = "";
-		for($c = 0; $c < 100; $c++){
-			$unique_code_candidate = Mk::make_random_code($length, $char_seed);
-
-			$r = DB::select($column_name)->from(static::table())->where($column_name, $unique_code_candidate)->execute();
-			if( $r->count() == 0 ){
-				$unique_code = $unique_code_candidate;
-				break;
-			}
-		}
-		if( ! $unique_code ){
-			throw new Exception('generate unique id failed');
-		}
-
-		return $unique_code;
-	}
-
-	/*
-	public static function instance_from_query_data()
-	{
-		$db_query = forward_static_call_array('DB::query',func_get_args());
-		return $db_query->set_fetch_as(get_called_class())->execute();
-	}
-	 * 
-	 */
-
 	public function offsetSet($offset, $value)
 	{
 		return $this->set($offset, $value);
@@ -733,6 +739,11 @@ class Model implements Iterator, Countable, ArrayAccess
 	public function offsetExists($offset)
 	{
 		return $this->is_exist($offset);
+	}
+
+	function is_exist($name)
+	{
+		return (array_key_exists($name, $this->_data) || array_key_exists($name, $this->_original));
 	}
 
 	public function offsetUnset($offset)
@@ -745,27 +756,15 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $this->get($offset);
 	}
 
-	function columns()
+	function rewind()
 	{
-		$schema = $this->schema();
-
-		return array_keys($schema['columns']);
-	}
-
-	function schema()
-	{
-		return Database_Schema::get($this->table());
+		$this->_iter_keylist = $this->keys();
+		$this->_iter_curkey  = 0;
 	}
 
 	function keys()
 	{
 		return array_merge(array_keys($this->_original), array_keys($this->_data));
-	}
-
-	function rewind()
-	{
-		$this->_iter_keylist = $this->keys();
-		$this->_iter_curkey  = 0;
 	}
 
 	function current()

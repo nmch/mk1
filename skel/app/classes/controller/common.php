@@ -1,7 +1,8 @@
 <?php
+
 /**
  * コントローラ基底クラス
- * 
+ *
  * @package    App
  * @subpackage Controller
  * @author     Hakonet Inc

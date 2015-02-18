@@ -1,4 +1,5 @@
 <?
+
 class File
 {
 	/**
@@ -6,20 +7,22 @@ class File
 	 */
 	static function rm($filepath)
 	{
-		$filepath = rtrim($filepath,'/');
+		$filepath = rtrim($filepath, '/');
 		Log::debug("File::rm : $filepath");
-		if (is_dir($filepath)) {
+		if( is_dir($filepath) ){
 			$objects = scandir($filepath);
-			foreach ($objects as $object) {
-				if ($object == "." || $object == "..")
+			foreach($objects as $object){
+				if( $object == "." || $object == ".." ){
 					continue;
-				
-				static::rm($filepath."/".$object);
+				}
+
+				static::rm($filepath . "/" . $object);
 			}
 			unset($objects);
 			rmdir($filepath);
 		}
-		else
+		else{
 			unlink($filepath);
+		}
 	}
 }

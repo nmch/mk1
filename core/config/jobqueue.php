@@ -1,4 +1,4 @@
 <?
-return array(
-	'pid_dir' => PROJECTPATH.'pid/'
-);
+return [
+	'pid_dir' => PROJECTPATH . 'pid/'
+];

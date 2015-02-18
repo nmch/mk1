@@ -76,105 +76,29 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 		return $this->fields;
 	}
 
-	function get($column = NULL, $position = NULL)
+	function get_first($column = null)
 	{
-		$row = $this->fetch(NULL, $position);
+		return $this->get($column, 0);
+	}
+
+	function get($column = null, $position = null)
+	{
+		$row = $this->fetch(null, $position);
 		if( $column ){
-			return isset($row[$column]) ? $row[$column] : NULL;
+			return isset($row[$column]) ? $row[$column] : null;
 		}
 		else{
 			return $row;
 		}
 	}
 
-	function get_first($column = NULL)
-	{
-		return $this->get($column, 0);
-	}
-
-	function get_last($column = NULL)
-	{
-		return $this->get($column, $this->rows ? ($this->rows - 1) : NULL);
-	}
-
-	/**
-	 * 結果データを1レコード1オブジェクトの形式で格納した配列を返す
-	 *
-	 * correct_data()を参照時まで遅延できるが、データ行数ぶんpg_result()が実行される。
-	 *
-	 * @param string|null $array_key
-	 *
-	 * @return array
-	 */
-	function as_object_array($array_key = NULL)
-	{
-		$list = [];
-		foreach($this as $item){
-			if( $array_key ){
-				$list[$item->$array_key] = $item;
-			}
-			else{
-				$list[] = $item;
-			}
-		}
-
-		return $list;
-	}
-
-	/**
-	 * 結果データを1レコード1配列の形式で格納した配列を返す
-	 *
-	 * 全カラムに対してcorrect_data()が実行されるが、データ取得はpg_fetch_all()で一括して行う。
-	 *
-	 * @param bool        $correct_values
-	 * @param string|null $array_key
-	 *
-	 * @return array
-	 */
-	function as_array($correct_values = false, $array_key = NULL)
-	{
-		// Database_Type::retrieve()から、加工なしで返ることを期待して呼ばれているので注意
-
-		$data = pg_fetch_all($this->result_resource);
-		if( ! $data ){
-			$data = [];
-		}
-		if( $correct_values ){
-			foreach($data as $key => $item){
-				$data[$key] = $this->correct_data($item);
-			}
-		}
-		if( $array_key ){
-			$new_data = [];
-			foreach($data as $item){
-				$new_data[Arr::get($item, $array_key)] = $item;
-			}
-			unset($data);
-			$data = $new_data;
-		}
-
-		return $data;
-	}
-
-	function set_fetch_as($fetch_as)
-	{
-		$this->fetch_as = $fetch_as;
-
-		return $this;
-	}
-
-	function get_fetch_as()
-	{
-		return $this->fetch_as;
-	}
-
-	function fetch($fetch_as = NULL, $position = NULL, $forward = false)
+	function fetch($fetch_as = null, $position = null, $forward = false)
 	{
 		//Log::coredebug("[db] fetch($fetch_as, $position, $forward)");
 		if( $this->rows == 0 ){
-			return NULL;
+			return null;
 		}
-		if( $position === NULL ){
+		if( $position === null ){
 			$position = $this->position;
 		}
 		if( ! $this->offsetExists($position) ){
@@ -199,6 +123,18 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 		$data = $this->correct_data($data);
 
 		return $data;
+	}
+
+	public function offsetExists($offset)
+	{
+		return is_numeric($offset) && ($offset < $this->rows);
+	}
+
+	function next()
+	{
+		$this->position++;
+
+		return $this;
 	}
 
 	/**
@@ -238,7 +174,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 		//Log::coredebug("correct_value : $value",$type);
 		switch($type['typcategory']){
 			case 'B':
-				$value = ($value === 't' ? true : ($value === 'f' ? false : NULL));
+				$value = ($value === 't' ? true : ($value === 'f' ? false : null));
 				/*
 				if( ! $value ){
 					$value = NULL;
@@ -259,8 +195,8 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 					}
 					else{
 						$value = array_map(function ($str) {
-								return stripslashes($str);
-							}, str_getcsv(trim($value, '{}'), $delimiter, '"', '\\')
+							return stripslashes($str);
+						}, str_getcsv(trim($value, '{}'), $delimiter, '"', '\\')
 						);
 					}
 				}
@@ -274,6 +210,82 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 
 		//Log::coredebug("correct value [$value] as $type");
 		return $value;
+	}
+
+	function get_last($column = null)
+	{
+		return $this->get($column, $this->rows ? ($this->rows - 1) : null);
+	}
+
+	/**
+	 * 結果データを1レコード1オブジェクトの形式で格納した配列を返す
+	 *
+	 * correct_data()を参照時まで遅延できるが、データ行数ぶんpg_result()が実行される。
+	 *
+	 * @param string|null $array_key
+	 *
+	 * @return array
+	 */
+	function as_object_array($array_key = null)
+	{
+		$list = [];
+		foreach($this as $item){
+			if( $array_key ){
+				$list[$item->$array_key] = $item;
+			}
+			else{
+				$list[] = $item;
+			}
+		}
+
+		return $list;
+	}
+
+	/**
+	 * 結果データを1レコード1配列の形式で格納した配列を返す
+	 *
+	 * 全カラムに対してcorrect_data()が実行されるが、データ取得はpg_fetch_all()で一括して行う。
+	 *
+	 * @param bool        $correct_values
+	 * @param string|null $array_key
+	 *
+	 * @return array
+	 */
+	function as_array($correct_values = false, $array_key = null)
+	{
+		// Database_Type::retrieve()から、加工なしで返ることを期待して呼ばれているので注意
+
+		$data = pg_fetch_all($this->result_resource);
+		if( ! $data ){
+			$data = [];
+		}
+		if( $correct_values ){
+			foreach($data as $key => $item){
+				$data[$key] = $this->correct_data($item);
+			}
+		}
+		if( $array_key ){
+			$new_data = [];
+			foreach($data as $item){
+				$new_data[Arr::get($item, $array_key)] = $item;
+			}
+			unset($data);
+			$data = $new_data;
+		}
+
+		return $data;
+	}
+
+	function get_fetch_as()
+	{
+		return $this->fetch_as;
+	}
+
+	function set_fetch_as($fetch_as)
+	{
+		$this->fetch_as = $fetch_as;
+
+		return $this;
 	}
 
 	function rewind()
@@ -290,13 +302,6 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 	function key()
 	{
 		return $this->position;
-	}
-
-	function next()
-	{
-		$this->position++;
-
-		return $this;
 	}
 
 	function valid()
@@ -323,11 +328,6 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 		// nop
 	}
 
-	public function offsetExists($offset)
-	{
-		return is_numeric($offset) && ($offset < $this->rows);
-	}
-
 	public function offsetUnset($offset)
 	{
 		// nop
@@ -335,6 +335,6 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 
 	public function offsetGet($offset)
 	{
-		return $this->fetch(NULL, $offset);
+		return $this->fetch(null, $offset);
 	}
 }
