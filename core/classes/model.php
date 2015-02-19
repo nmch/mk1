@@ -128,13 +128,14 @@ class Model implements Iterator, Countable, ArrayAccess
 			$join = [$join];
 		}
 
-		$parent = get_parent_class(get_called_class());
-		if( $parent ){
-			$join = array_merge($join, $parent::_get_join_items());
+		if(empty(static::$_do_not_inherit_join)){
+			$parent = get_parent_class(get_called_class());
+			if( $parent ){
+				$join = array_merge($join, $parent::_get_join_items());
+			}
+			$join = array_unique($join);
+			ksort($join);
 		}
-		$join = array_unique($join);
-		ksort($join);
-
 		//Log::debug(get_called_class(),$join);
 
 		return $join;
