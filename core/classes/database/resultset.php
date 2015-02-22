@@ -173,6 +173,12 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 
 		//Log::coredebug("correct_value : $value",$type);
 		switch($type['typcategory']){
+			case 'N':
+				if(is_string($value) && strpos($type['typname'], 'int') === 0){
+					$value = intval($value);
+				}
+//				Log::coredebug("typcategory=N ".gettype($value), $value,$type);
+				break;
 			case 'B':
 				$value = ($value === 't' ? true : ($value === 'f' ? false : null));
 				/*
