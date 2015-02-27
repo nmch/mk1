@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Response_Json extends Response
 {
