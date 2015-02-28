@@ -425,6 +425,11 @@ class Actionform
 		}
 	}
 
+	function get_by_path($name, $default = null)
+	{
+		return Arr::get($this->values, $name, Arr::get($this->values_default, $name, $default));
+	}
+
 	function get($name, $default = null)
 	{
 		if( array_key_exists($name, $this->values) ){

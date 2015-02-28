@@ -151,13 +151,18 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 	protected function correct_data($data)
 	{
 		foreach($this->fields_hashed_by_name as $name => $field){
-			if( is_object($data) ){
-				$data->set($name, static::correct_value($data->$name, $field['type']), true);
-			}
-			else{
-				if( is_array($data) ){
-					$data[$name] = static::correct_value($data[$name], $field['type']);
+			try {
+				if( is_object($data) ){
+					$data->set($name, static::correct_value($data->$name, $field['type']), true);
 				}
+				else{
+					if( is_array($data) ){
+						$data[$name] = static::correct_value($data[$name], $field['type']);
+					}
+				}
+			} catch(Exception $e){
+				Log::coredebug("error at correct_data", $name, $field, $e);
+				throw $e;
 			}
 		}
 
@@ -171,47 +176,56 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 			throw new MkException('invalid type');
 		}
 
-//		Log::coredebug("correct_value : $value",$type);
-		switch($type['typcategory']){
-			case 'N':
-				if(is_string($value) && strpos($type['typname'], 'int') === 0){
-					$value = intval($value);
-				}
+//		Log::coredebug("correct_value : ",$value,$type);
+
+		try {
+			switch($type['typcategory']){
+				case 'N':
+					if( is_string($value) && strpos($type['typname'], 'int') === 0 ){
+						$value = intval($value);
+					}
 //				Log::coredebug("typcategory=N ".gettype($value), $value,$type);
-				break;
-			case 'B':
-				$value = ($value === 't' ? true : ($value === 'f' ? false : null));
-				/*
-				if( ! $value ){
-					$value = NULL;
-				}
-				else{
-					if($value === 't')
-						$value = true;
-					else
-						$value = false;
-				}
-				*/
-				break;
-			case 'A':
-				if( $value ){
-					$delimiter = $type['typdelim'];
-					if( $value == '{}' ){
-						$value = [];
+					break;
+				case 'B':
+					$value = ($value === 't' ? true : ($value === 'f' ? false : null));
+					/*
+					if( ! $value ){
+						$value = NULL;
 					}
 					else{
-						$value = array_map(function ($str) {
-							return stripslashes($str);
-						}, str_getcsv(trim($value, '{}'), $delimiter, '"', '\\')
-						);
+						if($value === 't')
+							$value = true;
+						else
+							$value = false;
 					}
-				}
-				break;
-			case 'U':
-				if( $type['typname'] === 'json' ){
-					$value = json_decode($value, true);
-				}
-				break;
+					*/
+					break;
+				case 'A':
+					if( $value ){
+						$delimiter = $type['typdelim'];
+						if( is_array($value) ){
+							// nop
+						}
+						elseif( $value === '{}' ){
+							$value = [];
+						}
+						else{
+							$value = array_map(function ($str) {
+								return stripslashes($str);
+							}, str_getcsv(trim($value, '{}'), $delimiter, '"', '\\')
+							);
+						}
+					}
+					break;
+				case 'U':
+					if( $type['typname'] === 'json' || $type['typname'] === 'jsonb' ){
+						$value = json_decode($value, true);
+					}
+					break;
+			}
+		} catch(Exception $e){
+			Log::coredebug("error at correct value", $type, $value, $e);
+			throw $e;
 		}
 
 		//Log::coredebug("correct value [$value] as $type");
