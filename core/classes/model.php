@@ -128,7 +128,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			$join = [$join];
 		}
 
-		if(empty(static::$_do_not_inherit_join)){
+		if( empty(static::$_do_not_inherit_join) ){
 			$parent = get_parent_class(get_called_class());
 			if( $parent ){
 				$join = array_merge($join, $parent::_get_join_items());
@@ -136,6 +136,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			$join = array_unique($join);
 			ksort($join);
 		}
+
 		//Log::debug(get_called_class(),$join);
 
 		return $join;
@@ -511,7 +512,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 
 		foreach($schema['columns'] as $key => $property){
-			//Log::coredebug("[model typecheck] $key",$property);
+//			Log::coredebug("[model typecheck]", $key, $property);
 			//echo "[model typecheck] $key"; print_r($property);
 			/*
 			if( is_numeric($key) && ! is_array($property) ){
@@ -596,7 +597,7 @@ class Model implements Iterator, Countable, ArrayAccess
 					}
 					break;
 				case 'U':
-					if( $data_type === 'json' ){
+					if( $data_type === 'json' || $data_type === 'jsonb' ){
 						$value = $value === null ? null : json_encode($value);
 					}
 					break;

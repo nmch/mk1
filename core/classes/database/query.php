@@ -375,6 +375,7 @@ class Database_Query
 		else{
 			$sql .= '(' . implode(',', array_keys($this->_query_values)) . ')';
 			$ary = [];
+//			Log::coredebug($this->_query_values);
 			foreach($this->_query_values as $value){
 				$ary[] = '$' . $this->parameter($value);
 			}
