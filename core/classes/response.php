@@ -8,7 +8,7 @@ class Response
 	protected $headers;
 	protected $before_send_functions = [];
 
-	protected function __construct($body = null, $status = 200, array $headers = [])
+	public function __construct($body = null, $status = 200, array $headers = [])
 	{
 		Log::coredebug("[response] status=$status");
 		$this->body    = $body;
