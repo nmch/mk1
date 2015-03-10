@@ -600,6 +600,9 @@ class Model implements Iterator, Countable, ArrayAccess
 					if( $data_type === 'json' || $data_type === 'jsonb' ){
 						$value = $value === null ? null : json_encode($value);
 					}
+					if($data_type === 'hstore'){
+						// fixme
+					}
 					break;
 			}
 			if( $this->$key !== $value ){

@@ -97,6 +97,12 @@ class View
 		}
 	}
 
+	/**
+	 * 表示内容を生成する
+	 *
+	 * @returns string
+	 * @throws HttpNotFoundException
+	 */
 	function render()
 	{
 		$r = $this->view();
@@ -128,13 +134,12 @@ class View
 		return $this->smarty->fetch($this->template_filename);
 	}
 
-	public function view()
-	{
-	}
+	/**
+	 * @returns Response|string
+	 */
+	public function view(){}
 
-	function after_view()
-	{
-	}
+	function after_view(){}
 
 	function template_exists($template_filename)
 	{
