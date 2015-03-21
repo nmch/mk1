@@ -71,67 +71,71 @@ class Actionform
 			}
 
 			if( $this->get_config('import_db_schemas') ){
-				foreach(Database_Schema::get() as $table_name => $table){
-					foreach(Arr::get($table, 'columns') as $col_name => $col){
-						$rule = [
-							'name'    => Arr::get($col, 'desc'),
-							'filter'  => '',
-							'typecat' => Arr::get($col, 'type_cat'),
-						];
-						/** @see https://www.postgresql.jp/document/9.3/html/catalog-pg-type.html */
-						switch($rule['typecat']){
-							// 数値型
-							case 'N':
-								$rule['filter'] = ['hankaku', 'only0to9'];
+				$autoconfig = Cache::get('af_autoconfig', 'core_db', function () {
+					$autoconfig = [];
+					foreach(Database_Schema::get() as $table_name => $table){
+						foreach(Arr::get($table, 'columns') as $col_name => $col){
+							$rule = [
+								'name'    => Arr::get($col, 'desc'),
+								'filter'  => '',
+								'typecat' => Arr::get($col, 'type_cat'),
+							];
+							/** @see https://www.postgresql.jp/document/9.3/html/catalog-pg-type.html */
+							switch($rule['typecat']){
+								// 数値型
+								case 'N':
+									$rule['filter'] = ['hankaku', 'only0to9'];
 
-								$this->set_config('global.key.' . $col_name . '_from', [
+									$autoconfig['global.key.' . $col_name . '_from'] = [
 										'name'   => $rule['name'] . ' FROM',
 										'filter' => $rule['filter'],
-									]
-								);
-								$this->set_config('global.key.' . $col_name . '_to', [
+									];
+									$autoconfig['global.key.' . $col_name . '_to']   = [
 										'name'   => $rule['name'] . ' TO',
 										'filter' => $rule['filter'],
-									]
-								);
-								break;
-							// 日付時刻型
-							case 'D':
-								$rule['filter'] = ['hankaku', 'hantozen', 'trim'];
+									];
+									break;
+								// 日付時刻型
+								case 'D':
+									$rule['filter'] = ['hankaku', 'hantozen', 'trim'];
 
-								$this->set_config('global.key.' . $col_name . '_from', [
+									$autoconfig['global.key.' . $col_name . '_from'] = [
 										'name'   => $rule['name'] . ' FROM',
 										'filter' => $rule['filter'],
-									]
-								);
-								$this->set_config('global.key.' . $col_name . '_to', [
+									];
+									$autoconfig['global.key.' . $col_name . '_to']   = [
 										'name'   => $rule['name'] . ' TO',
 										'filter' => $rule['filter'],
-									]
-								);
-								break;
+									];
+									break;
 
-							case 'B': // 論理値型
-							case 'S': // 文字列型
-							case 'A': // 配列型
-								$rule['filter'] = ['hankaku', 'hantozen', 'trim', 'empty2null'];
-								break;
+								case 'B': // 論理値型
+								case 'S': // 文字列型
+								case 'A': // 配列型
+									$rule['filter'] = ['hankaku', 'hantozen', 'trim', 'empty2null'];
+									break;
 
-							case 'C': // 複合型
-							case 'U': // ユーザ定義型
-							case 'E': // 列挙型
-							case 'G': // 幾何学型
-							case 'P': // 仮想型
-							case 'I': // ネットワークアドレス型
-							case 'R': // 範囲型
-							case 'T': // 時間間隔型
-							case 'V': // ビット列型
-								break;
-							default:
-								Log::coredebug("[af] Unknown {$col_name} typecat: ", Arr::get($col, 'type_cat'), $col);
+								case 'C': // 複合型
+								case 'U': // ユーザ定義型
+								case 'E': // 列挙型
+								case 'G': // 幾何学型
+								case 'P': // 仮想型
+								case 'I': // ネットワークアドレス型
+								case 'R': // 範囲型
+								case 'T': // 時間間隔型
+								case 'V': // ビット列型
+									break;
+								default:
+									Log::coredebug("[af] Unknown {$col_name} typecat: ", Arr::get($col, 'type_cat'), $col);
+							}
+							$autoconfig['global.key.' . $col_name] = $rule;
 						}
-						$this->set_config('global.key.' . $col_name, $rule);
 					}
+
+					return $autoconfig;
+				});
+				foreach($autoconfig as $key => $value){
+					$this->set_config($key, $value);
 				}
 			}
 		}
@@ -139,6 +143,13 @@ class Actionform
 		return $this;
 	}
 
+	/**
+	 * @param string|array $name
+	 * @param mixed        $value
+	 * @param bool         $set_default
+	 *
+	 * @return Actionform
+	 */
 	function set($name, $value = null, $set_default = false)
 	{
 		if( is_array($name) || $name instanceof ArrayAccess ){
@@ -425,11 +436,6 @@ class Actionform
 		}
 	}
 
-	function get_by_path($name, $default = null)
-	{
-		return Arr::get($this->values, $name, Arr::get($this->values_default, $name, $default));
-	}
-
 	function get($name, $default = null)
 	{
 		if( array_key_exists($name, $this->values) ){
@@ -519,6 +525,11 @@ class Actionform
 				}
 			}
 		}
+	}
+
+	function get_by_path($name, $default = null)
+	{
+		return Arr::get($this->values, $name, Arr::get($this->values_default, $name, $default));
 	}
 
 	public function validation_results($results = null)
