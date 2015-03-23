@@ -70,6 +70,10 @@ class Model implements Iterator, Countable, ArrayAccess
 	 *
 	 * find(ID, ID_FIELD, IGNORE_CONDITION_LABELS)
 	 * ID_FIELDがfalse判定の場合はプライマリキーを使用する
+	 *
+	 * @return Database_Resultset|Model_Query|Model
+	 * @throws MkException
+	 * @throws RecordNotFoundException
 	 */
 	static function find()
 	{
