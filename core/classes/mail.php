@@ -1,4 +1,4 @@
-<?
+<?php
 
 class AttachmentNotFoundException extends MkException
 {
@@ -36,6 +36,17 @@ class Mail
 	public static function instance()
 	{
 		return new self;
+	}
+
+	function get_config($name)
+	{
+		return Arr::get($this->config, $name);
+	}
+
+	function set_config($name, $value)
+	{
+		Arr::set($this->config, $name, $value);
+		return $this;
 	}
 
 	function send()
@@ -83,8 +94,9 @@ class Mail
 	function template($view, $data = [])
 	{
 		if( is_scalar($view) ){
+			// 第三引数はフラッシュメッセージをクリアさせないフラグ
 			$view = new View("mail/" . $view, $data, true);
-		}    //第三引数はフラッシュメッセージをクリアさせないフラグ
+		}
 		$body = $view->set_smarty_environment('default_modifiers', [])->render();
 		list($subject, $body) = explode("\n", $body, 2);
 		$this->subject($subject);
