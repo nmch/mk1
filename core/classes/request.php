@@ -54,6 +54,9 @@ class Request
 			$response = new Response($controller_return_var);
 		}
 		if( $controller_return_var instanceof View ){
+			// コントローラとビューの両方に定義されているプロパティをコピーする
+			$controller_return_var->import_property($controller);
+
 			$response = new Response($controller_return_var);
 		}
 
