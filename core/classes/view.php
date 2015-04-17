@@ -137,9 +137,9 @@ class View
 	/**
 	 * @returns Response|string
 	 */
-	public function view(){}
+	public function view() { }
 
-	function after_view(){}
+	function after_view() { }
 
 	function template_exists($template_filename)
 	{
@@ -153,5 +153,28 @@ class View
 
 	function after()
 	{
+	}
+
+	/**
+	 * 指定されたオブジェクトから自分にプロパティをコピーする
+	 *
+	 * @param $obj
+	 *
+	 * @return View
+	 * @throws Exception
+	 */
+	function import_property($obj)
+	{
+		if( ! is_object($obj) ){
+			throw new Exception('cannot import from non-object');
+		}
+		foreach(get_object_vars($obj) as $key => $value){
+			Log::debug($key);
+			if( property_exists($this, $key) ){
+				$this->$key = $value;
+			}
+		}
+
+		return $this;
 	}
 }
