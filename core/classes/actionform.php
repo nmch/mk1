@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Actionform
 {
@@ -530,6 +530,38 @@ class Actionform
 	function get_by_path($name, $default = null)
 	{
 		return Arr::get($this->values, $name, Arr::get($this->values_default, $name, $default));
+	}
+
+	/**
+	 * @param string $name
+	 *
+	 * @return array
+	 */
+	public function get_validation_result_messages($name = null)
+	{
+		$messages = [];
+
+		foreach($this->validation_results as $key => $validation_results){
+			if( $name && $name !== $key ){
+				continue;
+			}
+
+			foreach($validation_results as $validation_result){
+				if( ! is_array($validation_result) ){
+					$validation_result = [];
+				}
+				$message = Arr::get($validation_result, 'message');
+
+				if( $message ){
+					$item_name  = Arr::get($validation_result, 'name', Arr::get($validation_result, 'key'));
+					$message    = "{$item_name} : {$message}";
+					$messages[] = $message;
+				}
+			}
+
+		}
+
+		return $messages;
 	}
 
 	public function validation_results($results = null)
