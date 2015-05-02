@@ -2,9 +2,11 @@
 
 class Route
 {
-	static function get_controller($uri)
+	static function get_controller($uri, $request_method = null)
 	{
-		$request_method = empty($_SERVER['REQUEST_METHOD']) ? '' : strtolower($_SERVER['REQUEST_METHOD']);
+		if( ! $request_method ){
+			$request_method = empty($_SERVER['REQUEST_METHOD']) ? '' : strtolower($_SERVER['REQUEST_METHOD']);
+		}
 		//Log::coredebug("[route] request_method=$request_method");
 
 		$controller_name           = '';
@@ -36,8 +38,8 @@ class Route
 				$controller_name_candidate = 'Controller_' . $controller_name_candidate;
 
 				$controller_method_name_candidate = count($tmp_uri_exploded) ? strtolower(array_shift($tmp_uri_exploded)) : 'index';
-				//Log::coredebug("[route] controller_name_candidate=$controller_name_candidate");
-				//Log::coredebug("[route] controller_method_name_candidate=$controller_method_name_candidate");
+//				Log::coredebug("[route] controller_name_candidate=$controller_name_candidate");
+//				Log::coredebug("[route] controller_method_name_candidate=$controller_method_name_candidate");
 
 
 				if( class_exists($controller_name_candidate) ){
@@ -144,6 +146,6 @@ class Route
 			}
 		}
 
-		return $controller_method_name;
+		return strtolower($controller_method_name);
 	}
 }

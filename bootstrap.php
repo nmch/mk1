@@ -53,6 +53,9 @@ defined('MK_START_TIME') or define('MK_START_TIME', microtime(true));
 defined('MK_START_MEM') or define('MK_START_MEM', memory_get_usage());
 defined('DS') or define('DS', DIRECTORY_SEPARATOR);
 
+// ユニットテストモードフラグ
+defined('UNITTESTMODE') or define('UNITTESTMODE', isset($_SERVER['UNITTESTMODE']));
+
 // 各種パスを設定
 if( empty($_SERVER['SCRIPT_FILENAME']) ){
 	throw new MkException('empty SCRIPT_FILENAME');
@@ -62,7 +65,7 @@ define('FWPATH', __DIR__ . '/');
 define('COREPATH', realpath(FWPATH . 'core/') . '/');
 define('SCRIPTPATH', realpath($_SERVER['SCRIPT_FILENAME']));
 define('SCRIPTDIR', dirname(realpath(SCRIPTPATH)) . '/');
-if( isset($_SERVER['UNITTESTMODE']) ){    //ユニットテストモード
+if( UNITTESTMODE ){    //ユニットテストモード
 	define('PROJECTPATH', realpath(COREPATH . '../../') . '/');
 }
 else{
@@ -92,7 +95,7 @@ Autoloader::register();
 $mk = Mk::instance();
 
 // ユニットテストモード
-if( isset($_SERVER['UNITTESTMODE']) ){
+if( Mk::is_unittesting() ){
 	/*
 	echo "FWNAME=".FWNAME."\n";
 	echo "FWPATH=".FWPATH."\n";

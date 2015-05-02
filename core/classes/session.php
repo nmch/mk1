@@ -10,9 +10,7 @@ class Session
 
 	function __construct()
 	{
-		$config         = array_merge([
-		], Config::get('session')
-		);
+		$config         = array_merge([], Config::get('session'));
 		static::$config = $config;
 
 		$driver_name   = Arr::get($config, 'driver');
@@ -43,7 +41,7 @@ class Session
 		session_name($cookie_name);
 		session_set_cookie_params($config['expiration_time'], $config['cookie_path'], $config['cookie_domain']);
 		session_start();
-		//Log::coredebug("Session started : ".session_id(),"Session Params",session_get_cookie_params());
+//		Log::coredebug("Session started : ".session_id(),"Session Params",session_get_cookie_params());
 
 		// Flashデータをロード
 		static::$flash = static::get(static::flash_id());
@@ -54,7 +52,7 @@ class Session
 
 	static function get($name, $default = null)
 	{
-		$value = Arr::get($_SESSION, $name, $default);
+		$value = Arr::get(isset($_SESSION) ? $_SESSION : [], $name, $default);
 
 		//Log::coredebug("[session] get $name : ",$value);
 		return $value;
@@ -144,7 +142,7 @@ class Session
 
 	static function delete($name)
 	{
-		if( array_key_exists($name, $_SESSION) ){
+		if( array_key_exists($name, isset($_SESSION) ? $_SESSION : []) ){
 			unset($_SESSION[$name]);
 			//Log::coredebug("[session] $name deleted",$_SESSION);
 		}

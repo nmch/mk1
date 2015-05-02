@@ -23,7 +23,7 @@ class Mk
 		static::$env = get_cfg_var('MK_ENV') ?: static::$env;    // AWS EBSのEC2でCLI実行した場合
 		static::$env = Arr::get($_SERVER, 'MK_ENV') ?: static::$env;    // サーバ変数
 		// ユニットテスト時、環境名がtest以外だった場合はその環境名に-testをつけた環境名にする。
-		if( isset($_SERVER['UNITTESTMODE']) && static::$env !== 'test' ){
+		if( static::is_unittesting() && static::$env !== 'test' ){
 			static::$env = Mk::env() . '-test';
 		}
 		// 本番環境以外では実行環境の書き換えに対応
@@ -49,6 +49,11 @@ class Mk
 		if( Config::get('session.auto_initialize') && php_sapi_name() != 'cli' ){
 			self::$session = Session::instance();
 		}
+	}
+
+	static function is_unittesting()
+	{
+		return UNITTESTMODE;
 	}
 
 	static function env($env = null)

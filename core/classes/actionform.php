@@ -36,7 +36,7 @@ class Actionform
 		$this->config = Config::get('form', []);
 
 		if( ! $clean_init ){
-			$this->values = array_merge($_GET ?: [], $_POST ?: []);
+			$this->values = array_merge($_GET ?: [], $_POST ?: [], $_REQUEST ?: []);
 			//echo "<PRE>values = "; print_r($this->values); echo "</PRE>";
 			//$this->af_filter = new \Model_ActionformFilter;
 			//$this->request_method = Arr::get($_SERVER,'REQUEST_METHOD','');

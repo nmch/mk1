@@ -2,13 +2,24 @@
 
 class Request
 {
-	var $uri;
+	public $uri;
+	public $method;
+	public $response;
+	/** @var View */
+	public $view;
 
-	function __construct($uri)
+	function __construct($uri, $method = null, $data = [])
 	{
-		$this->uri = $uri;
+		$this->uri    = $uri;
+		$this->method = $method;
+		$_REQUEST     = array_merge($_REQUEST, $data);
 	}
 
+	/**
+	 * @param null $offset
+	 *
+	 * @return array
+	 */
 	function uri_segments($offset = null)
 	{
 		$exploded = explode('/', $this->uri);
@@ -20,10 +31,14 @@ class Request
 		}
 	}
 
+	/**
+	 * @throws Exception
+	 * @throws MkException
+	 */
 	function execute()
 	{
 		$route_class_name = Config::get('class.route', 'Route');
-		list($controller_name, $controller_method_name, $controller_method_options) = $route_class_name::get_controller($this->uri);
+		list($controller_name, $controller_method_name, $controller_method_options) = $route_class_name::get_controller($this->uri, $this->method);
 		Log::coredebug("[$route_class_name] controller = $controller_name / method = $controller_method_name");
 
 		$controller = new $controller_name([
@@ -41,7 +56,8 @@ class Request
 			}
 		}
 
-		$controller_return_var = call_user_func_array([$controller, 'execute'], [$controller_method_name, $controller_method_options]);
+		$controller_return_var = call_user_func_array([$controller, 'execute'], [$controller_method_name,
+		                                                                         $controller_method_options]);
 
 		if( $controller_return_var === null ){
 			return;
@@ -57,6 +73,8 @@ class Request
 			// コントローラとビューの両方に定義されているプロパティをコピーする
 			$controller_return_var->import_property($controller);
 
+			$this->view = $controller_return_var;
+
 			$response = new Response($controller_return_var);
 		}
 
@@ -64,6 +82,10 @@ class Request
 			throw new MkException('invalid response object');
 		}
 
-		$response->send();
+		$this->response = $response;
+
+		if( ! Mk::is_unittesting() ){
+			$response->send();
+		}
 	}
 }
