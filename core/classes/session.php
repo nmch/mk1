@@ -64,7 +64,7 @@ class Session
 	 */
 	static function flash_id()
 	{
-		return static::$config['flash_id'];
+		return Arr::get(static::$config, 'flash_id');
 	}
 
 	static function __callStatic($name, $arguments)

@@ -80,10 +80,10 @@ define('APPPATH', realpath(PROJECTPATH . 'app/') . '/');
 define('PKGPATH', realpath(PROJECTPATH . 'packages/') . '/');
 
 set_include_path(get_include_path()
-	. PATH_SEPARATOR . APPPATH . 'plugin'
-	. PATH_SEPARATOR . APPPATH . 'vendor'
-	. PATH_SEPARATOR . COREPATH . 'plugin'
-	. PATH_SEPARATOR . FWPATH . 'vendor'
+                 . PATH_SEPARATOR . APPPATH . 'plugin'
+                 . PATH_SEPARATOR . APPPATH . 'vendor'
+                 . PATH_SEPARATOR . COREPATH . 'plugin'
+                 . PATH_SEPARATOR . FWPATH . 'vendor'
 );
 
 // オートローダー + コアbootstrap

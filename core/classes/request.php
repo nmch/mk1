@@ -2,6 +2,8 @@
 
 class Request
 {
+	/** @var Actionform */
+	public $af;
 	public $uri;
 	public $method;
 	public $response;
@@ -12,7 +14,10 @@ class Request
 	{
 		$this->uri    = $uri;
 		$this->method = $method;
-		$_REQUEST     = array_merge($_REQUEST, $data);
+		$this->af     = Actionform::instance();
+		if( is_array($data) ){
+			$this->af->set($data);
+		}
 	}
 
 	/**
@@ -84,8 +89,9 @@ class Request
 
 		$this->response = $response;
 
-		if( ! Mk::is_unittesting() ){
-			$response->send();
+		if( Mk::is_unittesting() ){
+			$response->do_not_display(true);
 		}
+		$response->send();
 	}
 }

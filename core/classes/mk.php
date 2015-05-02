@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Mk
 {
@@ -54,6 +54,11 @@ class Mk
 	static function is_unittesting()
 	{
 		return UNITTESTMODE;
+	}
+
+	static function is_cli()
+	{
+		return php_sapi_name() === 'cli';
 	}
 
 	static function env($env = null)

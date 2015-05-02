@@ -7,6 +7,8 @@ class Response
 	protected $status;
 	protected $headers;
 	protected $before_send_functions = [];
+	/** @var bool send()実行時にコンテンツをechoしない */
+	protected $do_not_display = false;
 
 	public function __construct($body = null, $status = 200, array $headers = [])
 	{
@@ -91,12 +93,16 @@ class Response
 	 */
 	protected function before()
 	{
-		if( headers_sent() ){
-			return false;
-		}
-		http_response_code($this->status);
-		foreach($this->headers as $key => $header){
-			header($key . ':' . $header);
+		if( ! Mk::is_cli() ){
+			if( headers_sent() ){
+				Log::warning("HTTPヘッダがすでに送出されているためResponse処理を中断します");
+
+				return false;
+			}
+			http_response_code($this->status);
+			foreach($this->headers as $key => $header){
+				header($key . ':' . $header);
+			}
 		}
 
 		return true;
@@ -109,8 +115,13 @@ class Response
 	 */
 	protected function after() { }
 
+	/**
+	 * @return Response
+	 * @throws HttpNotFoundException
+	 */
 	public function send()
 	{
+//		Log::coredebug(__CLASS__,__METHOD__,__FILE__,__LINE__);
 		if( $this->before() ){
 			if( is_array($this->before_send_functions) ){
 				foreach($this->before_send_functions as $func){
@@ -131,9 +142,25 @@ class Response
 			else{
 				$body = $this->body;
 			}
-			echo $body;
+
+			if( ! $this->do_not_display ){
+				echo $body;
+			}
 
 			$this->after();
 		}
+		else{
+			Log::coredebug("Response::before()がfalseを返したため実行を中断しました");
+		}
+
+		return $this;
+	}
+
+	/**
+	 * @param bool $flag send()実行時にコンテンツをechoしないフラグ
+	 */
+	function do_not_display($flag)
+	{
+		$this->do_not_display = boolval($flag);
 	}
 }
