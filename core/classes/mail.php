@@ -46,6 +46,7 @@ class Mail
 	function set_config($name, $value)
 	{
 		Arr::set($this->config, $name, $value);
+
 		return $this;
 	}
 
@@ -85,6 +86,10 @@ class Mail
 
 	function from($address, $name = '')
 	{
+		if( is_array($address) ){
+			$name    = Arr::get($address, 1);
+			$address = Arr::get($address, 0);
+		}
 		$this->config['from']      = $address;
 		$this->config['from_name'] = $name;
 
