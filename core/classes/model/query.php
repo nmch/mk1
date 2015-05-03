@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * Class Model_Query
@@ -13,9 +13,13 @@
  */
 class Model_Query
 {
+	/** @var Model */
 	private $model;
+	/** @var Database_Query */
 	private $query;
-	private $ignore_conditions  = [];
+	/** @var array */
+	private $ignore_conditions = [];
+	/** @var bool */
 	private $conditions_applied = false;
 
 	function __construct($model)
@@ -50,6 +54,22 @@ class Model_Query
 		}
 		$this->ignore_conditions = array_merge($this->ignore_conditions, $ignore_conditions);
 
+		return $this;
+	}
+
+	/**
+	 * @param string $name
+	 *
+	 * @return Model_Query
+	 */
+	function joinset($name)
+	{
+		$queries = Arr::get(forward_static_call([$this->model, 'joinset'], $name), "queries", []);
+		if( is_array($queries) ){
+			foreach($queries as $join_query){
+				$this->query->join($join_query);
+			}
+		}
 		return $this;
 	}
 

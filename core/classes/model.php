@@ -289,7 +289,8 @@ class Model implements Iterator, Countable, ArrayAccess
 		$query = null;
 
 		if( $relation_type == 'belongs_to' || $relation_type == 'has_many' ){
-			$query = forward_static_call_array([$options['model_to'], 'find'], [])->where($options['key_to'], $this->$options['key_from']);
+			$query = forward_static_call_array([$options['model_to'],
+			                                    'find'], [])->where($options['key_to'], $this->$options['key_from']);
 			if( isset($options['condition']) && is_array($options['condition']) ){
 				foreach($options['condition'] as $condition){
 					if( isset($condition['method']) && isset($condition['args']) ){
@@ -604,7 +605,7 @@ class Model implements Iterator, Countable, ArrayAccess
 					if( $data_type === 'json' || $data_type === 'jsonb' ){
 						$value = $value === null ? null : json_encode($value);
 					}
-					if($data_type === 'hstore'){
+					if( $data_type === 'hstore' ){
 						// fixme
 					}
 					break;
@@ -834,5 +835,17 @@ class Model implements Iterator, Countable, ArrayAccess
 	function count()
 	{
 		return count($this->_iter_keylist);
+	}
+
+	/**
+	 * joinsetを取得する
+	 *
+	 * @param string $name
+	 *
+	 * @return array
+	 */
+	static function joinset($name)
+	{
+		return isset(static::$_joinset) ? Arr::get(static::$_joinset, $name, []) : [];
 	}
 }
