@@ -47,7 +47,7 @@ class Session
 			throw new MkException("セッションが開始できませんでした");
 		}
 		static::$session_id = session_id();
-		Log::coredebug("Session started : ".session_id(),"Session Params",session_get_cookie_params());
+//		Log::coredebug("Session started : ".session_id(),"Session Params",session_get_cookie_params());
 
 		// Flashデータをロード
 		static::$flash = static::get(static::flash_id());
