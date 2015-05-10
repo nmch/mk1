@@ -8,6 +8,8 @@ class Session
 
 	protected static $flash = [];
 
+	protected static $session_id = '';
+
 	function __construct()
 	{
 		$config         = array_merge([], Config::get('session'));
@@ -40,8 +42,12 @@ class Session
 
 		session_name($cookie_name);
 		session_set_cookie_params($config['expiration_time'], $config['cookie_path'], $config['cookie_domain']);
-		session_start();
-//		Log::coredebug("Session started : ".session_id(),"Session Params",session_get_cookie_params());
+		$r = session_start();
+		if($r === false){
+			throw new MkException("セッションが開始できませんでした");
+		}
+		static::$session_id = session_id();
+		Log::coredebug("Session started : ".session_id(),"Session Params",session_get_cookie_params());
 
 		// Flashデータをロード
 		static::$flash = static::get(static::flash_id());
@@ -54,7 +60,7 @@ class Session
 	{
 		$value = Arr::get(isset($_SESSION) ? $_SESSION : [], $name, $default);
 
-		//Log::coredebug("[session] get $name : ",$value);
+//		Log::coredebug("[session] get $name : ",$value);
 		return $value;
 		//return array_key_exists($name,$_SESSION) ? $_SESSION[$name] : $default;
 	}

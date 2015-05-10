@@ -46,7 +46,8 @@ class Mk
 		$locale = setlocale(LC_ALL, Config::get('locale', 'en_US'));
 		//Log::debug("locale=$locale");
 
-		if( Config::get('session.auto_initialize') && php_sapi_name() != 'cli' ){
+		// テスト時はセッション維持が必要なのでcli判定を削除
+		if( Config::get('session.auto_initialize') ){
 			self::$session = Session::instance();
 		}
 	}
