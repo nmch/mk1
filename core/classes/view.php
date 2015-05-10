@@ -71,6 +71,9 @@ class View
 	function before()
 	{
 	}
+	function before_view()
+	{
+	}
 
 	function nofilter()
 	{
@@ -105,6 +108,7 @@ class View
 	 */
 	function render()
 	{
+		$this->before_view();
 		$r = $this->view();
 
 		$this->after_view();
@@ -169,8 +173,8 @@ class View
 			throw new Exception('cannot import from non-object');
 		}
 		foreach(get_object_vars($obj) as $key => $value){
-			Log::debug($key);
 			if( property_exists($this, $key) ){
+//				Log::debug(__CLASS__.'::'.__METHOD__.' '.$key);
 				$this->$key = $value;
 			}
 		}
