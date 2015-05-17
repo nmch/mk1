@@ -71,6 +71,7 @@ class View
 	function before()
 	{
 	}
+
 	function before_view()
 	{
 	}
@@ -177,6 +178,30 @@ class View
 //				Log::debug(__CLASS__.'::'.__METHOD__.' '.$key);
 				$this->$key = $value;
 			}
+		}
+
+		return $this;
+	}
+
+	function __get($name)
+	{
+		return $this->get($name);
+	}
+
+	function __set($name, $arg)
+	{
+		return $this->set($name, $arg);
+	}
+
+	function get($name)
+	{
+		return property_exists($this, $name) ? $this->$name : null;
+	}
+
+	function set($name, $value)
+	{
+		if( property_exists($this, $name) ){
+			$this->$name = $value;
 		}
 
 		return $this;
