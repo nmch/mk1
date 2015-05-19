@@ -390,7 +390,9 @@ class Actionform
 		$this->validation_results[$name] = $validation_results;
 		$this->validation_error          = $is_error;
 		if( $is_error ){
-			throw new ValidateErrorException();
+			$exception = new ValidateErrorException();
+			$exception->set_af($this);
+			throw $exception;
 		}
 
 		//Log::coredebug("[af validate] validated_values=",$this->validated_values,$this->values);

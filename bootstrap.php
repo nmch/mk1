@@ -25,6 +25,13 @@ class HttpNotFoundException extends MkException
 
 class ValidateErrorException extends MkException
 {
+	protected static $af;
+	public function set_af(Actionform $af){
+		static::$af = $af;
+	}
+	public function get_af(){
+		return static::$af ?: Actionform::instance();
+	}
 }
 
 class ImageErrorException extends MkException
