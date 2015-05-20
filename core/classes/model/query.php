@@ -9,6 +9,10 @@
  * @method Model_Query or_where()
  * @method Model_Query where_open()
  * @method Model_Query where_close()
+ * @method Model_Query order_by()
+ * @method Model_Query join()
+ * @method Model_Query limit()
+ * @method Model_Query with()
  * @see Database_Query
  */
 class Model_Query
@@ -70,6 +74,7 @@ class Model_Query
 				$this->query->join($join_query);
 			}
 		}
+
 		return $this;
 	}
 
