@@ -8,7 +8,8 @@ class View
 	protected $smarty;
 	protected $template_filename;
 	protected $data;
-	private   $do_not_clear_flash = false;
+	/** @var bool render()時にフラッシュメッセージをクリアしない */
+	private $do_not_clear_flash = false;
 
 	function __construct($template_filename = null, $data = [], $do_not_clear_flash = false)
 	{
@@ -99,6 +100,16 @@ class View
 
 			return '';
 		}
+	}
+
+	/**
+	 * do_not_clear_flashフラグを変更する
+	 *
+	 * @param bool $value
+	 */
+	function do_not_clear_flash($value = true)
+	{
+		$this->do_not_clear_flash = $value;
 	}
 
 	/**

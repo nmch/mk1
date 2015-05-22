@@ -54,6 +54,7 @@ class Session
 		if( ! is_array(static::$flash) ){
 			static::$flash = [];
 		}
+//		Log::coredebug("フラッシュセッションデータをロードしました",static::$flash);
 	}
 
 	static function get($name, $default = null)
@@ -115,6 +116,7 @@ class Session
 		$flash[$name] = $value;
 		static::set(static::flash_id(), $flash);
 		static::$flash = $flash;
+//		Log::coredebug("フラッシュセッションデータをセットしました",static::$flash);
 	}
 
 	/**
@@ -144,6 +146,7 @@ class Session
 	static function clear_flash()
 	{
 		static::delete(static::flash_id());
+//		Log::coredebug("フラッシュセッションデータを削除しました", debug_backtrace(0,2));
 	}
 
 	static function delete($name)

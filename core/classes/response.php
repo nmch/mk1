@@ -134,7 +134,7 @@ class Response
 			if( $this->body instanceof View ){
 				$body = $this->body->render();
 
-				//bodyがResponseオブジェクトだった場合(View::view()がResponseインスタンスを返した場合)、そこから先はそのインスタンスのsend()に任せる
+				// bodyがResponseオブジェクトだった場合(View::view()がResponseインスタンスを返した場合)、そこから先はそのインスタンスのsend()に任せる
 				if( $body instanceof Response ){
 					return $body->send();
 				}
