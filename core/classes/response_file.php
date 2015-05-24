@@ -14,7 +14,8 @@ class Response_File extends Response
 		Log::coredebug("[response file] filename=$filename");
 
 		if( ! file_exists($filepath) ){
-			throw new Exception("file not found");
+//			throw new Exception("file not found");
+			throw new HttpNotFoundException;
 		}
 		if( ! is_file($filepath) ){
 			throw new Exception("specified path is not a regular file");
