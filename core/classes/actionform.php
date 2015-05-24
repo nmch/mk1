@@ -48,16 +48,16 @@ class Actionform
 			if( is_array($_FILES) && count($_FILES) ){
 				foreach($_FILES as $file_key => $file){
 					if( is_array($file['tmp_name']) ){
-						continue;
-						/* たとえば name="upload_files[1][]" という2次元配列にしたときは下のコードは動かなくなる。
-						   配列にするときは様々な構造があり得るので、mk1ではサポートしないことにする。
-						Log::coredebug("file=",$file);
 						$files = [];
 						foreach($file['tmp_name'] as $file_index => $file_tmpname){
+							if( is_array($file_tmpname) ){
+								/* たとえば name="upload_files[1][]" という2次元配列にしたときは下のコードは動かなくなる。
+								   2次元以上の配列にするときは様々な構造があり得るので、mk1ではサポートしないことにする。*/
+								continue;
+							}
 							if( ! $file_tmpname ){
 								continue;
 							}
-							Log::coredebug("file_tmpname",$file_tmpname);
 							if( is_uploaded_file($file_tmpname) ){
 								$files[$file_index] = [
 									'tmp_name' => $file_tmpname,
@@ -69,7 +69,6 @@ class Actionform
 							}
 						}
 						$this->set($file_key, $files);
-						*/
 					}
 					else{
 						if( $file['tmp_name'] && is_uploaded_file($file['tmp_name']) ){
