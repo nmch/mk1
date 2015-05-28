@@ -10,6 +10,8 @@
  */
 class DB
 {
+	const ROWS_NOLIMIT = 'nolimit';
+
 	private $connections = [];
 
 	/**
