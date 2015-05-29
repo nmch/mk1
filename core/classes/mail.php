@@ -102,6 +102,9 @@ class Mail
 			// 第三引数はフラッシュメッセージをクリアさせないフラグ
 			$view = new View("mail/" . $view, $data, true);
 		}
+		if( ! $view instanceof View ){
+			throw new MkException("invalid object");
+		}
 		$body = $view->set_smarty_environment('default_modifiers', [])->render();
 		list($subject, $body) = explode("\n", $body, 2);
 		$this->subject($subject);
