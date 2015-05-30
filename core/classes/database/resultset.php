@@ -30,7 +30,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 				'is_null' => pg_field_is_null($result, $c),
 			];
 
-			$this->fields[]                              = $field;
+			$this->fields[$c]                            = $field;
 			$this->fields_hashed_by_name[$field['name']] = $field;
 		}
 
@@ -125,6 +125,35 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 		return $data;
 	}
 
+	/**
+	 * 指定されたカラム名の値を配列で返す
+	 *
+	 * @param string $column_name
+	 * @param bool   $correct_data
+	 *
+	 * @return array
+	 * @throws Exception
+	 * @throws MkException
+	 */
+	function fetch_column($column_name, $correct_data = false)
+	{
+		$field = Arr::get($this->fields_hashed_by_name, $column_name);
+		if( ! $field ){
+			throw new Exception('column not found');
+		}
+		$num = $field['num'];
+
+		$data = pg_fetch_all_columns($this->result_resource, $num);
+
+		if( $correct_data ){
+			foreach($data as $key => $value){
+				$data[$key] = static::correct_value($value, $field['type']);
+			}
+		}
+
+		return $data;
+	}
+
 	public function offsetExists($offset)
 	{
 		return is_numeric($offset) && ($offset < $this->rows);
@@ -147,6 +176,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 	 * @param mixed $data
 	 *
 	 * @return mixed
+	 * @throws Exception
 	 */
 	protected function correct_data($data)
 	{
