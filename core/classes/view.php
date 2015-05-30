@@ -120,6 +120,14 @@ class View
 	 */
 	function render()
 	{
+		// before_render_*
+		foreach(get_class_methods($this) as $method_name){
+			if( strpos($method_name, 'before_render_') === 0 ){
+				$this->$method_name();
+			}
+		}
+
+
 		$this->before_view();
 		$r = $this->view();
 
