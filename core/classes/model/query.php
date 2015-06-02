@@ -51,6 +51,11 @@ class Model_Query
 		$this->ignore_conditions = [];
 	}
 
+	/**
+	 * @param $ignore_conditions
+	 *
+	 * @return Model_Query
+	 */
 	function ignore_conditions($ignore_conditions)
 	{
 		if( ! is_array($ignore_conditions) ){
