@@ -830,11 +830,17 @@ class Database_Query
 	/**
 	 * @param string $join_str
 	 *
+	 * @see Model_Query::apply_joins()
 	 * @return Database_Query
 	 */
-	function join($join_str)
+	function join($join_str, $prepend = false)
 	{
-		$this->_query_join[] = $join_str;
+		if( $prepend ){
+			array_unshift($this->_query_join, $join_str);
+		}
+		else{
+			$this->_query_join[] = $join_str;
+		}
 
 		return $this;
 	}
