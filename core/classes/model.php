@@ -125,7 +125,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $query;
 	}
 
-	protected static function _get_join_items(Model_Query $query)
+	static function _get_join_items()
 	{
 		$join = isset(static::$_join) ? static::$_join : [];
 		if( ! is_array($join) ){
@@ -141,7 +141,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			ksort($join);
 		}
 
-		//Log::debug(get_called_class(),$join);
+//		Log::debug("_get_join_items",get_called_class(),$join);
 
 		return $join;
 	}
@@ -196,11 +196,12 @@ class Model implements Iterator, Countable, ArrayAccess
 	 * データ取得時のJOIN条件を取得する
 	 *
 	 * @see Model_Query::get()
-	 */
 	static function joins()
 	{
+		Log::debug("joins = ",get_called_class());
 		return isset(static::$_join) ? static::$_join : [];
 	}
+	 */
 
 	static function get_all()
 	{

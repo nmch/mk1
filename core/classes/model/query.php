@@ -174,7 +174,8 @@ class Model_Query
 			return $this;
 		}
 
-		$joins = forward_static_call([$this->model, 'joins']);
+		$joins = forward_static_call([$this->model, '_get_join_items']);
+//		Log::debug("apply_joins = ",$this->model,$joins);
 
 		// ここで適用されるjoinは、クエリ個別に設定されたjoinより大体は先にjoinされていないといけないものなので
 		// Database_Query::join()を呼び出すときにprependフラグをつけている。
