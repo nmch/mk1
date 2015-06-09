@@ -473,7 +473,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			//データがある場合のみ更新する
 			if( count($data) ){
 				$query_update = DB::update($this->table())->values($data)->where($primary_key, $this->get($primary_key))->returning('*');
-				$sql_select   = static::_build_select_query()->clear_from()->from('model_save_query')->get_sql();
+				$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
 				$sql_update   = $query_update->get_sql();
 				$query_update->clear_query_type()->set_sql("with model_save_query as ($sql_update) $sql_select");
 				//echo "SQL = "; print_r($query_update->get_sql(true));
@@ -483,7 +483,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		else{
 			//挿入の場合、データがなくてもdefault valuesが挿入される
 			$query_insert = DB::insert($this->table())->values($data)->returning('*');
-			$sql_select   = static::_build_select_query()->clear_from()->from('model_save_query')->get_sql();
+			$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
 			$sql_insert   = $query_insert->get_sql();
 			$query_insert->clear_query_type()->set_sql("with model_save_query as ($sql_insert) $sql_select");
 			//echo "SQL = "; print_r($query_insert->get_sql(true));
