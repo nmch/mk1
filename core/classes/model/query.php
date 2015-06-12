@@ -13,6 +13,7 @@
  * @method Model_Query join()
  * @method Model_Query limit()
  * @method Model_Query with()
+ * @method Model_Query select()
  * @see Database_Query
  */
 class Model_Query
@@ -23,8 +24,14 @@ class Model_Query
 	private $query;
 	/** @var array */
 	private $ignore_conditions = [];
+	/** @var array */
+	private $ignore_joins = [];
+	/** @var array */
+	private $replace_joins = [];
 	/** @var bool */
 	private $conditions_applied = false;
+	/** @var bool */
+	private $joins_applied = false;
 
 	function __construct($model)
 	{
@@ -62,6 +69,34 @@ class Model_Query
 			$ignore_conditions = [$ignore_conditions];
 		}
 		$this->ignore_conditions = array_merge($this->ignore_conditions, $ignore_conditions);
+
+		return $this;
+	}
+
+	function clear_ignore_joins()
+	{
+		$this->ignore_joins = [];
+	}
+
+	/**
+	 * @return Model_Query
+	 */
+	function ignore_joins($ignore_joins)
+	{
+		if( ! is_array($ignore_joins) ){
+			$ignore_joins = [$ignore_joins];
+		}
+		$this->ignore_joins = array_merge($this->ignore_joins, $ignore_joins);
+
+		return $this;
+	}
+
+	/**
+	 * @return Model_Query
+	 */
+	function replace_joins(array $replace_joins)
+	{
+		$this->replace_joins = array_merge($this->replace_joins, $replace_joins);
 
 		return $this;
 	}
@@ -119,9 +154,50 @@ class Model_Query
 
 	function get_query()
 	{
+		$this->apply_joins();
 		$this->apply_conditions();
 
 		return $this->query;
+	}
+
+	/**
+	 * @param bool $force
+	 *
+	 * @see Model_Query::ignore_joins()
+	 * @see Model_Query::replace_joins()
+	 *
+	 * @return $this
+	 */
+	function apply_joins($force = false)
+	{
+		if( $this->joins_applied && ! $force ){
+			return $this;
+		}
+
+		$joins = forward_static_call([$this->model, '_get_join_items']);
+//		Log::debug("apply_joins = ",$this->model,$joins);
+
+		// ここで適用されるjoinは、クエリ個別に設定されたjoinより大体は先にjoinされていないといけないものなので
+		// Database_Query::join()を呼び出すときにprependフラグをつけている。
+		// そのため、Modelに定義されたjoin順を守るためにDatabase_Query::join()する順番は$joinsの逆順にする必要がある
+		foreach(array_reverse($joins, true) as $key => $join){
+			// 無視するリストに登録されていた場合はスキップ
+			if( ! is_numeric($key) && in_array($key, $this->ignore_joins) ){
+				continue;
+			}
+
+			if( $join ){
+				// join置換
+				if( ! is_numeric($key) && ! empty($this->replace_joins[$key]) ){
+					$join = $this->replace_joins[$key];
+				}
+				$this->join($join, true);
+			}
+		}
+
+		$this->joins_applied = true;
+
+		return $this;
 	}
 
 	/**

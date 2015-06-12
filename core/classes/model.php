@@ -82,8 +82,10 @@ class Model implements Iterator, Countable, ArrayAccess
 		$id                = Arr::get($args, '0');
 		$id_field          = Arr::get($args, '1');
 		$ignore_conditions = Arr::get($args, '2');
+		$ignore_joins      = Arr::get($args, '3');
 
 		$query = static::_build_select_query();
+		$query->ignore_joins($ignore_joins);
 		$query->ignore_conditions($ignore_conditions);
 
 		if( $argc ){
@@ -108,15 +110,13 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 	}
 
+	/**
+	 * @return Model_Query
+	 */
 	protected static function _build_select_query()
 	{
 		$query = new Model_Query(get_called_class());
 		$query->select('*');
-
-		$join = static::_get_join_items();
-		if( $join ){
-			$query->join(implode(" ", $join));
-		}
 
 		if( ! empty(static::$_add_field) ){
 			$query->select(static::$_add_field);
@@ -125,7 +125,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $query;
 	}
 
-	protected static function _get_join_items()
+	static function _get_join_items()
 	{
 		$join = isset(static::$_join) ? static::$_join : [];
 		if( ! is_array($join) ){
@@ -141,7 +141,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			ksort($join);
 		}
 
-		//Log::debug(get_called_class(),$join);
+//		Log::debug("_get_join_items",get_called_class(),$join);
 
 		return $join;
 	}
@@ -186,12 +186,22 @@ class Model implements Iterator, Countable, ArrayAccess
 	/**
 	 * データ取得時の強制条件を取得する
 	 *
-	 * Model_Query::get() から呼ばれる
+	 * @see Model_Query::get()
 	 */
 	static function conditions()
 	{
 		return isset(static::$_conditions) ? static::$_conditions : [];
 	}
+	/**
+	 * データ取得時のJOIN条件を取得する
+	 *
+	 * @see Model_Query::get()
+	static function joins()
+	{
+		Log::debug("joins = ",get_called_class());
+		return isset(static::$_join) ? static::$_join : [];
+	}
+	 */
 
 	static function get_all()
 	{
@@ -221,6 +231,18 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 
 		return $unique_code;
+	}
+
+	/**
+	 * joinsetを取得する
+	 *
+	 * @param string $name
+	 *
+	 * @return array
+	 */
+	static function joinset($name)
+	{
+		return isset(static::$_joinset) ? Arr::get(static::$_joinset, $name, []) : [];
 	}
 
 	function set_array(array $data, $force_original = false)
@@ -451,7 +473,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			//データがある場合のみ更新する
 			if( count($data) ){
 				$query_update = DB::update($this->table())->values($data)->where($primary_key, $this->get($primary_key))->returning('*');
-				$sql_select   = static::_build_select_query()->clear_from()->from('model_save_query')->get_sql();
+				$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
 				$sql_update   = $query_update->get_sql();
 				$query_update->clear_query_type()->set_sql("with model_save_query as ($sql_update) $sql_select");
 				//echo "SQL = "; print_r($query_update->get_sql(true));
@@ -461,7 +483,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		else{
 			//挿入の場合、データがなくてもdefault valuesが挿入される
 			$query_insert = DB::insert($this->table())->values($data)->returning('*');
-			$sql_select   = static::_build_select_query()->clear_from()->from('model_save_query')->get_sql();
+			$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
 			$sql_insert   = $query_insert->get_sql();
 			$query_insert->clear_query_type()->set_sql("with model_save_query as ($sql_insert) $sql_select");
 			//echo "SQL = "; print_r($query_insert->get_sql(true));
@@ -747,13 +769,6 @@ class Model implements Iterator, Countable, ArrayAccess
 	{
 	}
 
-	function drop_isnew_flag()
-	{
-		$this->_is_new = false;
-
-		return $this;
-	}
-
 	/*
 	public static function instance_from_query_data()
 	{
@@ -762,6 +777,13 @@ class Model implements Iterator, Countable, ArrayAccess
 	}
 	 * 
 	 */
+
+	function drop_isnew_flag()
+	{
+		$this->_is_new = false;
+
+		return $this;
+	}
 
 	/**
 	 * このModelのデータを取得する際のselectクエリを得る
@@ -835,17 +857,5 @@ class Model implements Iterator, Countable, ArrayAccess
 	function count()
 	{
 		return count($this->_iter_keylist);
-	}
-
-	/**
-	 * joinsetを取得する
-	 *
-	 * @param string $name
-	 *
-	 * @return array
-	 */
-	static function joinset($name)
-	{
-		return isset(static::$_joinset) ? Arr::get(static::$_joinset, $name, []) : [];
 	}
 }

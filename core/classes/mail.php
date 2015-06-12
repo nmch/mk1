@@ -57,6 +57,32 @@ class Mail
 		}
 
 		$additional_header = [];
+
+		$body = $this->get_config('body');
+
+		Log::coredebug("mail files = ",$this->get_config('file'));
+		if( $this->get_config('file') ){
+			$boundary            = '__BOUNDARY__' . md5(rand());
+			$additional_header[] = "Content-Type: multipart/mixed;boundary=\"{$boundary}\"\n";
+			$body                = "--{$boundary}\n";
+			$body .= "Content-Type: text/plain; charset=\"ISO-2022-JP\"\n";
+			$body .= "\n{$this->get_config('body')}\n";
+			foreach($this->config['file'] as $filepath){
+				if( ! file_exists($filepath) ){
+					throw new MkException("file not found");
+				}
+				$attach_mime_type = "application/octet-stream";
+				$filebase         = basename($filepath);
+			            $body .= "\n--{$boundary}\n";
+			            $body .= "Content-Type: {$attach_mime_type}; name=\"{$filebase}\"\n";
+			            $body .= "Content-Disposition: attachment; filename=\"{$filebase}\"\n";
+			            $body .= "Content-Transfer-Encoding: base64\n";
+			            $body .= "\n";
+			            $body .= chunk_split(base64_encode(file_get_contents($filepath))) . "\n";
+			}
+			$body .= "--{$boundary}--";
+		}
+
 		if( isset($this->config['from']) ){
 			$from = $this->config['from'];
 			if( isset($this->config['from_name']) ){
@@ -75,7 +101,6 @@ class Mail
 
 		$to      = implode(',', $this->config['to']);
 		$subject = isset($this->config['subject']) ? $this->config['subject'] : '';
-		$body    = isset($this->config['body']) ? $this->config['body'] : '';
 		$r       = mb_send_mail($to, $subject, $body, $additional_header);
 		if( $r !== true ){
 			Log::error("メールの送信に失敗しました", $r, $to, $subject, $body, $additional_header);
@@ -153,6 +178,16 @@ class Mail
 			$address = [$address];
 		}
 		$this->config['bcc'] = $address;
+
+		return $this;
+	}
+
+	function file($filepath)
+	{
+		if( ! is_array($filepath) ){
+			$filepath = [$filepath];
+		}
+		$this->config['file'] = $filepath;
 
 		return $this;
 	}
