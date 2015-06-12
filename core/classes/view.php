@@ -113,9 +113,14 @@ class View
 	}
 
 	/**
+	 * @return null|string
+	 */
+	protected function change_template_filename() { }
+
+	/**
 	 * 表示内容を生成する
 	 *
-	 * @returns string
+	 * @return string
 	 * @throws HttpNotFoundException
 	 */
 	function render()
@@ -143,9 +148,10 @@ class View
 			return $r;
 		}
 
-		if( ! $this->template_exists($this->template_filename) ){
-			if( is_scalar($this->template_filename) ){
-				Log::error("template not found {$this->template_filename}");
+		$template_filename = $this->change_template_filename() ?: $this->template_filename;
+		if( ! $this->template_exists($template_filename) ){
+			if( is_scalar($template_filename) ){
+				Log::error("template not found {$template_filename}");
 			}
 			throw new HttpNotFoundException();
 		}
@@ -155,7 +161,7 @@ class View
 			$this->smarty->assign($name, $value);
 		}
 
-		return $this->smarty->fetch($this->template_filename);
+		return $this->smarty->fetch($template_filename);
 	}
 
 	/**
