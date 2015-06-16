@@ -125,27 +125,6 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $query;
 	}
 
-	static function _get_join_items()
-	{
-		$join = isset(static::$_join) ? static::$_join : [];
-		if( ! is_array($join) ){
-			$join = [$join];
-		}
-
-		if( empty(static::$_do_not_inherit_join) ){
-			$parent = get_parent_class(get_called_class());
-			if( $parent ){
-				$join = array_merge($join, $parent::_get_join_items());
-			}
-			$join = array_unique($join);
-			ksort($join);
-		}
-
-//		Log::debug("_get_join_items",get_called_class(),$join);
-
-		return $join;
-	}
-
 	static function primary_key()
 	{
 		if( empty(static::$_primary_key) ){
@@ -183,6 +162,27 @@ class Model implements Iterator, Countable, ArrayAccess
 		return isset(static::$_table_name) ? static::$_table_name : Inflector::tableize(get_called_class());
 	}
 
+	static function _get_join_items()
+	{
+		$join = isset(static::$_join) ? static::$_join : [];
+		if( ! is_array($join) ){
+			$join = [$join];
+		}
+
+		if( empty(static::$_do_not_inherit_join) ){
+			$parent = get_parent_class(get_called_class());
+			if( $parent ){
+				$join = array_merge($join, $parent::_get_join_items());
+			}
+			$join = array_unique($join);
+			ksort($join);
+		}
+
+//		Log::debug("_get_join_items",get_called_class(),$join);
+
+		return $join;
+	}
+
 	/**
 	 * データ取得時の強制条件を取得する
 	 *
@@ -196,12 +196,14 @@ class Model implements Iterator, Countable, ArrayAccess
 	 * データ取得時のJOIN条件を取得する
 	 *
 	 * @see Model_Query::get()
+	 */
+	/*
 	static function joins()
 	{
 		Log::debug("joins = ",get_called_class());
 		return isset(static::$_join) ? static::$_join : [];
 	}
-	 */
+	*/
 
 	static function get_all()
 	{
@@ -473,8 +475,10 @@ class Model implements Iterator, Countable, ArrayAccess
 			//データがある場合のみ更新する
 			if( count($data) ){
 				$query_update = DB::update($this->table())->values($data)->where($primary_key, $this->get($primary_key))->returning('*');
-				$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
-				$sql_update   = $query_update->get_sql();
+				// apply_conditions()を実行するとexcept系のconditionにひっかかって保存したデータがselectできないことがある
+//				$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
+				$sql_select = static::_build_select_query()->apply_joins()->clear_from()->from('model_save_query')->get_sql();
+				$sql_update = $query_update->get_sql();
 				$query_update->clear_query_type()->set_sql("with model_save_query as ($sql_update) $sql_select");
 				//echo "SQL = "; print_r($query_update->get_sql(true));
 				$r = $query_update->execute();
@@ -483,8 +487,10 @@ class Model implements Iterator, Countable, ArrayAccess
 		else{
 			//挿入の場合、データがなくてもdefault valuesが挿入される
 			$query_insert = DB::insert($this->table())->values($data)->returning('*');
-			$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
-			$sql_insert   = $query_insert->get_sql();
+			// apply_conditions()を実行するとexcept系のconditionにひっかかって保存したデータがselectできないことがある
+//			$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
+			$sql_select = static::_build_select_query()->apply_joins()->clear_from()->from('model_save_query')->get_sql();
+			$sql_insert = $query_insert->get_sql();
 			$query_insert->clear_query_type()->set_sql("with model_save_query as ($sql_insert) $sql_select");
 			//echo "SQL = "; print_r($query_insert->get_sql(true));
 			$r = $query_insert->execute();
