@@ -29,6 +29,11 @@ trait Logic_View_Pager
 	{
 		parent::view();
 
+		$method_name = 'before_retrieve';
+		if( method_exists($this, $method_name) ){
+			call_user_func([$this,$method_name]);
+		}
+
 		return $this->retrieve();
 	}
 
