@@ -118,12 +118,11 @@ class View
 	protected function change_template_filename() { }
 
 	/**
-	 * 表示内容を生成する
+	 * view()の実行結果を得る
 	 *
-	 * @return string
-	 * @throws HttpNotFoundException
+	 * @return Response|string
 	 */
-	function render()
+	function get_view()
 	{
 		// before_render_*
 		foreach(get_class_methods($this) as $method_name){
@@ -132,11 +131,24 @@ class View
 			}
 		}
 
-
 		$this->before_view();
+
 		$r = $this->view();
 
 		$this->after_view();
+
+		return $r;
+	}
+
+	/**
+	 * 表示内容を生成する
+	 *
+	 * @return string
+	 * @throws HttpNotFoundException
+	 */
+	function render()
+	{
+		$r = $this->get_view();
 
 		// view()でset_flashする可能性があるので、clear_flash()はview()のあとで。
 		if( ! $this->do_not_clear_flash ){
