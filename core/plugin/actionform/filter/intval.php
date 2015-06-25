@@ -5,5 +5,5 @@
  * @return integer
  */
 return function ($value) {
-	return intval($value);
+	return strlen($value) ? intval($value) : null;
 };
