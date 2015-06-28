@@ -152,6 +152,9 @@ class Model_Query
 		return $this->get_query()->select('*')->execute();
 	}
 
+	/**
+	 * @return Database_Query
+	 */
 	function get_query()
 	{
 		$this->apply_joins();
