@@ -197,7 +197,7 @@ class Database_Query
 
 	function build_where()
 	{
-		Log::coredebug($this->_query_where,$this->_query_values);
+//		Log::coredebug($this->_query_where,$this->_query_values);
 		$last_condition = null;
 
 		$sql = '';
