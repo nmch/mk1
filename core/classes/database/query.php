@@ -197,7 +197,7 @@ class Database_Query
 
 	function build_where()
 	{
-		//Log::coredebug($this->_query_where,$this->_query_values);
+		Log::coredebug($this->_query_where,$this->_query_values);
 		$last_condition = null;
 
 		$sql = '';
@@ -221,6 +221,9 @@ class Database_Query
 					}
 
 					$sql .= ')';
+				}
+				elseif( ($exp = Arr::get($condition,0)) instanceof Database_Expression ){
+					$sql .= ' '.(string)$exp;
 				}
 				else{
 					if( ! empty($sql) AND $last_condition !== '(' ){
