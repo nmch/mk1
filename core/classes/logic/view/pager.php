@@ -119,7 +119,7 @@ trait Logic_View_Pager
 
 			// スペースによる複数指定
 			if( is_scalar($values) ){
-				$values = explode(' ', $values);
+				$values = explode(' ', trim($values));
 			}
 			if( ! $values ){
 				$values = [];
