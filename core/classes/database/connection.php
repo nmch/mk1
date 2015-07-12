@@ -192,5 +192,9 @@ class Database_Connection
 
 		DB::query('ROLLBACK TO SAVEPOINT ' . $point_name)->execute($this);
 		$this->savepoint_counter--;
+		if( $this->savepoint_counter < 1 ){
+			$this->savepoint_counter = 0;
+			$this->rollback_transaction();
+		}
 	}
 }
