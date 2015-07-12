@@ -148,7 +148,8 @@ class View
 	 */
 	function render()
 	{
-		$r = $this->get_view();
+		$return_value = null;
+		$r            = $this->get_view();
 
 		// view()でset_flashする可能性があるので、clear_flash()はview()のあとで。
 		if( ! $this->do_not_clear_flash ){
@@ -157,23 +158,28 @@ class View
 
 		// view()がResponseオブジェクト(JSONを想定)を返した場合はそのまま呼び出し元(たぶんResopnse::send()へ返す
 		if( $r instanceof Response ){
-			return $r;
+			$return_value = $r;
 		}
-
-		$template_filename = $this->change_template_filename() ?: $this->template_filename;
-		if( ! $this->template_exists($template_filename) ){
-			if( is_scalar($template_filename) ){
-				Log::error("template not found {$template_filename}");
+		else{
+			$template_filename = $this->change_template_filename() ?: $this->template_filename;
+			if( ! $this->template_exists($template_filename) ){
+				if( is_scalar($template_filename) ){
+					Log::error("template not found {$template_filename}");
+				}
+				throw new HttpNotFoundException();
 			}
-			throw new HttpNotFoundException();
-		}
-		//echo "<PRE>"; print_r($this->smarty); echo "</PRE>";
+			//echo "<PRE>"; print_r($this->smarty); echo "</PRE>";
 
-		foreach(get_object_vars($this) as $name => $value){
-			$this->smarty->assign($name, $value);
+			foreach(get_object_vars($this) as $name => $value){
+				$this->smarty->assign($name, $value);
+			}
+
+			$return_value = $this->smarty->fetch($template_filename);
 		}
 
-		return $this->smarty->fetch($template_filename);
+		$this->after();
+
+		return $return_value;
 	}
 
 	/**
@@ -188,14 +194,7 @@ class View
 		return $this->smarty->templateExists($template_filename);
 	}
 
-	function __destruct()
-	{
-		$this->after();
-	}
-
-	function after()
-	{
-	}
+	function after() { }
 
 	/**
 	 * 指定されたオブジェクトから自分にプロパティをコピーする
