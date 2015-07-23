@@ -23,6 +23,9 @@ trait Logic_View_Pager
 //	public $is_first_page;
 //	public $is_last_page;
 
+	/** @var Database_Query|Model_Query */
+	protected $query;
+	/** @var array */
 	public $list = [];
 
 	function view()
@@ -31,10 +34,17 @@ trait Logic_View_Pager
 
 		$method_name = 'before_retrieve';
 		if( method_exists($this, $method_name) ){
-			call_user_func([$this,$method_name]);
+			call_user_func([$this, $method_name]);
 		}
 
-		return $this->retrieve();
+		$r = $this->retrieve();
+
+		$method_name = 'after_retrieve';
+		if( method_exists($this, $method_name) ){
+			call_user_func([$this, $method_name]);
+		}
+
+		return $r;
 	}
 
 	/**
@@ -43,7 +53,7 @@ trait Logic_View_Pager
 	 */
 	function retrieve()
 	{
-		$query = $this->get_query();
+		$query = $this->query = $this->get_query();
 		if( $query === null ){
 			return null;
 		}
