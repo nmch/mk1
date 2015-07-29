@@ -7,17 +7,31 @@ class Task_Migration extends Task
 {
 	function run()
 	{
+		Log::info("[db migration] データベースマイグレーションを実行します");
+
 		$argv = func_get_args();
 
 		// renumberオプション
 		if( in_array('renumber', $argv) ){
-			$seq = 10;
-			foreach($this->get_migration_files() as $file){
-				$new_filename = sprintf('%04d_%s', $seq, $file['name']);
-				echo "[{$file['seq']} -> $seq] ";
-				rename($file['dirname'] . '/' . $file['basename'], $file['dirname'] . '/' . $new_filename);
+			Log::info("[db migration] リナンバリングを実行します");
 
-				$seq += 10;
+			$seq = 10;
+			foreach($this->get_migration_files() as $groups){
+				foreach($groups as $file){
+					$new_filename = sprintf('%04d', $seq);
+					$group        = Arr::get($file, 'group');
+					if( $group !== 'NOGROUP' ){
+						$new_filename .= "-{$group}";
+					}
+					$new_filename .= "_{$file['name']}";
+
+					Log::info("[db migration] [Renumber] {$group}/{$file['seq']} -> [$seq]");
+					echo "[Renumber] {$group}/{$file['seq']} -> [$seq]\n";
+
+					rename($file['dirname'] . '/' . $file['basename'], $file['dirname'] . '/' . $new_filename);
+
+					$seq += 10;
+				}
 			}
 
 			// renumber時はinitオプションを自動追加
@@ -26,46 +40,92 @@ class Task_Migration extends Task
 
 		// initオプション
 		if( in_array('init', $argv) ){
+			Log::info("[db migration] すべてのテーブルを削除します");
 			DB::delete_all_tables();
 		}
 
-		$last_seq             = 0;
-		$table_existing_check = DB::query("SELECT * FROM information_schema.tables WHERE table_schema='public' AND table_name='migrations'")->execute();
-		if( $table_existing_check->count() == 0 ){
-			DB::query("CREATE TABLE migrations ( last_seq INTEGER )")->execute();
-			DB::query("INSERT INTO migrations (last_seq) VALUES (0)")->execute();
-			echo "migrationsテーブルを作成しました\n";
-		}
-		else{
-			$last_seq = DB::query("SELECT last_seq FROM migrations")->execute()->get('last_seq');
-			//echo "last_seq=$last_seq\n";
-		}
+		$schema = Database_Schema::get('migrations');
 
-		foreach($this->get_migration_files() as $migration_file){
-			$seq  = $migration_file['seq'];
-			$name = $migration_file['name'];
-
-			if( $seq <= $last_seq ){
-				echo "[skip $seq] ";
-				continue;
+		/**
+		 * migrationsテーブルのバージョンアップ
+		 */
+		{
+			$migrations_migration_1_to_2         = false;
+			$migrations_migration_1_to_2_lastseq = null;
+			if( $schema && count($schema['columns']) === 1 ){
+				$migrations_migration_1_to_2         = true;
+				$migrations_migration_1_to_2_lastseq = DB::query("SELECT last_seq FROM migrations")->execute()->get('last_seq');
+				Log::info("[db migration] migrationsテーブルのバージョンアップ(1 -> 2)を行います。現在のシーケンスは[{$migrations_migration_1_to_2_lastseq}]です。");
+				DB::query("DROP TABLE migrations")->execute();
+				$schema = null;
 			}
-			printf("\n%4d : %s -> ", $seq, $name);
+		}
 
-			$query = file_get_contents($migration_file['dirname'] . '/' . $migration_file['basename']);
-			DB::start_transaction();
-			try {
-				$r = DB::query($query)->execute();
-				//Log::coredebug($query,$r);
-				DB::query("update migrations set last_seq=$seq")->execute();
-				DB::commit_transaction();
-				Log::info("[db migration] seq=$seq / $name");
-				echo "OK";
-			} catch(Exception $e){
-				DB::rollback_transaction();
-				//Log::coredebug($e->getMessage());
-				//print_r( $e->getTrace());
-				echo "Error";
-				break;
+		if( ! $schema ){
+			$q = <<<SQL
+CREATE TABLE migrations (
+	migration_group TEXT PRIMARY KEY ,
+	migration_last_seq INTEGER NOT NULL DEFAULT 0
+);
+INSERT INTO migrations (migration_group) VALUES ('NOGROUP');
+SQL;
+			DB::query($q)->execute();
+			Log::info("[db migration] migrationsテーブルを作成しました");
+		}
+
+		/**
+		 * migrationsテーブルのバージョンアップ
+		 */
+		if( $migrations_migration_1_to_2 ){
+			DB::update('migrations')->set([
+				'migration_last_seq' => $migrations_migration_1_to_2_lastseq,
+			])->where('migration_group', 'NOGROUP')->execute();
+			Log::info("[db migration] migrationsテーブルのバージョンアップ(1 -> 2)が完了しました。");
+		}
+
+		$last_seq_list = DB::select()->from('migrations')->execute()->as_array(false, 'migration_group');
+
+		foreach($this->get_migration_files() as $groups){
+			foreach($groups as $group => $migration_file){
+				$seq  = $migration_file['seq'];
+				$name = $migration_file['name'];
+
+				$last_seq_item = Arr::get($last_seq_list, $group);
+				$last_seq      = 0;
+				if( ! $last_seq_item ){
+					DB::insert('migrations')->values(['migration_group' => $group])->execute();
+				}
+				else{
+					$last_seq = $last_seq_item['migration_last_seq'];
+				}
+
+				if( $seq <= $last_seq ){
+					Log::info("[db migration] マイグレーションをスキップしました / group={$group} / seq={$seq}");
+					echo ".";
+				}
+				else{
+					printf("\n%10s : %4d : %s -> ", $group, $seq, $name);
+
+					$query = file_get_contents($migration_file['dirname'] . '/' . $migration_file['basename']);
+					DB::start_transaction();
+					try {
+						$r = DB::query($query)->execute();
+						//Log::coredebug($query,$r);
+						DB::update("migrations")->set(['migration_last_seq' => $seq])->where('migration_group', $group)->execute();
+						DB::commit_transaction();
+						Log::info("[db migration] マイグレーションの実行に成功しました / group={$group} / seq={$seq} / {$name}");
+						echo "OK";
+					} catch(Exception $e){
+						DB::rollback_transaction();
+						//Log::coredebug($e->getMessage());
+						//print_r( $e->getTrace());
+						Log::error("[db migration] マイグレーション失敗 / group={$group} / seq={$seq} / {$name}", $e);
+
+						$msg = "Error\n{$e->getMessage()}";
+						echo $msg;
+						break;
+					}
+				}
 			}
 		}
 		echo "\n";
@@ -83,16 +143,24 @@ class Task_Migration extends Task
 		$data = [];
 		foreach($migration_files as $migration_file){
 			$pathinfo = pathinfo($migration_file);
-			list($seq, $name) = explode('_', $pathinfo['basename'], 2);
-			if( ! is_numeric($seq) ){
-				throw new MkException("シーケンス [{$seq}] は数値で指定して下さい");
-				continue;
+			$basename = $pathinfo['filename'];
+			if( preg_match('#^([0-9]+)(-([^_]+))?_(.*)$#', $basename, $match) ){
+				$seq   = intval(Arr::get($match, 1));
+				$group = Arr::get($match, 3);
+				if( strlen($group) === 0 ){
+					$group = 'NOGROUP'; // グループなしの場合の表記"NOGROUP"を変更するときは、既存DBのマイグレーションが必要なので注意!!
+				}
+
+				$pathinfo['seq']   = $seq;
+				$pathinfo['group'] = $group;
+				$pathinfo['name']  = Arr::get($match, 4);
+
+				if( ! empty($data[$seq][$group]) ){
+					throw new MkException("グループ[{$group}]のシーケンス[{$seq}]の定義が重複しています");
+				}
+
+				$data[$seq][$group] = $pathinfo;
 			}
-			$seq        = intval($seq);
-			$data[$seq] = $pathinfo + [
-					'seq'  => $seq,
-					'name' => $name,
-				];
 		}
 		ksort($data);
 
