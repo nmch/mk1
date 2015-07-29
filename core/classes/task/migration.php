@@ -83,7 +83,7 @@ SQL;
 			Log::info("[db migration] migrationsテーブルのバージョンアップ(1 -> 2)が完了しました。");
 		}
 
-		$last_seq_list = DB::select()->from('migrations')->execute()->as_array(false, 'migration_group');
+		$last_seq_list = $this->get_latest_migrations();
 
 		foreach($this->get_migration_files() as $groups){
 			foreach($groups as $group => $migration_file){
@@ -94,6 +94,7 @@ SQL;
 				$last_seq      = 0;
 				if( ! $last_seq_item ){
 					DB::insert('migrations')->values(['migration_group' => $group])->execute();
+					$last_seq_list = $this->get_latest_migrations();
 				}
 				else{
 					$last_seq = $last_seq_item['migration_last_seq'];
@@ -131,6 +132,11 @@ SQL;
 		echo "\n";
 
 		DB::clear_schema_cache();
+	}
+
+	function get_latest_migrations()
+	{
+		return DB::select()->from('migrations')->execute()->as_array(false, 'migration_group');
 	}
 
 	function get_migration_files()
