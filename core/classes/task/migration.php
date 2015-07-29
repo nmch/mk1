@@ -8,6 +8,7 @@ class Task_Migration extends Task
 	function run()
 	{
 		Log::info("[db migration] データベースマイグレーションを実行します");
+		DB::clear_schema_cache();
 
 		$argv = func_get_args();
 
