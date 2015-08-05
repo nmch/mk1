@@ -83,9 +83,8 @@ trait Logic_Masterdetail_Controller
 
 	abstract protected function get_model_name();
 
-	function get_detail($id = null)
+	private function prepare_view($view_class_name, $id)
 	{
-		$view_class_name = 'View_' . $this->get_base_class_name() . '_Detail';
 		if( ! class_exists($view_class_name) ){
 			throw new Exception("view class({$view_class_name}) not found");
 		}
@@ -110,5 +109,19 @@ trait Logic_Masterdetail_Controller
 		}
 
 		return $view;
+	}
+
+	function get_view($id)
+	{
+		$view_class_name = 'View_' . $this->get_base_class_name() . '_View';
+
+		return $this->prepare_view($view_class_name, $id);
+	}
+
+	function get_detail($id = null)
+	{
+		$view_class_name = 'View_' . $this->get_base_class_name() . '_Detail';
+
+		return $this->prepare_view($view_class_name, $id);
 	}
 }
