@@ -51,6 +51,10 @@ trait Logic_Masterdetail_Controller
 				/** @var Model $obj */
 				$obj = $this->af->save($af_preset_name);
 
+				if( method_exists($this, 'after_save_detail') ){
+					$this->after_save_detail($obj);
+				}
+
 				Log::debug("保存後obj", $obj->as_array());
 
 				$this->af->set_message('success', "保存しました");
@@ -93,7 +97,7 @@ trait Logic_Masterdetail_Controller
 
 		$model_name = $this->get_model_name();
 		if( ! class_exists($model_name) ){
-			throw new Exception("model class({$view_class_name}) not found");
+			throw new Exception("model class({$model_name}) not found");
 		}
 
 		if( $id ){
