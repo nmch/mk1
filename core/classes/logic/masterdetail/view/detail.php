@@ -9,6 +9,7 @@
  */
 trait Logic_Masterdetail_View_Detail
 {
+	/** @var  Model[] */
 	public $item;
 
 	function before_render_set_default()
