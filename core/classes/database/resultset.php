@@ -241,7 +241,13 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 						}
 						else{
 							$value = array_map(function ($str) {
-								return stripslashes($str);
+								if( strtoupper($str) === 'NULL' ){
+									// fixme: 文字列型配列の場合の文字列としての'NULL'とSQLのnull値を区別しなければならない
+									$str = null;
+								}
+								$str = stripslashes($str);
+
+								return $str;
 							}, str_getcsv(trim($value, '{}'), $delimiter, '"', '\\')
 							);
 						}
