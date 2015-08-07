@@ -20,6 +20,8 @@ trait Logic_View_Pager
 //	public $page;
 	/** @var int */
 	public $default_rows = 10;
+	/** @var string 取得した結果にas_object_array()を実行するかどうか */
+	public $as_object_array = null;
 //	public $is_first_page;
 //	public $is_last_page;
 
@@ -83,7 +85,8 @@ trait Logic_View_Pager
 			);
 		}
 		else{
-			$this->list = DB::pager($query, $this->af)->execute();
+			$r          = DB::pager($query, $this->af)->execute();
+			$this->list = $this->as_object_array ? $r->as_object_array($this->as_object_array) : $r;
 		}
 
 		return null;
@@ -152,6 +155,5 @@ trait Logic_View_Pager
 				}
 			}
 		}
-
 	}
 }
