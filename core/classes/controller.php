@@ -7,6 +7,7 @@ class Controller
 {
 	/** @var Actionform $af */
 	protected $af;
+	/** @var  Request */
 	protected $request;
 
 	function __construct($options = [])
