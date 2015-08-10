@@ -25,10 +25,15 @@ trait Logic_Masterdetail_Controller
 
 	function post_detail($id = null)
 	{
+		$options = [];
+
 		$savepoint = DB::place_savepoint();
 		try {
 			if( method_exists($this, 'before_post_detail') ){
-				$this->before_post_detail();
+				$options = $this->before_post_detail();
+				if( ! is_array($options) ){
+					$options = [];
+				}
 			}
 			$model_name = $this->get_model_name();
 			if( ! preg_match('/^Model_(.+)$/', $model_name, $match) ){
@@ -71,9 +76,15 @@ trait Logic_Masterdetail_Controller
 			*/
 			$list_path = '/' . strtolower(str_replace('_', '/', $this->get_base_class_name()));
 
+			if( Arr::get($options, 'redirect_to_detail') ){
+				$list_path .= '/detail/' . $obj->$primary_key_name;
+			}
+
 			DB::commit_savepoint($savepoint);
 
-			return new Response_Redirect($list_path);
+			$redirect_to = Arr::get($options, 'redirect_to', $list_path);
+
+			return new Response_Redirect($redirect_to);
 		} catch(AppException $e){
 			DB::rollback_savepoint($savepoint);
 			$this->af->set_message('error', $e->getMessage());
