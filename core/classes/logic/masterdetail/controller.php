@@ -46,11 +46,13 @@ trait Logic_Masterdetail_Controller
 			$primary_key_value = $this->af->get($primary_key_name);
 			$af_preset_name    = strtolower($match[1]);
 
+			$deleted = false;
 			if( $this->af->delete && $primary_key_value ){
 				/** @var Model $obj */
 				$obj = $model_name::find($primary_key_value);
 				$obj->delete();
 				$this->af->set_message('success', "削除しました");
+				$deleted = true;
 			}
 			else{
 				Log::info("プリセット [{$af_preset_name}] でバリデーションと自動保存を行います");
@@ -79,7 +81,7 @@ trait Logic_Masterdetail_Controller
 			*/
 			$list_path = '/' . strtolower(str_replace('_', '/', $this->get_base_class_name()));
 
-			if( Arr::get($options, 'redirect_to_detail') || $this->redirect_to_detail ){
+			if( (Arr::get($options, 'redirect_to_detail') || $this->redirect_to_detail) && ! $deleted ){
 				$list_path .= '/detail/' . $obj->$primary_key_name;
 			}
 
