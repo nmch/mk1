@@ -13,6 +13,9 @@ trait Logic_Masterdetail_Controller
 {
 	use Logic_Masterdetail_Common;
 
+	/** @var bool detail保存時にindexではなくdetailへ戻るフラグ */
+	protected $redirect_to_detail = false;
+
 	function get_index()
 	{
 		$view_class_name = 'View_' . $this->get_base_class_name() . '_Index';
@@ -28,7 +31,7 @@ trait Logic_Masterdetail_Controller
 		$options = [];
 
 		$savepoint = DB::place_savepoint();
-		try {
+		try{
 			if( method_exists($this, 'before_post_detail') ){
 				$options = $this->before_post_detail();
 				if( ! is_array($options) ){
@@ -76,7 +79,7 @@ trait Logic_Masterdetail_Controller
 			*/
 			$list_path = '/' . strtolower(str_replace('_', '/', $this->get_base_class_name()));
 
-			if( Arr::get($options, 'redirect_to_detail') ){
+			if( Arr::get($options, 'redirect_to_detail') || $this->redirect_to_detail ){
 				$list_path .= '/detail/' . $obj->$primary_key_name;
 			}
 
