@@ -13,6 +13,9 @@ trait Logic_Masterdetail_Controller
 {
 	use Logic_Masterdetail_Common;
 
+	/** @var bool detail保存時にindexではなくdetailへ戻るフラグ */
+	protected $redirect_to_detail = false;
+
 	function get_index()
 	{
 		$view_class_name = 'View_' . $this->get_base_class_name() . '_Index';
@@ -28,7 +31,7 @@ trait Logic_Masterdetail_Controller
 		$options = [];
 
 		$savepoint = DB::place_savepoint();
-		try {
+		try{
 			if( method_exists($this, 'before_post_detail') ){
 				$options = $this->before_post_detail();
 				if( ! is_array($options) ){
@@ -43,11 +46,13 @@ trait Logic_Masterdetail_Controller
 			$primary_key_value = $this->af->get($primary_key_name);
 			$af_preset_name    = strtolower($match[1]);
 
+			$deleted = false;
 			if( $this->af->delete && $primary_key_value ){
 				/** @var Model $obj */
 				$obj = $model_name::find($primary_key_value);
 				$obj->delete();
 				$this->af->set_message('success', "削除しました");
+				$deleted = true;
 			}
 			else{
 				Log::info("プリセット [{$af_preset_name}] でバリデーションと自動保存を行います");
@@ -76,7 +81,7 @@ trait Logic_Masterdetail_Controller
 			*/
 			$list_path = '/' . strtolower(str_replace('_', '/', $this->get_base_class_name()));
 
-			if( Arr::get($options, 'redirect_to_detail') ){
+			if( (Arr::get($options, 'redirect_to_detail') || $this->redirect_to_detail) && ! $deleted ){
 				$list_path .= '/detail/' . $obj->$primary_key_name;
 			}
 
