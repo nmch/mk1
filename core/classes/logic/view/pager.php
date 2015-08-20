@@ -11,19 +11,19 @@
  */
 trait Logic_View_Pager
 {
-//	public $nolimit_rows;
-//	public $total_result;
-//	public $offset;
+	//	public $nolimit_rows;
+	//	public $total_result;
+	//	public $offset;
 
-//	public $total_rows;
-//	public $total_pages;
-//	public $page;
+	//	public $total_rows;
+	//	public $total_pages;
+	//	public $page;
 	/** @var int */
 	public $default_rows = 10;
 	/** @var string 取得した結果にas_object_array()を実行するかどうか */
 	public $as_object_array = null;
-//	public $is_first_page;
-//	public $is_last_page;
+	//	public $is_first_page;
+	//	public $is_last_page;
 
 	/** @var Database_Query|Model_Query */
 	protected $query;
@@ -114,8 +114,8 @@ trait Logic_View_Pager
 		}
 		
 		foreach($filters as $key => $values){
-			// スカラー値でない場合は無視する
-			if( ! is_scalar($values) ){
+			// スカラー値か配列でない場合は無視する
+			if( ! is_scalar($values) && ! is_array($values) ){
 				continue;
 			}
 			// ページャで使うパラメータは無視する
