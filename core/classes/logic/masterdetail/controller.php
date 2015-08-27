@@ -31,7 +31,7 @@ trait Logic_Masterdetail_Controller
 		$options = [];
 
 		$savepoint = DB::place_savepoint();
-		try{
+		try {
 			if( method_exists($this, 'before_post_detail') ){
 				$options = $this->before_post_detail();
 				if( ! is_array($options) ){
@@ -62,7 +62,10 @@ trait Logic_Masterdetail_Controller
 				$obj = $this->af->save($af_preset_name);
 
 				if( method_exists($this, 'after_save_detail') ){
-					$this->after_save_detail($obj);
+					$r = $this->after_save_detail($obj);
+					if( is_array($r) ){
+						$options = array_merge($options, $r);
+					}
 				}
 
 				Log::debug("保存後obj", $obj->as_array());

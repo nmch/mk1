@@ -3,13 +3,15 @@
 /**
  * マスタデータ編集
  *
+ * @property Actionform af
+ *
  * @package    App
  * @subpackage Logic
  * @author     Hakonet Inc
  */
 trait Logic_Masterdetail_View_Detail
 {
-	/** @var  Model[] */
+	/** @var Model */
 	public $item;
 
 	function before_render_set_default()
