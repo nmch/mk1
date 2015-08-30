@@ -69,20 +69,28 @@ trait Logic_View_Pager
 
 		$this->af->rows = $this->af->rows ?: $this->default_rows;
 
-		if( $this->af->export && property_exists($this, 'export_settings') ){
-			$export_settings = $this->export_settings;
+		if( $this->af->export ){
+			$export_method_name = "export_{$this->af->export}";
+			if( method_exists($this, $export_method_name) ){
+				$r = call_user_func_array([$this, $export_method_name], [$query, $this->af]);
 
-			$dataexchange_format         = Arr::get($export_settings, 'dataexchange_format', []);
-			$default_dataexchange_format = Arr::get($export_settings, 'default_dataexchange_format', 'default');
-			$export_filename             = Arr::get($export_settings, 'export_filename', 'export');
-			$functions                   = Arr::get($export_settings, 'functions', []);
+				return $r;
+			}
+			elseif( property_exists($this, 'export_settings') ){
+				$export_settings = $this->export_settings;
 
-			return Logic_File::respond_obj_as_csv(
-				$query->get(),
-				Arr::get($dataexchange_format, $default_dataexchange_format, []),
-				$export_filename,
-				$functions
-			);
+				$dataexchange_format         = Arr::get($export_settings, 'dataexchange_format', []);
+				$default_dataexchange_format = Arr::get($export_settings, 'default_dataexchange_format', 'default');
+				$export_filename             = Arr::get($export_settings, 'export_filename', 'export');
+				$functions                   = Arr::get($export_settings, 'functions', []);
+
+				return Logic_File::respond_obj_as_csv(
+					$query->get(),
+					Arr::get($dataexchange_format, $default_dataexchange_format, []),
+					$export_filename,
+					$functions
+				);
+			}
 		}
 		else{
 			$r          = DB::pager($query, $this->af)->execute();

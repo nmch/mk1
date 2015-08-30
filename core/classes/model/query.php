@@ -14,6 +14,8 @@
  * @method Model_Query limit()
  * @method Model_Query with()
  * @method Model_Query select()
+ * @method Model_Query clear_order_by()
+ * @method Model_Query into(string $table_name)
  * @see Database_Query
  */
 class Model_Query
@@ -178,7 +180,7 @@ class Model_Query
 		}
 
 		$joins = forward_static_call([$this->model, '_get_join_items']);
-//		Log::debug("apply_joins = ",$this->model,$joins);
+		//		Log::debug("apply_joins = ",$this->model,$joins);
 
 		// ここで適用されるjoinは、クエリ個別に設定されたjoinより大体は先にjoinされていないといけないものなので
 		// Database_Query::join()を呼び出すときにprependフラグをつけている。
@@ -235,14 +237,14 @@ class Model_Query
 			if( $name === 'order_by' ){
 				if( is_string($options) ){
 					$options = [
-						[$options, 'asc']
+						[$options, 'asc'],
 					];
 				}
 				elseif( is_array($options) ){
 					// 'options' => ['test_int1','asc'] 形式を変換
 					if( count($options) === 2 && (Arr::get($options, '1') === 'asc' || Arr::get($options, '1') === 'desc') ){
 						$options = [
-							[Arr::get($options, '0'), Arr::get($options, '1')]
+							[Arr::get($options, '0'), Arr::get($options, '1')],
 						];
 					}
 

@@ -16,6 +16,7 @@ class Database_Query
 	protected $_query_columns    = [];
 	protected $_query_where      = [];
 	protected $_query_from       = [];
+	protected $_query_into       = [];
 	protected $_query_with       = [];
 	protected $_query_join       = [];
 	protected $_query_values     = [];
@@ -197,7 +198,7 @@ class Database_Query
 
 	function build_where()
 	{
-//		Log::coredebug($this->_query_where,$this->_query_values);
+		//		Log::coredebug($this->_query_where,$this->_query_values);
 		$last_condition = null;
 
 		$sql = '';
@@ -222,8 +223,8 @@ class Database_Query
 
 					$sql .= ')';
 				}
-				elseif( ($exp = Arr::get($condition,0)) instanceof Database_Expression ){
-					$sql .= ' '.(string)$exp;
+				elseif( ($exp = Arr::get($condition, 0)) instanceof Database_Expression ){
+					$sql .= ' ' . (string)$exp;
 				}
 				else{
 					if( ! empty($sql) AND $last_condition !== '(' ){
@@ -286,7 +287,7 @@ class Database_Query
 					if( $value instanceof Database_Query ){
 						list($_insql_sql, $_insql_parameters) = $value->get_sql(true);
 						// パラメータが$1から始まっているので、置き換える
-//						Log::coredebug("_insql_sql={$_insql_sql} / _insql_parameters=",$_insql_parameters);
+						//						Log::coredebug("_insql_sql={$_insql_sql} / _insql_parameters=",$_insql_parameters);
 						$_insql_search  = [];
 						$_insql_replace = [];
 						foreach($_insql_parameters as $_insql_parameter_index => $_insql_parameter_value){
@@ -296,8 +297,8 @@ class Database_Query
 						$_insql_search  = array_reverse($_insql_search);
 						$_insql_replace = array_reverse($_insql_replace);
 						$_insql_sql     = str_replace($_insql_search, $_insql_replace, $_insql_sql);
-//						Log::coredebug($_insql_search,$_insql_replace);
-//						Log::coredebug("replaced sql={$_insql_sql}");
+						//						Log::coredebug($_insql_search,$_insql_replace);
+						//						Log::coredebug("replaced sql={$_insql_sql}");
 
 						$value = DB::expr('(' . $_insql_sql . ')');
 						$op    = $op === '=' ? 'IN' : $op;
@@ -366,7 +367,10 @@ class Database_Query
 
 	public function compile_insert()
 	{
-		$table = is_array($this->_query_from) ? reset($this->_query_from) : $this->_query_from;
+		// intoが設定されている場合は優先
+		$table = $this->_query_into;
+		// intoが無い場合はfromを設定
+		$table = $table ?: is_array($this->_query_from) ? reset($this->_query_from) : $this->_query_from;
 		if( ! $table ){
 			throw new Exception('table required');
 		}
@@ -378,7 +382,7 @@ class Database_Query
 		else{
 			$sql .= '(' . implode(',', array_keys($this->_query_values)) . ')';
 			$ary = [];
-//			Log::coredebug($this->_query_values);
+			//			Log::coredebug($this->_query_values);
 			foreach($this->_query_values as $value){
 				$ary[] = '$' . $this->parameter($value);
 			}
@@ -413,6 +417,9 @@ class Database_Query
 			$sql .= " DISTINCT ";
 		}
 		$sql .= $this->_query_columns ? implode(',', $this->_query_columns) : '*';
+		if( $this->_query_into ){
+			$sql .= " INTO {$this->_query_into} ";
+		}
 		if( $this->_query_from ){
 			$sql .= " FROM " . implode(',', $this->_query_from);
 		}
@@ -424,7 +431,7 @@ class Database_Query
 			$sql .= " WHERE $where";
 		}
 		if( $this->_query_orderby ){
-			$sql .= " ORDER BY " . implode(',', array_map(function ($ary) {
+			$sql .= " ORDER BY " . implode(',', array_map(function ($ary){
 						return implode(' ', $ary);
 					}, $this->_query_orderby
 					)
@@ -565,16 +572,28 @@ class Database_Query
 	}
 
 	/**
+	 * @param $into
+	 *
+	 * @return Database_Query
+	 */
+	function into($into)
+	{
+		$this->_query_into = $into;
+
+		return $this;
+	}
+
+	/**
 	 * INSERTクエリを作成
 	 *
 	 * @param string $table テーブル名
 	 *
 	 * @return Database_Query
 	 */
-	function insert($table)
+	function insert($table = null)
 	{
 		$this->_query_type = 'INSERT';
-		$this->from($table);
+		$this->into($table);
 
 		return $this;
 	}
