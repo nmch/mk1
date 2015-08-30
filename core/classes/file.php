@@ -1,4 +1,4 @@
-<?
+<?php
 
 class File
 {
@@ -8,7 +8,7 @@ class File
 	static function rm($filepath)
 	{
 		$filepath = rtrim($filepath, '/');
-		Log::debug("File::rm : $filepath");
+		//Log::debug("File::rm : $filepath");
 		if( is_dir($filepath) ){
 			$objects = scandir($filepath);
 			foreach($objects as $object){
