@@ -125,7 +125,7 @@ SQL;
 
 						$msg = "Error\n{$e->getMessage()}";
 						echo $msg;
-						break;
+						break 2;
 					}
 				}
 			}
