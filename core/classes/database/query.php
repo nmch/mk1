@@ -370,7 +370,7 @@ class Database_Query
 		// intoが設定されている場合は優先
 		$table = $this->_query_into;
 		// intoが無い場合はfromを設定
-		$table = $table ?: is_array($this->_query_from) ? reset($this->_query_from) : $this->_query_from;
+		$table = $table ?: (is_array($this->_query_from) ? reset($this->_query_from) : $this->_query_from);
 		if( ! $table ){
 			throw new Exception('table required');
 		}
