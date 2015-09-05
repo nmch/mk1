@@ -25,6 +25,9 @@ class Task_Migration extends Task
 						$new_filename .= "-{$group}";
 					}
 					$new_filename .= "_{$file['name']}";
+					if( strlen($file['extension']) ){
+						$new_filename .= '.' . $file['extension'];
+					}
 
 					Log::info("[db migration] [Renumber] {$group}/{$file['seq']} -> [$seq]");
 					echo "[Renumber] {$group}/{$file['seq']} -> [$seq]\n";
