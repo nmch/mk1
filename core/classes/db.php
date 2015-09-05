@@ -77,13 +77,13 @@ class DB
 			}
 		}
 		if( $typecat == 'S' ){
-			$data = array_map(function ($str) {
+			$data = array_map(function ($str){
 				return '"' . pg_escape_string($str) . '"';
 			}, $data
 			);
 		}
 		else{
-			$data = array_map(function ($str) {
+			$data = array_map(function ($str){
 				return is_numeric($str) ? $str : 'NULL';
 			}, $data
 			);
@@ -99,6 +99,13 @@ class DB
 		$dbconn = static::get_database_connection($connection);
 
 		return $dbconn->copy_from($table_name, $rows, $delimiter, $null_as);
+	}
+
+	static function copy_to($table_name, $connection = null, $delimiter = "\t", $null_as = '')
+	{
+		$dbconn = static::get_database_connection($connection);
+
+		return $dbconn->copy_to($table_name, $delimiter, $null_as);
 	}
 
 	/**

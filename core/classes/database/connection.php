@@ -70,6 +70,11 @@ class Database_Connection
 		return pg_copy_from($this->connection, $table_name, $rows, $delimiter, $null_as);
 	}
 
+	function copy_to($table_name, $delimiter = "\t", $null_as = '')
+	{
+		return pg_copy_to($this->connection, $table_name, $delimiter, $null_as);
+	}
+
 	function query($sql, $parameters = [])
 	{
 		Log::coredebug("[dbconn] SQL {$this->connection} = $sql / " . var_export($parameters, true));
@@ -83,7 +88,7 @@ class Database_Connection
 		}
 
 		// 結果を全て取得して、エラーがあれば例外スロー、なければ最後の結果を返す
-		while( $r = pg_get_result($this->connection) ){
+		while($r = pg_get_result($this->connection)){
 			if( $r !== false ){
 				$query_result = $r;
 				$error_msg    = trim(pg_result_error($query_result));
@@ -101,7 +106,7 @@ class Database_Connection
 						, PGSQL_DIAG_INTERNAL_POSITION  => pg_result_error_field($query_result, PGSQL_DIAG_INTERNAL_POSITION)
 						, PGSQL_DIAG_INTERNAL_QUERY     => pg_result_error_field($query_result, PGSQL_DIAG_INTERNAL_QUERY)
 						, PGSQL_DIAG_SOURCE_LINE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_LINE)
-						, PGSQL_DIAG_SOURCE_FUNCTION    => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FUNCTION)
+						, PGSQL_DIAG_SOURCE_FUNCTION    => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FUNCTION),
 					];
 					Log::error("Query Error", $error_details);
 					$this->last_error_details = $error_details;
