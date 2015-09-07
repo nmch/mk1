@@ -30,6 +30,13 @@ trait Logic_View_Pager
 	/** @var array */
 	public $list = [];
 
+	/**
+	 * ページング対象のデータ取得クエリ作成
+	 *
+	 * @return Database_Query|Model_Query
+	 */
+	abstract protected function get_query();
+
 	function view()
 	{
 		parent::view();
@@ -99,13 +106,6 @@ trait Logic_View_Pager
 
 		return null;
 	}
-
-	/**
-	 * ページング対象のデータ取得クエリ作成
-	 *
-	 * @return Database_Query|Model_Query
-	 */
-	abstract protected function get_query();
 
 	/**
 	 * 検索キーワードをループさせるときに使うジェネレータ
