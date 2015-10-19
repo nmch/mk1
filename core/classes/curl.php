@@ -66,7 +66,7 @@ class Curl
 	 */
 	public function set_option($key, $name)
 	{
-		Arr::set($key, $name);
+		Arr::set($this->options, $key, $name);
 
 		return $this;
 	}
