@@ -47,12 +47,14 @@ trait Logic_Masterdetail_Controller
 			$af_preset_name    = strtolower($match[1]);
 
 			$deleted = false;
+			$action  = '';
 			if( $this->af->delete && $primary_key_value ){
 				/** @var Model $obj */
 				$obj = $model_name::find($primary_key_value);
 				$obj->delete();
 				$this->af->set_message('success', "削除しました");
 				$deleted = true;
+				$action  = 'delete';
 			}
 			else{
 				Log::info("プリセット [{$af_preset_name}] でバリデーションと自動保存を行います");
@@ -60,6 +62,9 @@ trait Logic_Masterdetail_Controller
 
 				/** @var Model $obj */
 				$obj = $this->af->save($af_preset_name);
+
+				$primary_key_diff = $obj->get_save_diff($obj->primary_key());
+				$action           = ( ! $primary_key_diff[0] && $primary_key_diff[1]) ? 'create' : 'update';
 
 				if( method_exists($this, 'after_save_detail') ){
 					$r = $this->after_save_detail($obj);
@@ -69,20 +74,16 @@ trait Logic_Masterdetail_Controller
 				}
 
 				Log::debug("保存後obj", $obj->as_array());
-
 				$this->af->set_message('success', "保存しました");
 			}
-			/*
-			if( ! $id && $obj->get($obj->primary_key()) ){
-				// 新規保存でIDが発行された (エラー無し) の場合はリストへリダイレクト
-				$list_path = '/'.strtolower(str_replace('_', '/', $this->get_base_class_name()));
-
-				return new Response_Redirect($list_path);
-			}
-
-			return $this->get_detail($obj->get($obj->primary_key()));
-			*/
 			$list_path = '/' . strtolower(str_replace('_', '/', $this->get_base_class_name()));
+
+			if( method_exists($this, 'after_process_detail') ){
+				$r = $this->after_process_detail($action, $obj);
+				if( is_array($r) ){
+					$options = array_merge($options, $r);
+				}
+			}
 
 			if( (Arr::get($options, 'redirect_to_detail') || $this->redirect_to_detail) && ! $deleted ){
 				$list_path .= '/detail/' . $obj->$primary_key_name;

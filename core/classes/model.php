@@ -38,8 +38,9 @@ class Model implements Iterator, Countable, ArrayAccess
 	protected        $_original             = [];
 	protected        $_original_before_save = [];
 	protected        $_iter_keylist         = [];
-	protected        $_iter_curkey          = 0;    //save()時にとられるdiff
-	protected        $_save_diff            = [];
+	protected        $_iter_curkey          = 0;
+	/** @var array save()時にとられるdiff */
+	protected $_save_diff = [];
 
 	function __construct($options = [])
 	{
@@ -178,7 +179,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			ksort($join);
 		}
 
-//		Log::debug("_get_join_items",get_called_class(),$join);
+		//		Log::debug("_get_join_items",get_called_class(),$join);
 
 		return $join;
 	}
@@ -476,7 +477,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			if( count($data) ){
 				$query_update = DB::update($this->table())->values($data)->where($primary_key, $this->get($primary_key))->returning('*');
 				// apply_conditions()を実行するとexcept系のconditionにひっかかって保存したデータがselectできないことがある
-//				$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
+				//				$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
 				$sql_select = static::_build_select_query()->apply_joins()->clear_from()->from('model_save_query')->get_sql();
 				$sql_update = $query_update->get_sql();
 				$query_update->clear_query_type()->set_sql("with model_save_query as ($sql_update) $sql_select");
@@ -488,7 +489,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			//挿入の場合、データがなくてもdefault valuesが挿入される
 			$query_insert = DB::insert($this->table())->values($data)->returning('*');
 			// apply_conditions()を実行するとexcept系のconditionにひっかかって保存したデータがselectできないことがある
-//			$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
+			//			$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
 			$sql_select = static::_build_select_query()->apply_joins()->clear_from()->from('model_save_query')->get_sql();
 			$sql_insert = $query_insert->get_sql();
 			$query_insert->clear_query_type()->set_sql("with model_save_query as ($sql_insert) $sql_select");
@@ -532,9 +533,20 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $this;
 	}
 
-	protected function before_save()
+	public function get_save_diff($key = null)
 	{
+		if( $key ){
+			return [
+				Arr::get($this->_save_diff, '0.' . $key),
+				Arr::get($this->_save_diff, '1.' . $key),
+			];
+		}
+		else{
+			return $this->_save_diff;
+		}
 	}
+
+	protected function before_save(){ }
 
 	protected function _typecheck($throw = null, $skip_unchanged_item = true)
 	{
@@ -545,7 +557,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 
 		foreach($schema['columns'] as $key => $property){
-//			Log::coredebug("[model typecheck]", $key, $property);
+			//			Log::coredebug("[model typecheck]", $key, $property);
 			//echo "[model typecheck] $key"; print_r($property);
 			/*
 			if( is_numeric($key) && ! is_array($property) ){
@@ -573,9 +585,9 @@ class Model implements Iterator, Countable, ArrayAccess
 						$value = null;
 					}
 					break;
-//					if( is_numeric($value) && -32768 <= $value && $value <= 32767){
-//					if(is_numeric($value) && -2147483648 <= $value && $value <= 2147483647){
-//					if(is_numeric($value) && -9223372036854775808 <= $value && $value <= 9223372036854775807){
+				//					if( is_numeric($value) && -32768 <= $value && $value <= 32767){
+				//					if(is_numeric($value) && -2147483648 <= $value && $value <= 2147483647){
+				//					if(is_numeric($value) && -9223372036854775808 <= $value && $value <= 9223372036854775807){
 				case 'D':
 					// UNIXタイムスタンプだった場合は変換する
 					if( is_numeric($value) ){
@@ -645,7 +657,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 	}
 
-	protected function after_save() { }
+	protected function after_save(){ }
 
 	/**
 	 * 同じテーブル内で別のIDからデータをコピーする
@@ -735,6 +747,11 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 	}
 
+	/**
+	 * originalとのdiffを取得する
+	 *
+	 * @return array
+	 */
 	function get_diff()
 	{
 		$diff = [];
@@ -767,13 +784,9 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $r->get_affected_rows();
 	}
 
-	protected function before_delete()
-	{
-	}
+	protected function before_delete(){ }
 
-	protected function after_delete()
-	{
-	}
+	protected function after_delete(){ }
 
 	/*
 	public static function instance_from_query_data()
