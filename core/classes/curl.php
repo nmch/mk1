@@ -26,6 +26,8 @@ class Curl
 	private $method = '';
 	/** @var array リクエスト時のデータ */
 	private $request_data = [];
+	/** @var array */
+	private $response_header = [];
 
 	/** @var  Resource curl handle */
 	private $curl;
@@ -54,6 +56,23 @@ class Curl
 				'default_ua'               => 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.04506.648)',
 			];
 		$this->setup_curl($curl_options);
+	}
+
+	/**
+	 * 直前のリクエストのレスポンスヘッダを取得する
+	 *
+	 * @param null $key
+	 *
+	 * @return array|mixed
+	 */
+	public function response_header($key = null)
+	{
+		if( $key === null ){
+			return $this->response_header;
+		}
+		else{
+			return Arr::get($this->response_header, $key);
+		}
 	}
 
 	/**
@@ -234,8 +253,19 @@ class Curl
 		$errno             = curl_errno($this->curl);
 		Log::coredebug("cURLの実行が完了しました errno={$errno}");
 		Log::coredebug("curl_info = " . print_r($this->curl_info, true));
+
 		rewind($this->transfer_header_file);
-		Log::coredebug("header = " . stream_get_contents($this->transfer_header_file));
+		$response_header_str = stream_get_contents($this->transfer_header_file);
+		Log::coredebug("header = {$response_header_str}");
+		$response_header = [];
+		foreach(explode("\n", $response_header_str) as $line){
+			$line                  = explode(':', $line, 2);
+			$key                   = trim(Arr::get($line, 0));
+			$value                 = trim(Arr::get($line, 1));
+			$response_header[$key] = $value;
+		}
+		$this->response_header = $response_header;
+
 		rewind($this->error_output_file);
 		$error_output = stream_get_contents($this->error_output_file);
 		Log::coredebug("error = " . $error_output);
