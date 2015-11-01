@@ -529,7 +529,7 @@ class Database_Query
 	 *
 	 * @return Database_Query
 	 */
-	function select($columns = [])
+	function select($columns = [], $permit_overlap_column = false)
 	{
 		if( ! is_array($columns) ){
 			$columns = func_get_args();
@@ -539,7 +539,7 @@ class Database_Query
 		//$this->_query_columns = array_merge($this->_query_columns,$columns);
 		foreach($columns as $col){
 			$col = trim($col);
-			if( ! in_array($col, $this->_query_columns) ){
+			if( $permit_overlap_column || ! in_array($col, $this->_query_columns) ){
 				$this->_query_columns[] = $col;
 			}
 		}
