@@ -91,8 +91,18 @@ trait Logic_View_Pager
 				$export_filename             = Arr::get($export_settings, 'export_filename', 'export');
 				$functions                   = Arr::get($export_settings, 'functions', []);
 
+				if( $query instanceof Model_Query ){
+					$data = $query->get();
+				}
+				elseif( $query instanceof Database_Query ){
+					$data = $query->execute();
+				}
+				elseif( ! is_array($query) ){
+					throw new MkException("invalid data source");
+				}
+
 				return Logic_File::respond_obj_as_csv(
-					$query->get(),
+					$data,
 					Arr::get($dataexchange_format, $default_dataexchange_format, []),
 					$export_filename,
 					$functions
