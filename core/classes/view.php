@@ -115,7 +115,7 @@ class View
 	/**
 	 * @return null|string
 	 */
-	protected function change_template_filename() { }
+	protected function change_template_filename(){ }
 
 	/**
 	 * view()の実行結果を得る
@@ -185,16 +185,16 @@ class View
 	/**
 	 * @returns Response|string
 	 */
-	public function view() { }
+	public function view(){ }
 
-	function after_view() { }
+	function after_view(){ }
 
 	function template_exists($template_filename)
 	{
 		return $this->smarty->templateExists($template_filename);
 	}
 
-	function after() { }
+	function after(){ }
 
 	/**
 	 * 指定されたオブジェクトから自分にプロパティをコピーする
@@ -211,7 +211,7 @@ class View
 		}
 		foreach(get_object_vars($obj) as $key => $value){
 			if( property_exists($this, $key) ){
-//				Log::debug(__CLASS__.'::'.__METHOD__.' '.$key);
+				//				Log::debug(__CLASS__.'::'.__METHOD__.' '.$key);
 				$this->$key = $value;
 			}
 		}
