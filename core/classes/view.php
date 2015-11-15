@@ -21,7 +21,7 @@ class View
 		if( ! $template_filename ){
 			$template_filename = implode('/', array_slice(explode('_', $this->af->_view_class_name), 1));
 		}
-		$this->template_filename = $template_filename . '.' . Config::get('smarty.extension');
+		$this->template_filename($template_filename);
 
 		$this->smarty = new Smarty();
 
@@ -65,17 +65,18 @@ class View
 		$this->before();
 	}
 
-	protected function set_view()
+	public function set_data(array $data)
 	{
+		$this->data = $data;
+
+		return $this;
 	}
 
-	function before()
-	{
-	}
+	protected function set_view(){ }
 
-	function before_view()
-	{
-	}
+	function before(){ }
+
+	function before_view(){ }
 
 	function nofilter()
 	{
@@ -115,7 +116,22 @@ class View
 	/**
 	 * @return null|string
 	 */
-	protected function change_template_filename() { }
+	protected function change_template_filename(){ }
+
+	/**
+	 * テンプレートファイル名を変更する
+	 *
+	 * @param $filename
+	 *
+	 * @return $this
+	 */
+	public function template_filename($filename)
+	{
+		$this->template_filename = $filename . '.' . Config::get('smarty.extension');
+
+		return $this;
+	}
+
 
 	/**
 	 * view()の実行結果を得る
@@ -185,16 +201,16 @@ class View
 	/**
 	 * @returns Response|string
 	 */
-	public function view() { }
+	public function view(){ }
 
-	function after_view() { }
+	function after_view(){ }
 
 	function template_exists($template_filename)
 	{
 		return $this->smarty->templateExists($template_filename);
 	}
 
-	function after() { }
+	function after(){ }
 
 	/**
 	 * 指定されたオブジェクトから自分にプロパティをコピーする
@@ -211,7 +227,7 @@ class View
 		}
 		foreach(get_object_vars($obj) as $key => $value){
 			if( property_exists($this, $key) ){
-//				Log::debug(__CLASS__.'::'.__METHOD__.' '.$key);
+				//				Log::debug(__CLASS__.'::'.__METHOD__.' '.$key);
 				$this->$key = $value;
 			}
 		}

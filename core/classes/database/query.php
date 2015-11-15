@@ -21,6 +21,7 @@ class Database_Query
 	protected $_query_join       = [];
 	protected $_query_values     = [];
 	protected $_query_orderby    = [];
+	protected $_query_groupby    = [];
 	protected $_query_limit      = null;
 	protected $_query_offset     = null;
 	protected $_query_distinct   = false;
@@ -430,6 +431,9 @@ class Database_Query
 		if( $where ){
 			$sql .= " WHERE $where";
 		}
+		if( $this->_query_groupby ){
+			$sql .= " GROUP BY " . implode(',', $this->_query_groupby);
+		}
 		if( $this->_query_orderby ){
 			$sql .= " ORDER BY " . implode(',', array_map(function ($ary){
 						return implode(' ', $ary);
@@ -525,7 +529,7 @@ class Database_Query
 	 *
 	 * @return Database_Query
 	 */
-	function select($columns = [])
+	function select($columns = [], $permit_overlap_column = false)
 	{
 		if( ! is_array($columns) ){
 			$columns = func_get_args();
@@ -535,7 +539,7 @@ class Database_Query
 		//$this->_query_columns = array_merge($this->_query_columns,$columns);
 		foreach($columns as $col){
 			$col = trim($col);
-			if( ! in_array($col, $this->_query_columns) ){
+			if( $permit_overlap_column || ! in_array($col, $this->_query_columns) ){
 				$this->_query_columns[] = $col;
 			}
 		}
@@ -805,6 +809,27 @@ class Database_Query
 			else{
 				foreach($column as $_column => $_direction){
 					$this->_query_orderby[] = [$_column, $_direction];
+				}
+			}
+		}
+
+		return $this;
+	}
+
+	/**
+	 * @param string $column
+	 *
+	 * @return Database_Query
+	 */
+	function group_by($column)
+	{
+		if( $column ){
+			if( ! is_array($column) ){
+				$this->group_by([(string)$column]);
+			}
+			else{
+				foreach($column as $_column){
+					$this->_query_groupby[] = $_column;
 				}
 			}
 		}
