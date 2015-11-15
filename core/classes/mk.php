@@ -33,8 +33,11 @@ class Mk
 
 		self::$include_path_list = self::get_include_path_list();
 		$this->config            = Config::instance();
-		Log::coredebug("Process Start\n-------------------------------------------------------------------------------------------------------------------");
-		Log::coredebug("[mk] env=" . self::$env . (self::is_production() ? ' [PRODUCTION]' : ''));
+		$start_log = "Mk1 Start ";
+		$start_log .= "(env:".self::$env.(self::is_production() ? ' [PRODUCTION]' : '').")";
+		$start_log .= " ============================================";
+		Log::info($start_log);
+		//Log::coredebug("[mk] env=" . self::$env . (self::is_production() ? ' [PRODUCTION]' : ''));
 		if( self::is_production() ){
 			error_reporting(0);
 			ini_set('display_errors', 0);

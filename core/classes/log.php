@@ -35,12 +35,38 @@ class Log
 	{
 		$drivers = Config::get('log.drivers', []);
 		if( is_array($drivers) ){
-			foreach($drivers as $driver_name => $threshold){
-				$driver_name                   = 'Log_' . ucfirst($driver_name);
-				static::$drivers[$driver_name] = [
-					'threshold' => $threshold,
-					'driver'    => new $driver_name,
-				];
+			foreach($drivers as $index => $config_value){
+				/**
+				 * driver_name => threshold 形式と
+				 * index => config array 形式に対応する
+				 * $config_valueが配列かどうかで判断する
+				 * nullの場合は未定義として処理を飛ばす
+				 */
+				if( $config_value === null ){
+					continue;
+				}
+
+				$global_driver_config = Config::get('log', []);
+
+				if( is_array($config_value) ){
+					$driver_config = $config_value + $global_driver_config;
+				}
+				else{
+					$driver_config = [
+						                 'name'      => $index,
+						                 'threshold' => $config_value,
+					                 ] + $global_driver_config;
+				}
+
+				$driver_name = Arr::get($driver_config, 'driver') ?: Arr::get($driver_config, 'name');
+				if( ! strlen($driver_name) ){
+					throw new MkException('invalid driver name');
+				}
+				$driver_name             = 'Log_' . ucfirst($driver_name);
+				$driver_config['uniqid'] = uniqid();
+				$driver_config['driver'] = new $driver_name($driver_config);
+
+				static::$drivers[] = $driver_config;
 			}
 		}
 		static::$date_format = Config::get('log.date_format', 'Y-m-d H:i:s');
@@ -69,8 +95,8 @@ class Log
 			}
 		}
 
-		$log_str = $log_format = Config::get('log.log_format');
-		if( preg_match_all('/\{([a-z0-9_]+|@[^}]+)}/', $log_format, $vars) ){
+		$log_str = $log_format = Arr::get($data, 'config.log_format');
+		if( preg_match_all('/\{([a-z0-9_.]+|@[^}]+)}/', $log_format, $vars) ){
 			foreach($vars[1] as $var){
 				$var_value = '';
 
@@ -116,19 +142,26 @@ class Log
 
 			foreach($messages as $message){
 				$timestamp_unixtime = time();
-				// キーで使える文字はmake_log_string()内で[a-z0-9_]に制限されている
-				$log_data        = [
+				// キーで使える文字はmake_log_string()内で[a-z0-9_.]に制限されている
+				/** @see \Log::make_log_string */
+				$base_log_data = [
 					'timestamp_unixtime' => $timestamp_unixtime,
 					'timestamp_string'   => date(static::$date_format, $timestamp_unixtime),
 					'level'              => $level,
 					'level_num'          => $level_num,
-					'message'            => $message
+					'message'            => $message,
 				];
-				$log_data['str'] = call_user_func_array(static::$makelogstr_function, [$log_data]);
 
-				foreach(static::$drivers as $driver){
-					if( $driver['threshold'] <= $level_num ){
-						$driver['driver']->write($log_data);
+				foreach(static::$drivers as $driver_config){
+					if( $driver_config['threshold'] <= $level_num ){
+						$log_data        = $base_log_data + [
+								'config' => $driver_config,
+							];
+						$log_data['str'] = call_user_func_array(static::$makelogstr_function, [$log_data]);
+
+						/** @var Logic_Interface_Log_Driver $driver_config */
+						$driver_config = $driver_config['driver'];
+						$driver_config->write($log_data);
 					}
 				}
 

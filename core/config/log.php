@@ -1,10 +1,18 @@
-<?
+<?php
 return [
 	'drivers'     => [
-		'file' => Log::ALL,
+		'file' => [
+			'name'      => 'file',
+			'driver'    => 'file',
+			'threshold' => Log::ALL,
+		],
+
+		// 旧形式
+		//'file' => Log::ALL,
 	],
 	'path'        => PROJECTPATH . 'logs/',
-	'filename'    => 'Y-m-d',
+	'filename'    => 'Ymd',
+	'fileext'     => 'log',
 	'date_format' => 'Y-m-d H:i:s',
-	'log_format'  => '{level} - {timestamp_string} --> {message}',
+	'log_format'  => '{timestamp_string} [{config.uniqid}] - {level} :  {message}',
 ];
