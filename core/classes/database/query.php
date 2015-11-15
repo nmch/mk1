@@ -22,6 +22,7 @@ class Database_Query
 	protected $_query_values     = [];
 	protected $_query_orderby    = [];
 	protected $_query_groupby    = [];
+	protected $_query_for        = null;
 	protected $_query_limit      = null;
 	protected $_query_offset     = null;
 	protected $_query_distinct   = false;
@@ -447,6 +448,9 @@ class Database_Query
 		if( $this->_query_offset ){
 			$sql .= " OFFSET $this->_query_offset";
 		}
+		if( $this->_query_for ){
+			$sql .= " FOR {$this->_query_for}";
+		}
 
 		//Log::coredebug("[db query] sql=$sql");
 		return $sql;
@@ -571,6 +575,18 @@ class Database_Query
 	function from($from)
 	{
 		$this->_query_from[] = $from;
+
+		return $this;
+	}
+
+	/**
+	 * @param string $for
+	 *
+	 * @return Database_Query
+	 */
+	function select_for($for)
+	{
+		$this->_query_for = $for;
 
 		return $this;
 	}

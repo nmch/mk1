@@ -4,16 +4,17 @@
  * Class Model_Query
  *
  *
- * @method Model_Query where()
+ * @method Model_Query where(string $column, $operator_or_value, $value = null)
  * @method Model_Query and_where()
  * @method Model_Query or_where()
  * @method Model_Query where_open()
  * @method Model_Query where_close()
- * @method Model_Query order_by()
+ * @method Model_Query order_by(string $column, $order = 'asc')
  * @method Model_Query join()
- * @method Model_Query limit()
+ * @method Model_Query limit(int $limit)
  * @method Model_Query with()
  * @method Model_Query select()
+ * @method Model_Query select_for(string $p)
  * @method Model_Query clear_order_by()
  * @method Model_Query into(string $table_name)
  * @see Database_Query
