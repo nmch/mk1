@@ -62,9 +62,9 @@ class Log
 				if( ! strlen($driver_name) ){
 					throw new MkException('invalid driver name');
 				}
-				$driver_name             = 'Log_' . ucfirst($driver_name);
-				$driver_config['uniqid'] = uniqid();
-				$driver_config['driver'] = new $driver_name($driver_config);
+				$driver_name                    = 'Log_' . ucfirst($driver_name);
+				$driver_config['uniqid']        = uniqid();
+				$driver_config['driver_object'] = new $driver_name($driver_config);
 
 				static::$drivers[] = $driver_config;
 			}
@@ -72,6 +72,24 @@ class Log
 		static::$date_format = Config::get('log.date_format', 'Y-m-d H:i:s');
 		//static::$makelogstr_function = ['Log','make_log_string'];
 		static::set_make_log_string_function(['Log', 'make_log_string']);
+	}
+
+	public static function suppress($target_name = null, $target_driver = null)
+	{
+		foreach(static::$drivers as $index => $driver_config){
+			$name = Arr::get($driver_config, 'name');
+			if( $target_name && $target_name !== $name ){
+				continue;
+			}
+
+			$driver = Arr::get($driver_config, 'driver');
+			if( $target_driver && $target_driver !== $driver ){
+				continue;
+			}
+
+			Log::coredebug("Log [name={$name} / driver={$driver}] suppressed");
+			static::$drivers[$index]['suppress'] = true;
+		}
 	}
 
 	static function set_make_log_string_function($function_name)
@@ -153,6 +171,9 @@ class Log
 				];
 
 				foreach(static::$drivers as $driver_config){
+					if( Arr::get($driver_config, 'suppress') ){
+						continue;
+					}
 					if( $driver_config['threshold'] <= $level_num ){
 						$log_data        = $base_log_data + [
 								'config' => $driver_config,
@@ -160,7 +181,7 @@ class Log
 						$log_data['str'] = call_user_func_array(static::$makelogstr_function, [$log_data]);
 
 						/** @var Logic_Interface_Log_Driver $driver_config */
-						$driver_config = $driver_config['driver'];
+						$driver_config = $driver_config['driver_object'];
 						$driver_config->write($log_data);
 					}
 				}
