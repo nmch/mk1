@@ -19,6 +19,11 @@ class Log
 	const ALL       = 0;
 	const COREDEBUG = 100;
 	const DEBUG     = 200;
+	const DEBUG5    = 214;
+	const DEBUG4    = 215;
+	const DEBUG3    = 216;
+	const DEBUG2    = 217;
+	const DEBUG1    = 218;
 	const INFO      = 300;
 	const NOTICE    = 350;
 	const WARNING   = 400;
