@@ -3,15 +3,20 @@
 /**
  * ログ
  *
- * @method static void emergency($message)
- * @method static void alert($message)
- * @method static void critical($message)
- * @method static void error($message)
- * @method static void warning($message)
- * @method static void notice($message)
- * @method static void info($message)
- * @method static void debug($message)
- * @method static void coredebug($message)
+ * @method static void emergency($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void alert($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void critical($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void error($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void warning($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void notice($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void info($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug1($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug2($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug3($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug4($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug5($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void coredebug($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
  */
 class Log
 {
