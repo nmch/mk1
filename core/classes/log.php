@@ -79,6 +79,12 @@ class Log
 		static::set_make_log_string_function(['Log', 'make_log_string']);
 	}
 
+	/**
+	 * 以降のログ記録を抑制する
+	 *
+	 * @param null $target_name
+	 * @param null $target_driver
+	 */
 	public static function suppress($target_name = null, $target_driver = null)
 	{
 		foreach(static::$drivers as $index => $driver_config){
@@ -92,7 +98,7 @@ class Log
 				continue;
 			}
 
-			Log::coredebug("Log [name={$name} / driver={$driver}] suppressed");
+			Log::info("Log [name={$name} / driver={$driver}] suppressed");
 			static::$drivers[$index]['suppress'] = true;
 		}
 	}
