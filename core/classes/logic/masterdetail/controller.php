@@ -58,7 +58,7 @@ trait Logic_Masterdetail_Controller
 			}
 			else{
 				Log::info("プリセット [{$af_preset_name}] でバリデーションと自動保存を行います");
-				Log::debug("保存前af", $this->af->as_array());
+				Log::coredebug("保存前af", $this->af->as_array());
 
 				/** @var Model $obj */
 				$obj = $this->af->save($af_preset_name);
@@ -73,7 +73,7 @@ trait Logic_Masterdetail_Controller
 					}
 				}
 
-				Log::debug("保存後obj", $obj->as_array());
+				Log::coredebug("保存後obj", $obj->as_array());
 				$this->af->set_message('success', "保存しました");
 			}
 			$list_path = '/' . strtolower(str_replace('_', '/', $this->get_base_class_name()));

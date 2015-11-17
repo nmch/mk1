@@ -179,7 +179,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			ksort($join);
 		}
 
-		//		Log::debug("_get_join_items",get_called_class(),$join);
+		//		Log::coredebug("_get_join_items",get_called_class(),$join);
 
 		return $join;
 	}
@@ -201,7 +201,7 @@ class Model implements Iterator, Countable, ArrayAccess
 	/*
 	static function joins()
 	{
-		Log::debug("joins = ",get_called_class());
+		Log::coredebug("joins = ",get_called_class());
 		return isset(static::$_join) ? static::$_join : [];
 	}
 	*/
@@ -632,11 +632,11 @@ class Model implements Iterator, Countable, ArrayAccess
 					}
 					break;
 				case 'A':
-					//Log::debug($property);
+					//Log::coredebug($property);
 					$type_detail = Database_Type::get($data_type);
-					//Log::debug($type_detail);
+					//Log::coredebug($type_detail);
 					$elem_type = Database_Type::get_by_oid($type_detail['typelem']);
-					//Log::debug($elem_type);
+					//Log::coredebug($elem_type);
 					if( is_array($value) ){
 						$value = DB::array_to_pgarraystr($value, $type_detail['typdelim'], $elem_type['typcategory']);
 					}

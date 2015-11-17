@@ -119,8 +119,8 @@ class Job extends Model
 		else{
 			//失敗
 			//$e = new Exception();
-			//Log::debug(print_r(DB::query("select * from jobs where job_id={$this->job_id}")->execute()->as_array(),true));
-			//Log::debug(DB::in_transaction());
+			//Log::coredebug(print_r(DB::query("select * from jobs where job_id={$this->job_id}")->execute()->as_array(),true));
+			//Log::coredebug(DB::in_transaction());
 
 			//failカウンタアップ
 			$this->job_fail_counter++;

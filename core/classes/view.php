@@ -59,7 +59,7 @@ class View
 			}
 		}
 
-		//Log::debug("compile_dir = ",$this->smarty->compile_dir);
+		//Log::coredebug("compile_dir = ",$this->smarty->compile_dir);
 		$this->data = $data;
 		$this->set_view();
 		$this->before();
@@ -227,7 +227,7 @@ class View
 		}
 		foreach(get_object_vars($obj) as $key => $value){
 			if( property_exists($this, $key) ){
-				//				Log::debug(__CLASS__.'::'.__METHOD__.' '.$key);
+				//				Log::coredebug(__CLASS__.'::'.__METHOD__.' '.$key);
 				$this->$key = $value;
 			}
 		}

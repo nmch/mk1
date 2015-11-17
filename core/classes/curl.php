@@ -318,7 +318,7 @@ class Curl
 
 		curl_setopt_array($this->curl, $this->curl_options);
 
-		Log::debug("CURLを初期化しました", $this->curl_version);
+		Log::coredebug("CURLを初期化しました", $this->curl_version);
 	}
 
 	function __destruct()
