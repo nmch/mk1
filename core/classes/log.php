@@ -3,15 +3,20 @@
 /**
  * ログ
  *
- * @method static void emergency($message)
- * @method static void alert($message)
- * @method static void critical($message)
- * @method static void error($message)
- * @method static void warning($message)
- * @method static void notice($message)
- * @method static void info($message)
- * @method static void debug($message)
- * @method static void coredebug($message)
+ * @method static void emergency($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void alert($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void critical($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void error($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void warning($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void notice($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void info($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug1($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug2($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug3($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug4($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void debug5($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ * @method static void coredebug($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
  */
 class Log
 {
@@ -19,6 +24,11 @@ class Log
 	const ALL       = 0;
 	const COREDEBUG = 100;
 	const DEBUG     = 200;
+	const DEBUG5    = 214;
+	const DEBUG4    = 215;
+	const DEBUG3    = 216;
+	const DEBUG2    = 217;
+	const DEBUG1    = 218;
 	const INFO      = 300;
 	const NOTICE    = 350;
 	const WARNING   = 400;
@@ -74,6 +84,12 @@ class Log
 		static::set_make_log_string_function(['Log', 'make_log_string']);
 	}
 
+	/**
+	 * 以降のログ記録を抑制する
+	 *
+	 * @param null $target_name
+	 * @param null $target_driver
+	 */
 	public static function suppress($target_name = null, $target_driver = null)
 	{
 		foreach(static::$drivers as $index => $driver_config){
@@ -87,7 +103,7 @@ class Log
 				continue;
 			}
 
-			Log::coredebug("Log [name={$name} / driver={$driver}] suppressed");
+			Log::info("Log [name={$name} / driver={$driver}] suppressed");
 			static::$drivers[$index]['suppress'] = true;
 		}
 	}
