@@ -60,6 +60,13 @@ trait Logic_Masterdetail_Controller
 				Log::info("プリセット [{$af_preset_name}] でバリデーションと自動保存を行います");
 				Log::coredebug("保存前af", $this->af->as_array());
 
+				if( method_exists($this, 'before_save_detail') ){
+					$r = $this->before_save_detail();
+					if( is_array($r) ){
+						$options = array_merge($options, $r);
+					}
+				}
+
 				/** @var Model $obj */
 				$obj = $this->af->save($af_preset_name);
 
