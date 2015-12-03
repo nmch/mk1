@@ -36,6 +36,11 @@ class Database_Connection
 		return $this;
 	}
 
+	function get_connection()
+	{
+		return $this->connection;
+	}
+
 	/**
 	 * @param string|null $name
 	 *
