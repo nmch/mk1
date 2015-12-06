@@ -65,7 +65,7 @@ class Task_Coretask extends Task
 
 	public static function refine()
 	{
-		Error::add_error_handler(['Task_Coretask', 'refine_error']);
+		ErrorHandler::add_error_handler(['Task_Coretask', 'refine_error']);
 
 		$args = func_get_args();
 		if( count($args) < 1 ){

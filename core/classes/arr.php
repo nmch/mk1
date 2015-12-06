@@ -432,7 +432,7 @@ class Arr
 		$key = array_search($search, $original);
 
 		if( $key === false ){
-			\Error::notice('Unknown value after which to insert the new value into the array.');
+			\ErrorHandler::notice('Unknown value after which to insert the new value into the array.');
 
 			return false;
 		}
@@ -456,7 +456,7 @@ class Arr
 		$pos = array_search($key, array_keys($original));
 
 		if( $pos === false ){
-			\Error::notice('Unknown key after which to insert the new value into the array.');
+			\ErrorHandler::notice('Unknown key after which to insert the new value into the array.');
 
 			return false;
 		}
@@ -498,7 +498,7 @@ class Arr
 	public static function insert(array &$original, $value, $pos)
 	{
 		if( count($original) < abs($pos) ){
-			\Error::notice('Position larger than number of elements in array in which to insert.');
+			\ErrorHandler::notice('Position larger than number of elements in array in which to insert.');
 
 			return false;
 		}
@@ -523,7 +523,7 @@ class Arr
 		$key = array_search($search, $original);
 
 		if( $key === false ){
-			\Error::notice('Unknown value before which to insert the new value into the array.');
+			\ErrorHandler::notice('Unknown value before which to insert the new value into the array.');
 
 			return false;
 		}
@@ -547,7 +547,7 @@ class Arr
 		$pos = array_search($key, array_keys($original));
 
 		if( $pos === false ){
-			\Error::notice('Unknown key before which to insert the new value into the array.');
+			\ErrorHandler::notice('Unknown key before which to insert the new value into the array.');
 
 			return false;
 		}

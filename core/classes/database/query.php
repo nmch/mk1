@@ -90,6 +90,7 @@ class Database_Query
 			return $result;
 		} catch(Exception $e){
 			$message        = $e->getMessage();
+			//Log::error("Database_Query::execute() Exception : message={$message} / code={$e->getCode()} / prev_exception=",$e);
 			$new_expception = new DatabaseQueryError($message, $e->getCode(), $e);
 			Log::error($message);
 			throw $new_expception;

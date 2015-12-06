@@ -310,12 +310,15 @@ class Model implements Iterator, Countable, ArrayAccess
 
 	function get_related($relation_type, $options)
 	{
-		//Log::coredebug("rel : $relation_type",$options);
+		Log::coredebug("Model::get_related() : $relation_type", $options);
 		$query = null;
 
 		if( $relation_type == 'belongs_to' || $relation_type == 'has_many' ){
-			$query = forward_static_call_array([$options['model_to'],
-			                                    'find'], [])->where($options['key_to'], $this->$options['key_from']);
+
+			$method     = [$options['model_to'], 'find'];
+			$key_from   = $options['key_from'];
+			$from_value = $this->{$key_from};
+			$query      = forward_static_call_array($method, [])->where($options['key_to'], $from_value);
 			if( isset($options['condition']) && is_array($options['condition']) ){
 				foreach($options['condition'] as $condition){
 					if( isset($condition['method']) && isset($condition['args']) ){
