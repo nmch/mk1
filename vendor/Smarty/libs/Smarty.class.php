@@ -1359,7 +1359,8 @@ class Smarty extends Smarty_Internal_TemplateBase
     public function __set($name, $value)
     {
         if (isset(self::$accessMap[$name])) {
-            $this->{self::$accessMap[$name]}($value);
+            $set_method = substr_replace(self::$accessMap[$name], 'set', 0, 3);
+            $this->{$set_method}($value);
         } elseif (in_array($name, self::$obsoleteProperties)) {
             return;
         } else {
