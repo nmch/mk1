@@ -31,7 +31,7 @@ class View
 			$list[] = $dir . '/' . 'views/';
 		}
 		$list[]                     = APPPATH . 'views/';
-		$this->smarty->template_dir = array_reverse($list);
+		$this->smarty->setTemplateDir(array_reverse($list));
 		//$this->smarty->template_dir = APPPATH.'views/';
 
 		// プラグインディレクトリ設定
@@ -47,14 +47,14 @@ class View
 			}
 			$list = array_merge($config_plugins, $list);
 		}
-		$this->smarty->plugins_dir = array_reverse($list);
+		$this->smarty->setPluginsDir(array_reverse($list));
 
 		// その他の設定
 		$environments = Config::get('smarty.environment');
 		if( is_array($environments) ){
 			foreach($environments as $name => $environment){
 				if( $name !== 'plugins_dir' ){    //プラグインディレクトリは先に設定済み
-					$this->smarty->$name = $environment;
+					$this->smarty->{$name} = $environment;
 				}
 			}
 		}
