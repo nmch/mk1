@@ -27,7 +27,7 @@
  * @author    Uwe Tews
  * @author    Rodney Rehm
  * @package   Smarty
- * @version   3.1.28-dev
+ * @version   3.1.29
  */
 
 /**
@@ -118,7 +118,7 @@ class Smarty extends Smarty_Internal_TemplateBase
     /**
      * smarty version
      */
-    const SMARTY_VERSION = '3.1.28-dev/77';
+    const SMARTY_VERSION = '3.1.29';
 
     /**
      * define variable scopes
@@ -677,15 +677,20 @@ class Smarty extends Smarty_Internal_TemplateBase
     /**
      * removed properties
      *
-     * @var array
+     * @var string[]
      */
     private static $obsoleteProperties = array('resource_caching', 'template_resource_caching',
                                                'direct_access_security', '_dir_perms', '_file_perms',
                                                'plugin_search_order', 'inheritance_merge_compiled_includes');
 
-    private static $accessMap = array('template_dir' => 'getTemplateDir', 'config_dir' => 'getConfigDir',
-                                      'plugins_dir'  => 'getPluginsDir', 'compile_dir' => 'getCompileDir',
-                                      'cache_dir'    => 'getCacheDir',);
+    /**
+     * List of private properties which will call getter/setter ona direct access
+     *
+     * @var array
+     */
+    private static $accessMap = array('template_dir' => 'TemplateDir', 'config_dir' => 'ConfigDir',
+                                      'plugins_dir'  => 'PluginsDir', 'compile_dir' => 'CompileDir',
+                                      'cache_dir'    => 'CacheDir',);
 
     /**#@-*/
 
@@ -1094,8 +1099,12 @@ class Smarty extends Smarty_Internal_TemplateBase
                 $tpl->tpl_vars[$_key] = new Smarty_Variable($_val);
             }
         }
-        if ($this->debugging) {
+        if ($this->debugging || $this->debugging_ctrl == 'URL') {
             $tpl->smarty->_debug = new Smarty_Internal_Debug();
+            // check URL debugging control
+            if (!$this->debugging && $this->debugging_ctrl == 'URL') {
+                $tpl->smarty->_debug->debugUrl($tpl->smarty);
+            }
         }
         return $tpl;
     }
@@ -1169,7 +1178,7 @@ class Smarty extends Smarty_Internal_TemplateBase
             $path = str_replace($nds, DS, $path);
         }
 
-        if ($realpath === true && $path[0] !== '/' && $path[1] !== ':') {
+        if ($realpath === true && (($path[0] !== '/' && DS == '/') || ($path[1] !== ':' && DS != '/'))) {
             $path = getcwd() . DS . $path;
         }
         while ((strpos($path, '.' . DS) !== false) || (strpos($path, DS . DS) !== false)) {
@@ -1340,7 +1349,8 @@ class Smarty extends Smarty_Internal_TemplateBase
     {
 
         if (isset(self::$accessMap[$name])) {
-            return $this->{self::$accessMap[$name]}();
+            $method = 'get' . self::$accessMap[$name];
+            return $this->{$method}();
         } elseif (in_array($name, self::$obsoleteProperties)) {
             return null;
         } else {
@@ -1359,8 +1369,8 @@ class Smarty extends Smarty_Internal_TemplateBase
     public function __set($name, $value)
     {
         if (isset(self::$accessMap[$name])) {
-            $set_method = substr_replace(self::$accessMap[$name], 'set', 0, 3);
-            $this->{$set_method}($value);
+            $method = 'set' . self::$accessMap[$name];
+            $this->{$method}($value);
         } elseif (in_array($name, self::$obsoleteProperties)) {
             return;
         } else {
