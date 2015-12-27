@@ -1,6 +1,6 @@
 <?php
 
-class Actionform
+class Actionform implements ArrayAccess
 {
 	use Singleton;
 
@@ -79,7 +79,7 @@ class Actionform
 			}
 
 			if( $this->get_config('import_db_schemas') ){
-				$autoconfig = Cache::get('af_autoconfig', 'core_db', function () {
+				$autoconfig = Cache::get('af_autoconfig', 'core_db', function (){
 					$autoconfig = [];
 					foreach(Database_Schema::get() as $table_name => $table){
 						foreach(Arr::get($table, 'columns') as $col_name => $col){
@@ -653,7 +653,7 @@ class Actionform
 	function is_mobiledevice()
 	{
 		if( $this->useragent ){
-			return Cache::get($this->useragent, 'ismobiledevice_by_ua', function ($useragent) {
+			return Cache::get($this->useragent, 'ismobiledevice_by_ua', function ($useragent){
 				$browser = get_browser($useragent);
 				if( is_object($browser) ){
 					return $browser->ismobiledevice;
@@ -739,5 +739,25 @@ class Actionform
 		}
 
 		return $list;
+	}
+
+	public function offsetSet($offset, $value)
+	{
+		$this->set($offset, $value);
+	}
+
+	public function offsetGet($offset)
+	{
+		return $this->get($offset);
+	}
+
+	public function offsetExists($offset)
+	{
+		return $this->key_exists($offset);
+	}
+
+	public function offsetUnset($offset)
+	{
+		$this->delete($offset);
 	}
 }
