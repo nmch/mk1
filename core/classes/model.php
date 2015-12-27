@@ -310,7 +310,7 @@ class Model implements Iterator, Countable, ArrayAccess
 
 	function get_related($relation_type, $options)
 	{
-		Log::coredebug("Model::get_related() : $relation_type", $options);
+		//Log::coredebug("Model::get_related() : $relation_type", $options);
 		$query = null;
 
 		if( $relation_type == 'belongs_to' || $relation_type == 'has_many' ){
