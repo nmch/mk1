@@ -508,12 +508,14 @@ class Model implements Iterator, Countable, ArrayAccess
 			$this->_save_diff = [];
 
 			//echo "new_data = "; print_r($new_data);
-			//Log::coredebug("[model] new_data = ",$new_data);
+			//Log::debug2("[model] new_data = ",$new_data,$this->_original);
 			if( $new_data ){
 				foreach($new_data as $key => $value){
-					if( $this->$key !== $value ){
+					//Log::debug2("save key",$key,$this->get($key),$value);
+					if( $this->{$key} !== $value ){
 						$this->_save_diff[0][$key] = $this->$key;
 						$this->_save_diff[1][$key] = $value;
+						//Log::debug2("save diff",$this->_save_diff);
 					}
 					$this->_original[$key] = $value;
 					if( array_key_exists($key, $this->_data) ){
