@@ -183,8 +183,19 @@ class Actionform implements ArrayAccess
 
 	public function get_config($name)
 	{
-		return Config::get('form.' . $name);
-		//return Arr::get($this->config,$name);
+		$config = Config::get('form.' . $name);
+
+		if( is_array($config) ){
+			// Modelの定義があった場合はModel内のformコンフィグもマージする
+			if( $model_name = Arr::get($config, 'model') ){
+				$r = call_user_func([$model_name, 'form']);
+				if( is_array($r) ){
+					$config = Arr::merge($config, $r);
+				}
+			}
+		}
+
+		return $config;
 	}
 
 	private function set_config($name, $value)
