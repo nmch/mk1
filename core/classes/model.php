@@ -474,30 +474,44 @@ class Model implements Iterator, Countable, ArrayAccess
 		//echo "this->_data = "; print_r($this->_data);
 		//echo "data = "; print_r($data);
 
-		$r = null;
-		if( $this->get($primary_key) ){
-			//データがある場合のみ更新する
-			if( count($data) ){
-				$query_update = DB::update($this->table())->values($data)->where($primary_key, $this->get($primary_key))->returning('*');
-				// apply_conditions()を実行するとexcept系のconditionにひっかかって保存したデータがselectできないことがある
-				//				$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
-				$sql_select = static::_build_select_query()->apply_joins()->clear_from()->from('model_save_query')->get_sql();
-				$sql_update = $query_update->get_sql();
-				$query_update->clear_query_type()->set_sql("with model_save_query as ($sql_update) $sql_select");
-				//echo "SQL = "; print_r($query_update->get_sql(true));
-				$r = $query_update->execute();
+		try {
+			$r = null;
+			if( $this->get($primary_key) ){
+				//データがある場合のみ更新する
+				if( count($data) ){
+					$query_update = DB::update($this->table())->values($data)->where($primary_key, $this->get($primary_key))->returning('*');
+					// apply_conditions()を実行するとexcept系のconditionにひっかかって保存したデータがselectできないことがある
+					//				$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
+					$sql_select = static::_build_select_query()->apply_joins()->clear_from()->from('model_save_query')->get_sql();
+					$sql_update = $query_update->get_sql();
+					$query_update->clear_query_type()->set_sql("with model_save_query as ($sql_update) $sql_select");
+					//echo "SQL = "; print_r($query_update->get_sql(true));
+					$r = $query_update->execute();
+				}
 			}
-		}
-		else{
-			//挿入の場合、データがなくてもdefault valuesが挿入される
-			$query_insert = DB::insert($this->table())->values($data)->returning('*');
-			// apply_conditions()を実行するとexcept系のconditionにひっかかって保存したデータがselectできないことがある
-			//			$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
-			$sql_select = static::_build_select_query()->apply_joins()->clear_from()->from('model_save_query')->get_sql();
-			$sql_insert = $query_insert->get_sql();
-			$query_insert->clear_query_type()->set_sql("with model_save_query as ($sql_insert) $sql_select");
-			//echo "SQL = "; print_r($query_insert->get_sql(true));
-			$r = $query_insert->execute();
+			else{
+				//挿入の場合、データがなくてもdefault valuesが挿入される
+				$query_insert = DB::insert($this->table())->values($data)->returning('*');
+				// apply_conditions()を実行するとexcept系のconditionにひっかかって保存したデータがselectできないことがある
+				//			$sql_select   = static::_build_select_query()->apply_joins()->apply_conditions()->clear_from()->from('model_save_query')->get_sql();
+				$sql_select = static::_build_select_query()->apply_joins()->clear_from()->from('model_save_query')->get_sql();
+				$sql_insert = $query_insert->get_sql();
+				$query_insert->clear_query_type()->set_sql("with model_save_query as ($sql_insert) $sql_select");
+				//echo "SQL = "; print_r($query_insert->get_sql(true));
+				$r = $query_insert->execute();
+			}
+		} catch(Exception $e){
+			$on_save_error_handler_name = 'on_save_error';
+			if( method_exists($this, $on_save_error_handler_name) ){
+				$on_save_error_handler_result = call_user_func([$this, $on_save_error_handler_name], $e);
+				if( $on_save_error_handler_result === null ){
+					// ハンドラが明示的にnull以外を返さなかった場合は例外を投げる
+					throw $e;
+				}
+			}
+			else{
+				throw $e;
+			}
 		}
 
 		// 更新・挿入されたアイテムはoriginalとして保存し、_dataからは消す
