@@ -22,6 +22,8 @@ trait Logic_View_Pager
 	public $default_rows = 10;
 	/** @var string 取得した結果にas_object_array()を実行するかどうか */
 	public $as_object_array = null;
+	/** @var string */
+	public $id_name;
 	//	public $is_first_page;
 	//	public $is_last_page;
 
@@ -66,6 +68,8 @@ trait Logic_View_Pager
 		if( $query === null ){
 			return null;
 		}
+		$model         = $query->get_model();
+		$this->id_name = $model::primary_key();
 
 		foreach($this->search_elements() as list($key, $value)){
 			$method_name = 'search_' . $key;

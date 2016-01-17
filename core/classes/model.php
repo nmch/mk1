@@ -809,6 +809,16 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $this;
 	}
 
+	static function form()
+	{
+		if( property_exists(get_called_class(), 'form') ){
+			return static::$form;
+		}
+		else{
+			return null;
+		}
+	}
+
 	/**
 	 * このModelのデータを取得する際のselectクエリを得る
 	 *
