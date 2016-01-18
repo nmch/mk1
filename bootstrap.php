@@ -102,6 +102,11 @@ require COREPATH . 'classes/autoloader.php';
 require COREPATH . 'bootstrap.php';
 Autoloader::register();
 
+$composer_autoloader = PROJECTPATH . 'vendor/autoload.php';
+if( is_file($composer_autoloader) ){
+	include $composer_autoloader;
+}
+
 // 実行環境
 $mk = Mk::instance();
 
