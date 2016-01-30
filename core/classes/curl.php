@@ -44,6 +44,8 @@ class Curl
 	private $error_output_file;
 	/** @var  Resource 転送ヘッダを出力するファイルポインタ */
 	private $transfer_header_file;
+	/** @var  string Cookie保存用ファイルのパス */
+	private $cookie_path;
 
 	function __construct(array $options = [], array $curl_options = [])
 	{
@@ -278,6 +280,7 @@ class Curl
 				'error'    => curl_error($this->curl),
 				'stderr'   => $error_output,
 			];
+			Log::debug("curl error", $this->curl_error);
 		}
 
 		if( $this->curl_result === false ){
@@ -298,6 +301,8 @@ class Curl
 		$this->error_output_file    = tmpfile();
 		$this->transfer_header_file = tmpfile();
 
+		$this->cookie_path = tempnam(null, 'CURL');
+
 		$this->curl_options = $curl_options + [
 				CURLOPT_VERBOSE        => true,
 				CURLOPT_RETURNTRANSFER => true,
@@ -305,8 +310,9 @@ class Curl
 				CURLOPT_HEADER         => false,
 				CURLOPT_AUTOREFERER    => true,
 				CURLOPT_COOKIESESSION  => true,
-				//			    CURLOPT_COOKIEFILE => $cookie_path,
-				//			    CURLOPT_COOKIEJAR => $cookie_path,
+				CURLOPT_SSL_VERIFYPEER => false,
+				CURLOPT_COOKIEFILE     => $this->cookie_path,
+				CURLOPT_COOKIEJAR      => $this->cookie_path,
 				//			    CURLOPT_FILE => 'step1.txt',
 				CURLOPT_STDERR         => $this->error_output_file,
 				CURLOPT_WRITEHEADER    => $this->transfer_header_file,
