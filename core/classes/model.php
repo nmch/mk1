@@ -42,6 +42,8 @@ class Model implements Iterator, Countable, ArrayAccess
 	/** @var array save()時にとられるdiff */
 	protected $_save_diff = [];
 
+	protected static $after_load_functions = [];
+
 	function __construct($options = [])
 	{
 		if( empty($options['deferred_init']) ){
@@ -49,13 +51,23 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 
 		$this->after_load();
+		$class_name = get_called_class();
+		foreach(Arr::get(static::$after_load_functions,$class_name,[]) as $func){
+			if( is_callable($func) ){
+				$func($this);
+			}
+		}
 
 		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
 	}
 
-	protected function after_load()
+	static function add_after_load_functions($func)
 	{
+		$class_name = get_called_class();
+		static::$after_load_functions[$class_name][] = $func;
 	}
+
+	protected function after_load(){ }
 
 	static function __callStatic($name, $arguments)
 	{
