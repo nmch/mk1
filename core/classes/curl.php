@@ -78,6 +78,23 @@ class Curl
 	}
 
 	/**
+	 * 直前のリクエストの情報を取得する
+	 *
+	 * @param null $key
+	 *
+	 * @return array|mixed
+	 */
+	public function response_info($key = null)
+	{
+		if( $key === null ){
+			return $this->curl_info;
+		}
+		else{
+			return Arr::get($this->curl_info, $key);
+		}
+	}
+
+	/**
 	 * オプションを設定する
 	 *
 	 * @param $key
@@ -222,6 +239,7 @@ class Curl
 			$curl_options[CURLOPT_HTTPHEADER] = $curl_headers;
 		}
 
+		Log::coredebug("cURL リクエストオプション", $curl_options);
 		curl_setopt_array($this->curl, $curl_options);
 
 		Log::coredebug("cURLの実行準備が整いました: method={$this->method} / url={$url}");
