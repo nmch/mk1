@@ -5,13 +5,15 @@
  */
 class Curl
 {
-	const OP_RETURN_AS_JSON  = 'return_as_json';
-	const OP_CAMOUFLAGE_UA   = 'camouflage_ua';
-	const OP_CURL_SETTINGS   = 'curl_settings';
-	const OP_BASE_URL        = 'base_url';
-	const OP_REQUEST_HEADERS = 'request_headers';
-	const OP_REQUEST_DATA    = 'request_data';
-	const OP_USERPWD         = 'userpwd';
+	const OP_RETURN_AS_JSON         = 'return_as_json';
+	const OP_CONVERT_ENCODING       = 'convert_encoding';
+	const OP_EXCEPTION_WHEN_NOT_200 = 'exception_when_not_200';
+	const OP_CAMOUFLAGE_UA          = 'camouflage_ua';
+	const OP_CURL_SETTINGS          = 'curl_settings';
+	const OP_BASE_URL               = 'base_url';
+	const OP_REQUEST_HEADERS        = 'request_headers';
+	const OP_REQUEST_DATA           = 'request_data';
+	const OP_USERPWD                = 'userpwd';
 
 	const METHOD_GET    = 'GET';
 	const METHOD_POST   = 'POST';
@@ -50,12 +52,14 @@ class Curl
 	function __construct(array $options = [], array $curl_options = [])
 	{
 		$this->options = $options + [
-				static::OP_RETURN_AS_JSON  => true,
-				static::OP_CAMOUFLAGE_UA   => true,
-				static::OP_BASE_URL        => '',
-				static::OP_REQUEST_DATA    => [],
-				static::OP_REQUEST_HEADERS => [],
-				'default_ua'               => 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.04506.648)',
+				static::OP_RETURN_AS_JSON         => true,
+				static::OP_CONVERT_ENCODING       => false,
+				static::OP_EXCEPTION_WHEN_NOT_200 => false,
+				static::OP_CAMOUFLAGE_UA          => true,
+				static::OP_BASE_URL               => '',
+				static::OP_REQUEST_DATA           => [],
+				static::OP_REQUEST_HEADERS        => [],
+				'default_ua'                      => 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.04506.648)',
 			];
 		$this->setup_curl($curl_options);
 	}
@@ -245,7 +249,14 @@ class Curl
 		Log::coredebug("cURLの実行準備が整いました: method={$this->method} / url={$url}");
 
 		$this->execute_curl();
+		$http_code = intval($this->response_info('http_code'));
 
+		if( Arr::get($this->options, static::OP_EXCEPTION_WHEN_NOT_200) && $http_code !== 200 ){
+			throw new MkException('Bad Http Response', $http_code);
+		}
+		if( $to_encoding = Arr::get($this->options, static::OP_CONVERT_ENCODING) ){
+			$this->curl_result = mb_convert_encoding($this->curl_result, $to_encoding, 'SJIS-win');
+		}
 		if( Arr::get($this->options, static::OP_RETURN_AS_JSON) ){
 			$result = json_decode($this->curl_result, true);
 			if( $result === null ){
