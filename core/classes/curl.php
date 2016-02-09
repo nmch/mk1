@@ -134,7 +134,7 @@ class Curl
 	 * @return mixed|string
 	 * @throws MkException
 	 */
-	public function get($url, array $data = [])
+	public function get($url, array $data = [],array $options = [])
 	{
 		$this->method       = static::METHOD_GET;
 		$this->request_data = $data;
@@ -340,8 +340,9 @@ class Curl
 				CURLOPT_AUTOREFERER    => true,
 				CURLOPT_COOKIESESSION  => true,
 				CURLOPT_SSL_VERIFYPEER => false,
-				CURLOPT_COOKIEFILE     => $this->cookie_path,
-				CURLOPT_COOKIEJAR      => $this->cookie_path,
+				//CURLOPT_COOKIEFILE     => $this->cookie_path,
+				//CURLOPT_COOKIEJAR      => $this->cookie_path,
+				CURLOPT_COOKIEJAR      => '',
 				//			    CURLOPT_FILE => 'step1.txt',
 				CURLOPT_STDERR         => $this->error_output_file,
 				CURLOPT_WRITEHEADER    => $this->transfer_header_file,
