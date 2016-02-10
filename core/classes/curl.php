@@ -134,7 +134,7 @@ class Curl
 	 * @return mixed|string
 	 * @throws MkException
 	 */
-	public function get($url, array $data = [],array $options = [])
+	public function get($url, array $data = [], array $options = [])
 	{
 		$this->method       = static::METHOD_GET;
 		$this->request_data = $data;
@@ -223,6 +223,10 @@ class Curl
 			else{
 				$url .= '?' . http_build_query($request_data);
 			}
+		}
+		else{
+			// データがないときでも値をセットしないと Content-Length: -1 を投げてしまう
+			$curl_options[CURLOPT_POSTFIELDS] = null;
 		}
 
 		// ユーザ名・パスワード
