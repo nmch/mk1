@@ -205,6 +205,7 @@ class Curl
 			default:
 				throw new MkException("unknown method");
 		}
+		Log::coredebug('retrieve', $this->method, $curl_options);
 
 		// ベースURLを使ったURLの設定
 		if( $base_url = $this->get_option(static::OP_BASE_URL) ){
@@ -216,17 +217,19 @@ class Curl
 
 		// 送信するデータの処理
 		$request_data = array_merge(Arr::get($this->options, static::OP_REQUEST_DATA, []), $this->request_data);
-		if( $request_data ){
-			if( $this->method === static::METHOD_POST ){
+		if( $this->method === static::METHOD_POST ){
+			if( $request_data ){
 				$curl_options[CURLOPT_POSTFIELDS] = is_array($request_data) ? http_build_query($request_data) : $request_data;
 			}
 			else{
-				$url .= '?' . http_build_query($request_data);
+				// データがないときでも値をセットしないと Content-Length: -1 を投げてしまう
+				$curl_options[CURLOPT_POSTFIELDS] = null;
 			}
 		}
 		else{
-			// データがないときでも値をセットしないと Content-Length: -1 を投げてしまう
-			$curl_options[CURLOPT_POSTFIELDS] = null;
+			if( $request_data ){
+				$url .= '?' . http_build_query($request_data);
+			}
 		}
 
 		// ユーザ名・パスワード
