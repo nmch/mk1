@@ -205,7 +205,7 @@ class Curl
 			default:
 				throw new MkException("unknown method");
 		}
-		Log::coredebug('retrieve', $this->method, $curl_options);
+		//Log::coredebug('retrieve', $this->method, $curl_options);
 
 		// ベースURLを使ったURLの設定
 		if( $base_url = $this->get_option(static::OP_BASE_URL) ){
