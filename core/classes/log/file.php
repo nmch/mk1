@@ -27,7 +27,9 @@ class Log_File implements Logic_Interface_Log_Driver
 
 	function __destruct()
 	{
-		fclose($this->fp);
+		if($this->fp){
+			fclose($this->fp);
+		}
 	}
 
 	function write($data)
