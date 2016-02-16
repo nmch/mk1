@@ -12,22 +12,23 @@ class Database_Query
 	protected $affected_rows     = null;
 	//protected $result = NULL;
 
-	protected $_query_type       = null;
-	protected $_query_columns    = [];
-	protected $_query_where      = [];
-	protected $_query_from       = [];
-	protected $_query_into       = [];
-	protected $_query_with       = [];
-	protected $_query_join       = [];
-	protected $_query_values     = [];
-	protected $_query_orderby    = [];
-	protected $_query_groupby    = [];
-	protected $_query_for        = null;
-	protected $_query_limit      = null;
-	protected $_query_offset     = null;
-	protected $_query_distinct   = false;
-	protected $_query_returning  = [];
-	protected $_query_primarykey = [];
+	protected $_query_type        = null;
+	protected $_query_columns     = [];
+	protected $_query_where       = [];
+	protected $_query_from        = [];
+	protected $_query_into        = [];
+	protected $_query_with        = [];
+	protected $_query_join        = [];
+	protected $_query_values      = [];
+	protected $_query_orderby     = [];
+	protected $_query_groupby     = [];
+	protected $_query_for         = null;
+	protected $_query_limit       = null;
+	protected $_query_offset      = null;
+	protected $_query_distinct    = false;
+	protected $_query_distinct_on = [];
+	protected $_query_returning   = [];
+	protected $_query_primarykey  = [];
 
 
 	public function __construct($sql = null, $parameters = [])
@@ -89,7 +90,7 @@ class Database_Query
 
 			return $result;
 		} catch(Exception $e){
-			$message        = $e->getMessage();
+			$message = $e->getMessage();
 			//Log::error("Database_Query::execute() Exception : message={$message} / code={$e->getCode()} / prev_exception=",$e);
 			$new_expception = new DatabaseQueryError($message, $e->getCode(), $e);
 			Log::error($message);
@@ -418,6 +419,9 @@ class Database_Query
 		$sql .= "SELECT ";
 		if( $this->_query_distinct ){
 			$sql .= " DISTINCT ";
+		}
+		elseif( $this->_query_distinct_on ){
+			$sql .= " DISTINCT ON (" . implode(',', $this->_query_distinct_on) . ")";
 		}
 		$sql .= $this->_query_columns ? implode(',', $this->_query_columns) : '*';
 		if( $this->_query_into ){
@@ -941,6 +945,19 @@ class Database_Query
 	function distinct($flag)
 	{
 		$this->_query_distinct = (boolean)$flag;
+
+		return $this;
+	}
+
+	/**
+	 * @return Database_Query
+	 */
+	function distinct_on($columns)
+	{
+		if( ! is_array($columns) ){
+			$columns = [$columns];
+		}
+		$this->_query_distinct_on = array_merge($this->_query_distinct_on, $columns);
 
 		return $this;
 	}

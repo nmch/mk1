@@ -35,10 +35,12 @@ class Config
 				$r = [];
 			}
 			$group = pathinfo($file, PATHINFO_FILENAME);
-			if( $group && $group != 'config' ){
-				$r = [$group => $r];
+			if( $group === 'config' ){
+				$config = Arr::merge($config, $r);
 			}
-			$config = Arr::merge($config, $r);
+			else{
+				Arr::set($config, $group, Arr::merge(Arr::get($config, $group, []), $r));
+			}
 			unset($r);
 		}
 		unset($files);

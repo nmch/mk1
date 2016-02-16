@@ -8,13 +8,14 @@ class Response_File extends Response
 	protected $filename;
 	protected $do_not_unlink;
 	protected $unlink_targets = [];
+	protected $mime_type      = 'application/octet-stream';
 
 	function __construct($filepath, $filename, $do_not_unlink = false, array $headers = [])
 	{
 		Log::coredebug("[response file] filename=$filename");
 
 		if( ! file_exists($filepath) ){
-//			throw new Exception("file not found");
+			//			throw new Exception("file not found");
 			throw new HttpNotFoundException;
 		}
 		if( ! is_file($filepath) ){
@@ -41,10 +42,17 @@ class Response_File extends Response
 		return $this;
 	}
 
+	function set_mime_type($mime_type):Response_File
+	{
+		$this->mime_type = $mime_type;
+
+		return $this;
+	}
+
 	function send()
 	{
 		if( $this->before() ){
-			header('Content-Type: application/octet-stream');
+			header('Content-Type: ' . $this->mime_type);
 			header('Content-Disposition: attachment; filename=' . $this->filename);
 			header('Content-Transfer-Encoding: binary');
 			header('Content-Length: ' . filesize($this->filepath));

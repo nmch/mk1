@@ -42,7 +42,7 @@ trait Logic_Masterdetail_Controller
 					$options = [];
 				}
 			}
-			$model_name = $this->get_model_name();
+			$model_name       = $this->get_model_name();
 			if( ! preg_match('/^Model_(.+)$/', $model_name, $match) ){
 				throw new Exception("unexpected model name {$model_name}");
 			}

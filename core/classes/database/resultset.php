@@ -206,7 +206,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 			throw new MkException('invalid type');
 		}
 
-//		Log::coredebug("correct_value : ",$value,$type);
+		//		Log::coredebug("correct_value : ",$value,$type);
 
 		try {
 			switch($type['typcategory']){
@@ -214,7 +214,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 					if( is_string($value) && strpos($type['typname'], 'int') === 0 ){
 						$value = intval($value);
 					}
-//				Log::coredebug("typcategory=N ".gettype($value), $value,$type);
+					//				Log::coredebug("typcategory=N ".gettype($value), $value,$type);
 					break;
 				case 'B':
 					$value = ($value === 't' ? true : ($value === 'f' ? false : null));
@@ -240,7 +240,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 							$value = [];
 						}
 						else{
-							$value = array_map(function ($str) {
+							$value = array_map(function ($str){
 								if( strtoupper($str) === 'NULL' ){
 									// fixme: 文字列型配列の場合の文字列としての'NULL'とSQLのnull値を区別しなければならない
 									$str = null;
@@ -284,6 +284,10 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 	 */
 	function as_object_array($array_key = null)
 	{
+		if( $this->fetch_as && class_exists($this->fetch_as) && method_exists($this->fetch_as, 'before_as_object_array') ){
+			forward_static_call_array([$this->fetch_as, 'before_as_object_array'], [$this]);
+		}
+
 		$list = [];
 		foreach($this as $item){
 			if( $array_key ){
@@ -292,6 +296,10 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 			else{
 				$list[] = $item;
 			}
+		}
+
+		if( $this->fetch_as && class_exists($this->fetch_as) && method_exists($this->fetch_as, 'after_as_object_array') ){
+			forward_static_call_array([$this->fetch_as, 'after_as_object_array'], [$this, $list]);
 		}
 
 		return $list;

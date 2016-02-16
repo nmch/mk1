@@ -5,13 +5,15 @@
  */
 class Curl
 {
-	const OP_RETURN_AS_JSON  = 'return_as_json';
-	const OP_CAMOUFLAGE_UA   = 'camouflage_ua';
-	const OP_CURL_SETTINGS   = 'curl_settings';
-	const OP_BASE_URL        = 'base_url';
-	const OP_REQUEST_HEADERS = 'request_headers';
-	const OP_REQUEST_DATA    = 'request_data';
-	const OP_USERPWD         = 'userpwd';
+	const OP_RETURN_AS_JSON         = 'return_as_json';
+	const OP_CONVERT_ENCODING       = 'convert_encoding';
+	const OP_EXCEPTION_WHEN_NOT_200 = 'exception_when_not_200';
+	const OP_CAMOUFLAGE_UA          = 'camouflage_ua';
+	const OP_CURL_SETTINGS          = 'curl_settings';
+	const OP_BASE_URL               = 'base_url';
+	const OP_REQUEST_HEADERS        = 'request_headers';
+	const OP_REQUEST_DATA           = 'request_data';
+	const OP_USERPWD                = 'userpwd';
 
 	const METHOD_GET    = 'GET';
 	const METHOD_POST   = 'POST';
@@ -44,16 +46,20 @@ class Curl
 	private $error_output_file;
 	/** @var  Resource 転送ヘッダを出力するファイルポインタ */
 	private $transfer_header_file;
+	/** @var  string Cookie保存用ファイルのパス */
+	private $cookie_path;
 
 	function __construct(array $options = [], array $curl_options = [])
 	{
 		$this->options = $options + [
-				static::OP_RETURN_AS_JSON  => true,
-				static::OP_CAMOUFLAGE_UA   => true,
-				static::OP_BASE_URL        => '',
-				static::OP_REQUEST_DATA    => [],
-				static::OP_REQUEST_HEADERS => [],
-				'default_ua'               => 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.04506.648)',
+				static::OP_RETURN_AS_JSON         => true,
+				static::OP_CONVERT_ENCODING       => false,
+				static::OP_EXCEPTION_WHEN_NOT_200 => false,
+				static::OP_CAMOUFLAGE_UA          => true,
+				static::OP_BASE_URL               => '',
+				static::OP_REQUEST_DATA           => [],
+				static::OP_REQUEST_HEADERS        => [],
+				'default_ua'                      => 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.04506.648)',
 			];
 		$this->setup_curl($curl_options);
 	}
@@ -72,6 +78,23 @@ class Curl
 		}
 		else{
 			return Arr::get($this->response_header, $key);
+		}
+	}
+
+	/**
+	 * 直前のリクエストの情報を取得する
+	 *
+	 * @param null $key
+	 *
+	 * @return array|mixed
+	 */
+	public function response_info($key = null)
+	{
+		if( $key === null ){
+			return $this->curl_info;
+		}
+		else{
+			return Arr::get($this->curl_info, $key);
 		}
 	}
 
@@ -111,7 +134,7 @@ class Curl
 	 * @return mixed|string
 	 * @throws MkException
 	 */
-	public function get($url, array $data = [])
+	public function get($url, array $data = [], array $options = [])
 	{
 		$this->method       = static::METHOD_GET;
 		$this->request_data = $data;
@@ -182,6 +205,7 @@ class Curl
 			default:
 				throw new MkException("unknown method");
 		}
+		//Log::coredebug('retrieve', $this->method, $curl_options);
 
 		// ベースURLを使ったURLの設定
 		if( $base_url = $this->get_option(static::OP_BASE_URL) ){
@@ -193,11 +217,17 @@ class Curl
 
 		// 送信するデータの処理
 		$request_data = array_merge(Arr::get($this->options, static::OP_REQUEST_DATA, []), $this->request_data);
-		if( $request_data ){
-			if( $this->method === static::METHOD_POST ){
+		if( $this->method === static::METHOD_POST ){
+			if( $request_data ){
 				$curl_options[CURLOPT_POSTFIELDS] = is_array($request_data) ? http_build_query($request_data) : $request_data;
 			}
 			else{
+				// データがないときでも値をセットしないと Content-Length: -1 を投げてしまう
+				$curl_options[CURLOPT_POSTFIELDS] = null;
+			}
+		}
+		else{
+			if( $request_data ){
 				$url .= '?' . http_build_query($request_data);
 			}
 		}
@@ -220,12 +250,20 @@ class Curl
 			$curl_options[CURLOPT_HTTPHEADER] = $curl_headers;
 		}
 
+		Log::coredebug("cURL リクエストオプション", $curl_options);
 		curl_setopt_array($this->curl, $curl_options);
 
 		Log::coredebug("cURLの実行準備が整いました: method={$this->method} / url={$url}");
 
 		$this->execute_curl();
+		$http_code = intval($this->response_info('http_code'));
 
+		if( Arr::get($this->options, static::OP_EXCEPTION_WHEN_NOT_200) && $http_code !== 200 ){
+			throw new MkException('Bad Http Response', $http_code);
+		}
+		if( $to_encoding = Arr::get($this->options, static::OP_CONVERT_ENCODING) ){
+			$this->curl_result = mb_convert_encoding($this->curl_result, $to_encoding, 'SJIS-win');
+		}
 		if( Arr::get($this->options, static::OP_RETURN_AS_JSON) ){
 			$result = json_decode($this->curl_result, true);
 			if( $result === null ){
@@ -278,6 +316,7 @@ class Curl
 				'error'    => curl_error($this->curl),
 				'stderr'   => $error_output,
 			];
+			Log::debug("curl error", $this->curl_error);
 		}
 
 		if( $this->curl_result === false ){
@@ -298,6 +337,8 @@ class Curl
 		$this->error_output_file    = tmpfile();
 		$this->transfer_header_file = tmpfile();
 
+		$this->cookie_path = tempnam(null, 'CURL');
+
 		$this->curl_options = $curl_options + [
 				CURLOPT_VERBOSE        => true,
 				CURLOPT_RETURNTRANSFER => true,
@@ -305,8 +346,10 @@ class Curl
 				CURLOPT_HEADER         => false,
 				CURLOPT_AUTOREFERER    => true,
 				CURLOPT_COOKIESESSION  => true,
-				//			    CURLOPT_COOKIEFILE => $cookie_path,
-				//			    CURLOPT_COOKIEJAR => $cookie_path,
+				CURLOPT_SSL_VERIFYPEER => false,
+				//CURLOPT_COOKIEFILE     => $this->cookie_path,
+				//CURLOPT_COOKIEJAR      => $this->cookie_path,
+				CURLOPT_COOKIEJAR      => '',
 				//			    CURLOPT_FILE => 'step1.txt',
 				CURLOPT_STDERR         => $this->error_output_file,
 				CURLOPT_WRITEHEADER    => $this->transfer_header_file,
