@@ -94,7 +94,7 @@ class Curl
 			return $this->curl_info;
 		}
 		else{
-			return Arr::get($this->curl_info, $key);
+			return Arr::get($this->curl_info ?: [], $key);
 		}
 	}
 
