@@ -18,6 +18,10 @@ trait Logic_Masterdetail_Controller
 
 	function get_index()
 	{
+		if( method_exists($this, 'before_get_index') ){
+			$this->before_get_index();
+		}
+
 		$view_class_name = 'View_' . $this->get_base_class_name() . '_Index';
 		if( ! class_exists($view_class_name) ){
 			throw new Exception("view class({$view_class_name}) not found");
