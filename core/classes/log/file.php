@@ -5,6 +5,8 @@
  */
 class Log_File implements Logic_Interface_Log_Driver
 {
+	private $config = [];
+	private $logfile_dir;
 	private $fp;
 
 	function __construct($config)
@@ -19,22 +21,29 @@ class Log_File implements Logic_Interface_Log_Driver
 		if( ! $path ){
 			throw new MkException('cannot resolve log directory');
 		}
-		$filename_pattern = Arr::get($config, 'filename', 'Ymd');
-		$fileext          = Arr::get($config, 'fileext', 'log');
-		$filename         = date($filename_pattern) . '.' . $fileext;
-		$this->fp         = fopen($path . '/' . $filename, 'at');
-		if( $this->fp === false ){
-			throw new MkException('cannot open log file');
-		}
+		$this->config      = $config;
+		$this->logfile_dir = $path;
 	}
 
 	function __destruct()
 	{
-		fclose($this->fp);
+		if($this->fp){
+			fclose($this->fp);
+		}
 	}
 
 	function write($data)
 	{
+		if( ! $this->fp ){
+			$filename_pattern = Arr::get($this->config, 'filename', 'Ymd');
+			$fileext          = Arr::get($this->config, 'fileext', 'log');
+			$filename         = date($filename_pattern) . '.' . $fileext;
+			$this->fp         = fopen($this->logfile_dir . '/' . $filename, 'at');
+			if( $this->fp === false ){
+				throw new MkException('cannot open log file');
+			}
+		}
+
 		$str = empty($data['str']) ? '' : $data['str'];
 		fwrite($this->fp, rtrim($str) . "\n");
 	}

@@ -14,6 +14,7 @@
  * @method Model_Query limit(int $limit)
  * @method Model_Query with()
  * @method Model_Query select()
+ * @method Model_Query distinct_on($column)
  * @method Model_Query select_for(string $p)
  * @method Model_Query clear_order_by()
  * @method Model_Query into(string $table_name)

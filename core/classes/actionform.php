@@ -181,10 +181,22 @@ class Actionform implements ArrayAccess
 
 	//public function save($name,$model_list = array())
 
-	public function get_config($name)
+	public function get_config($name, $default = [])
 	{
-		return Config::get('form.' . $name);
-		//return Arr::get($this->config,$name);
+		$config = Config::get('form.' . $name, $default);
+
+		if( is_array($config) ){
+			// Modelの定義があった場合はModel内のformコンフィグもマージする
+			if( $model_name = Arr::get($config, 'model') ){
+				/** @see \Model::form() */
+				$r = call_user_func([$model_name, 'form']);
+				if( is_array($r) ){
+					$config = Arr::merge($config, $r);
+				}
+			}
+		}
+
+		return $config;
 	}
 
 	private function set_config($name, $value)
@@ -241,7 +253,15 @@ class Actionform implements ArrayAccess
 		$this->validate($name);
 		//Log::coredebug("validated_values = ",$this->validated_values);
 
-		$preset = Config::get('form.preset.' . $name);
+		$preset = Config::get('form.preset.' . $name, []);
+		// Modelの定義があった場合はModel内のformコンフィグもマージする
+		if( class_exists($name) && is_subclass_of($name, 'Model') ){
+			/** @see \Model::form() */
+			$r = call_user_func([$name, 'form']);
+			if( is_array($r) ){
+				$preset = Arr::merge($preset, $r);
+			}
+		}
 		if( ! $preset ){
 			throw new MkException('invalid preset name');
 		}
@@ -421,6 +441,16 @@ class Actionform implements ArrayAccess
 				//Log::coredebug("merged rules = ",$validation);
 			}
 		}
+
+		// Modelの定義があった場合はModel内のformコンフィグもマージする
+		if( class_exists($name) && is_subclass_of($name, 'Model') ){
+			/** @see \Model::form() */
+			$r = call_user_func([$name, 'form']);
+			if( is_array($r) ){
+				$validation = Arr::merge($validation, $r);
+			}
+		}
+
 		if( ! $validation ){
 			throw new MkException("empty validation rules ($name)");
 		}
