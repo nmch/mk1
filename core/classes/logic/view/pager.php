@@ -68,8 +68,10 @@ trait Logic_View_Pager
 		if( $query === null ){
 			return null;
 		}
-		$model         = $query->get_model();
-		$this->id_name = $model::primary_key();
+		if( $query instanceof Model_Query ){
+			$model         = $query->get_model();
+			$this->id_name = $model::primary_key();
+		}
 
 		foreach($this->search_elements() as list($key, $value)){
 			$method_name = 'search_' . $key;
@@ -95,6 +97,7 @@ trait Logic_View_Pager
 				$export_filename             = Arr::get($export_settings, 'export_filename', 'export');
 				$functions                   = Arr::get($export_settings, 'functions', []);
 
+				$data = null;
 				if( $query instanceof Model_Query ){
 					$data = $query->get();
 				}
