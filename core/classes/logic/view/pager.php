@@ -148,29 +148,34 @@ trait Logic_View_Pager
 				$option = [$option];
 			}
 
-			// スペースによる複数指定
-			if( is_scalar($values) ){
-				$values = explode(' ', trim($values));
-			}
-			if( ! $values ){
-				$values = [];
-			}
-
-			// 空文字列の要素は削除する
-			foreach($values as $values_key => $str){
-				if( $str === '' ){
-					unset($values[$values_key]);
+			if( ! in_array('do_not_explode', $option) ){
+				// スペースによる複数指定
+				if( is_scalar($values) ){
+					$values = explode(' ', trim($values));
 				}
-			}
+				if( ! $values ){
+					$values = [];
+				}
 
-			// 分割した配列ごと返す
-			if( in_array('array_agg', $option) ){
-				yield [$key, $values];
+				// 空文字列の要素は削除する
+				foreach($values as $values_key => $str){
+					if( $str === '' ){
+						unset($values[$values_key]);
+					}
+				}
+
+				// 分割した配列ごと返す
+				if( in_array('array_agg', $option) ){
+					yield [$key, $values];
+				}
+				else{
+					foreach($values as $value){
+						yield [$key, $value];
+					}
+				}
 			}
 			else{
-				foreach($values as $value){
-					yield [$key, $value];
-				}
+				yield [$key, $values];
 			}
 		}
 	}
