@@ -68,8 +68,10 @@ trait Logic_View_Pager
 		if( $query === null ){
 			return null;
 		}
-		$model         = $query->get_model();
-		$this->id_name = $model::primary_key();
+		if( $query instanceof Model_Query ){
+			$model         = $query->get_model();
+			$this->id_name = $model::primary_key();
+		}
 
 		foreach($this->search_elements() as list($key, $value)){
 			$method_name = 'search_' . $key;
@@ -95,6 +97,7 @@ trait Logic_View_Pager
 				$export_filename             = Arr::get($export_settings, 'export_filename', 'export');
 				$functions                   = Arr::get($export_settings, 'functions', []);
 
+				$data = null;
 				if( $query instanceof Model_Query ){
 					$data = $query->get();
 				}
@@ -152,29 +155,34 @@ trait Logic_View_Pager
 				$option = [$option];
 			}
 
-			// スペースによる複数指定
-			if( is_scalar($values) ){
-				$values = explode(' ', trim($values));
-			}
-			if( ! $values ){
-				$values = [];
-			}
-
-			// 空文字列の要素は削除する
-			foreach($values as $values_key => $str){
-				if( $str === '' ){
-					unset($values[$values_key]);
+			if( ! in_array('do_not_explode', $option) ){
+				// スペースによる複数指定
+				if( is_scalar($values) ){
+					$values = explode(' ', trim($values));
 				}
-			}
+				if( ! $values ){
+					$values = [];
+				}
 
-			// 分割した配列ごと返す
-			if( in_array('array_agg', $option) ){
-				yield [$key, $values];
+				// 空文字列の要素は削除する
+				foreach($values as $values_key => $str){
+					if( $str === '' ){
+						unset($values[$values_key]);
+					}
+				}
+
+				// 分割した配列ごと返す
+				if( in_array('array_agg', $option) ){
+					yield [$key, $values];
+				}
+				else{
+					foreach($values as $value){
+						yield [$key, $value];
+					}
+				}
 			}
 			else{
-				foreach($values as $value){
-					yield [$key, $value];
-				}
+				yield [$key, $values];
 			}
 		}
 	}
