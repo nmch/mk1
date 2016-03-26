@@ -122,10 +122,12 @@ if( Mk::is_unittesting() ){
 	echo "APPPATH=".APPPATH."\n";
 	echo "PKGPATH=".PKGPATH."\n";
 	*/
-	// DB初期化
-	DB::delete_all_tables();
-	// マイグレーション実行
-	Task_Coretask::refine('migration');
+	if(!isset($_SERVER['UNITTESTMODE_WITHOUT_MIGRATION'])){
+		// DB初期化
+		DB::delete_all_tables();
+		// マイグレーション実行
+		Task_Coretask::refine('migration');
+	}
 
 	return;
 }
