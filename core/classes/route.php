@@ -7,7 +7,7 @@ class Route
 		if( ! $request_method ){
 			$request_method = empty($_SERVER['REQUEST_METHOD']) ? '' : strtolower($_SERVER['REQUEST_METHOD']);
 		}
-		//Log::coredebug("[route] request_method=$request_method");
+		//Log::coredebug("[route] request_method=$request_method",$uri);
 
 		$controller_name           = '';
 		$controller_method_name    = '';
@@ -15,6 +15,7 @@ class Route
 
 		if( ! is_array($uri) ){
 			$uri = static::get_route($uri);
+			//Log::coredebug("[route] get_route=",$uri);
 		}
 
 		if( is_array($uri) ){
@@ -38,14 +39,14 @@ class Route
 				$controller_name_candidate = 'Controller_' . $controller_name_candidate;
 
 				$controller_method_name_candidate = count($tmp_uri_exploded) ? strtolower(array_shift($tmp_uri_exploded)) : 'index';
-//				Log::coredebug("[route] controller_name_candidate=$controller_name_candidate");
-//				Log::coredebug("[route] controller_method_name_candidate=$controller_method_name_candidate");
+				//Log::coredebug("[route] controller_name_candidate=$controller_name_candidate");
+				//Log::coredebug("[route] controller_method_name_candidate=$controller_method_name_candidate");
 
 
 				if( class_exists($controller_name_candidate) ){
-//					Log::coredebug("[route] Found controller class $controller_name_candidate");
+					//Log::coredebug("[route] Found controller class [{$controller_name_candidate}]");
 					$controller_method_name = static::find_method($controller_name_candidate, $controller_method_name_candidate, $request_method);
-//					Log::coredebug("[route] Found controller method $controller_method_name");
+					//Log::coredebug("[route] Found controller method [{$controller_method_name}]");
 
 					if( $controller_method_name ){
 						$controller_name           = $controller_name_candidate;
