@@ -50,20 +50,23 @@ class Model implements Iterator, Countable, ArrayAccess
 			$this->_is_new = false;
 		}
 
+		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
+	}
+
+	function execute_after_load_functions()
+	{
 		$this->after_load();
 		$class_name = get_called_class();
-		foreach(Arr::get(static::$after_load_functions,$class_name,[]) as $func){
+		foreach(Arr::get(static::$after_load_functions, $class_name, []) as $func){
 			if( is_callable($func) ){
 				$func($this);
 			}
 		}
-
-		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
 	}
 
 	static function add_after_load_functions($func)
 	{
-		$class_name = get_called_class();
+		$class_name                                  = get_called_class();
 		static::$after_load_functions[$class_name][] = $func;
 	}
 
