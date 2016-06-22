@@ -19,10 +19,16 @@ class File
 				static::rm($filepath . "/" . $object);
 			}
 			unset($objects);
-			rmdir($filepath);
+			$r = rmdir($filepath);
+			if( $r !== true ){
+				throw new MkException("rmdir {$filepath} failed");
+			}
 		}
 		else{
-			unlink($filepath);
+			$r = unlink($filepath);
+			if( $r !== true ){
+				throw new MkException("unlink {$filepath} failed");
+			}
 		}
 	}
 }
