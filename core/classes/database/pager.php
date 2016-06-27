@@ -2,6 +2,8 @@
 
 class Database_Pager
 {
+	const ROWS_NO_LIMIT = 'nolimit';
+
 	/** @var Database_Query $db_query */
 	var $db_query;
 	/** @var Actionform $options */
