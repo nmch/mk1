@@ -23,7 +23,7 @@ class EmailValidationFailedException extends MkException
 class Mail
 {
 	protected $config = [];
-
+	
 	function __construct()
 	{
 		$setup_name   = Config::get('mail.setup', 'default');
@@ -32,35 +32,35 @@ class Mail
 			Config::get('mail.' . $setup_name, [])
 		);
 	}
-
+	
 	public static function instance()
 	{
 		return new self;
 	}
-
+	
 	function get_config($name)
 	{
 		return Arr::get($this->config, $name);
 	}
-
+	
 	function set_config($name, $value)
 	{
 		Arr::set($this->config, $name, $value);
-
+		
 		return $this;
 	}
-
+	
 	function send()
 	{
 		if( empty($this->config['to']) ){
 			throw new Exception('empty to');
 		}
-
+		
 		$additional_header = [];
-
+		
 		$body = $this->get_config('body');
-
-		Log::coredebug("mail files = ",$this->get_config('file'));
+		
+		Log::coredebug("mail files = ", $this->get_config('file'));
 		if( $this->get_config('file') ){
 			$boundary            = '__BOUNDARY__' . md5(rand());
 			$additional_header[] = "Content-Type: multipart/mixed;boundary=\"{$boundary}\"\n";
@@ -73,42 +73,58 @@ class Mail
 				}
 				$attach_mime_type = "application/octet-stream";
 				$filebase         = basename($filepath);
-			            $body .= "\n--{$boundary}\n";
-			            $body .= "Content-Type: {$attach_mime_type}; name=\"{$filebase}\"\n";
-			            $body .= "Content-Disposition: attachment; filename=\"{$filebase}\"\n";
-			            $body .= "Content-Transfer-Encoding: base64\n";
-			            $body .= "\n";
-			            $body .= chunk_split(base64_encode(file_get_contents($filepath))) . "\n";
+				$body .= "\n--{$boundary}\n";
+				$body .= "Content-Type: {$attach_mime_type}; name=\"{$filebase}\"\n";
+				$body .= "Content-Disposition: attachment; filename=\"{$filebase}\"\n";
+				$body .= "Content-Transfer-Encoding: base64\n";
+				$body .= "\n";
+				$body .= chunk_split(base64_encode(file_get_contents($filepath))) . "\n";
 			}
 			$body .= "--{$boundary}--";
 		}
-
+		
+		$from_address = null;
+		$from         = null;
 		if( isset($this->config['from']) ){
-			$from = $this->config['from'];
+			$from_address = $this->config['from'];
+			$from         = $from_address;
+			
 			if( isset($this->config['from_name']) ){
-				$from = mb_encode_mimeheader($this->config['from_name']) . " <{$from}>";
+				$from_name         = $this->config['from_name'];
+				$encoded_from_name = mb_encode_mimeheader($from_name);
+				$from              = "{$encoded_from_name} <{$from}>";
 			}
-			$additional_header[] = "From: $from";
+			$additional_header[] = "From: {$from}";
 		}
-
+		
 		if( isset($this->config['cc']) && is_array($this->config['cc']) ){
 			$additional_header[] = "Cc: " . implode(',', $this->config['cc']);
 		}
 		if( isset($this->config['bcc']) && is_array($this->config['bcc']) ){
 			$additional_header[] = "Bcc: " . implode(',', $this->config['bcc']);
 		}
-		$additional_header = implode("\n", $additional_header);
-
+		$imploded_additional_header = implode("\n", $additional_header);
+		
+		$additional_parameter = null;
+		if( isset($this->config['envelope_from']) ){
+			$additional_parameter = "-f{$this->config['envelope_from']}";
+		}
+		
 		$to      = implode(',', $this->config['to']);
 		$subject = isset($this->config['subject']) ? $this->config['subject'] : '';
-		$r       = mb_send_mail($to, $subject, $body, $additional_header);
+		$r       = mb_send_mail($to, $subject, $body, $imploded_additional_header, $additional_parameter);
 		if( $r !== true ){
 			Log::error("メールの送信に失敗しました", $r, $to, $subject, $body, $additional_header);
 			throw new EmailSendingFailedException();
 		}
 		Log::coredebug("sent email to $to [$subject]");
 	}
-
+	
+	function envelope_from($address)
+	{
+		$this->config['envelope_from'] = $address;
+	}
+	
 	function from($address, $name = '')
 	{
 		if( is_array($address) ){
@@ -117,10 +133,10 @@ class Mail
 		}
 		$this->config['from']      = $address;
 		$this->config['from_name'] = $name;
-
+		
 		return $this;
 	}
-
+	
 	function template($view, $data = [])
 	{
 		if( is_scalar($view) ){
@@ -134,61 +150,61 @@ class Mail
 		list($subject, $body) = explode("\n", $body, 2);
 		$this->subject($subject);
 		$this->body($body);
-
+		
 		return $this;
 	}
-
+	
 	function subject($subject)
 	{
 		$this->config['subject'] = $subject;
-
+		
 		return $this;
 	}
-
+	
 	function body($body)
 	{
 		$this->config['body'] = $body;
-
+		
 		return $this;
 	}
-
+	
 	function to($address)
 	{
 		if( ! is_array($address) ){
 			$address = [$address];
 		}
 		$this->config['to'] = $address;
-
+		
 		return $this;
 	}
-
+	
 	function cc($address)
 	{
 		if( ! is_array($address) ){
 			$address = [$address];
 		}
 		$this->config['cc'] = $address;
-
+		
 		return $this;
 	}
-
+	
 	function bcc($address)
 	{
 		if( ! is_array($address) ){
 			$address = [$address];
 		}
 		$this->config['bcc'] = $address;
-
+		
 		return $this;
 	}
-
+	
 	function file($filepath)
 	{
 		if( ! is_array($filepath) ){
 			$filepath = [$filepath];
 		}
 		$this->config['file'] = $filepath;
-
+		
 		return $this;
 	}
 }
