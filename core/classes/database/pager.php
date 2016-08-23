@@ -3,25 +3,25 @@
 class Database_Pager
 {
 	const ROWS_NO_LIMIT = 'nolimit';
-
+	
 	/** @var Database_Query $db_query */
 	var $db_query;
 	/** @var Actionform $options */
 	var $options;
 	/** @var array $query_options */
 	var $query_options;
-
+	
 	function __construct(&$db_query, &$options, $query_options = [])
 	{
 		if( ! is_object($options) ){
 			$options = (object)$options;
 		}
-
+		
 		$this->db_query      = $db_query;
 		$this->options       = $options;
 		$this->query_options = $query_options;
 	}
-
+	
 	/**
 	 * ページングを実行
 	 *
@@ -36,15 +36,16 @@ class Database_Pager
 		$page         = $page ?: 1;
 		$rows         = intval($rows) ?: 10;
 		//Log::coredebug("[db pager] rows=$rows / page=$page");
-
+		
 		if( $this->db_query instanceof Model_Query ){
 			$query_for_total = clone $this->db_query->get_query();
 		}
 		else{
 			$query_for_total = clone $this->db_query;
 		}
-		$query_for_total->clear_order_by()->clear_select()->select('count(*) as count')->set_fetch_as(null);
-
+		$query_for_total->clear_order_by()->clear_select()->clear_into()
+		                ->select('count(*) as count')->set_fetch_as(null);
+		
 		// 合計数といっしょに計算する内容の追加
 		$add_col_to_total = Arr::get($this->query_options, 'add_col_to_total');
 		if( $add_col_to_total && ! is_array($add_col_to_total) ){
@@ -55,7 +56,7 @@ class Database_Pager
 				$query_for_total->select("{$add_item} as {$add_key}");
 			}
 		}
-
+		
 		$total_result = $query_for_total->execute();
 		$total_rows   = $total_result->get('count');
 		unset($query_for_total);
@@ -70,13 +71,13 @@ class Database_Pager
 			if( $total_pages < $page ){
 				$page = $total_pages;
 			}
-
+			
 			$offset = $page ? $rows * ($page - 1) : 0;
 		}
-
+		
 		//Log::coredebug("[db pager] total_pages=$total_pages / page=$page / offset=$offset");
 		$r2 = $this->db_query->offset($offset)->limit($rows)->execute();
-
+		
 		$paging_data = [
 			'total_rows'    => $total_rows,
 			'total_pages'   => $total_pages,
@@ -85,14 +86,14 @@ class Database_Pager
 			'is_first_page' => ($page <= 1),
 			'is_last_page'  => ($page >= $total_pages),
 		];
-
+		
 		// 合計数といっしょに計算した内容の追加
 		if( $add_col_to_total ){
 			foreach($add_col_to_total as $add_key => $add_item){
 				$paging_data[$add_key] = $total_result->get($add_key);
 			}
 		}
-
+		
 		/*
 		$this->set('total_rows',$total_rows);
 		$this->set('total_pages',$total_pages);
@@ -103,10 +104,10 @@ class Database_Pager
 		*/
 		$this->set($paging_data);
 		$this->set('paging_data', $paging_data);
-
+		
 		return $r2;
 	}
-
+	
 	function get($name)
 	{
 		if( method_exists($this->options, 'get') ){
@@ -115,10 +116,10 @@ class Database_Pager
 		if( property_exists($this->options, $name) ){
 			return $this->options->$name;
 		}
-
+		
 		return null;
 	}
-
+	
 	function set($name, $value = null)
 	{
 		if( method_exists($this->options, 'set') ){
@@ -127,15 +128,15 @@ class Database_Pager
 		else{
 			$this->options->$name = $value;
 		}
-
+		
 		return $this;
 	}
-
+	
 	function __set($name, $value)
 	{
 		return $this->set($name, $value);
 	}
-
+	
 	function __call(string $name, array $arguments)
 	{
 		return call_user_func_array([$this->db_query, $name], $arguments);

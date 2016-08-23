@@ -524,6 +524,16 @@ class Database_Query
 	/**
 	 * @return Database_Query
 	 */
+	function clear_into()
+	{
+		$this->_query_into = [];
+
+		return $this;
+	}
+
+	/**
+	 * @return Database_Query
+	 */
 	function clear_from()
 	{
 		$this->_query_from = [];
