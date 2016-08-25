@@ -62,25 +62,35 @@ class Mail
 		
 		Log::coredebug("mail files = ", $this->get_config('file'));
 		if( $this->get_config('file') ){
-			$boundary            = '__BOUNDARY__' . md5(rand());
-			$additional_header[] = "Content-Type: multipart/mixed;boundary=\"{$boundary}\"\n";
-			$body                = "--{$boundary}\n";
-			$body .= "Content-Type: text/plain; charset=\"ISO-2022-JP\"\n";
-			$body .= "\n{$this->get_config('body')}\n";
+			$boundary            = '__BOUNDARY__' . md5(uniqid(rand(), true));
+			$additional_header[] = "MIME-Version: 1.0";
+			$additional_header[] = "Content-Type: multipart/mixed; boundary=\"{$boundary}\"";
+			//$additional_header[] = "Content-Transfer-Encoding: 7bit";
+			$body_array   = [];
+			$body_array[] = "--{$boundary}";
+			$body_array[] .= 'Content-Type: text/plain; charset="UTF-8"';
+			$body_array[] = '';
+			$body_array[] .= $this->get_config('body');
 			foreach($this->config['file'] as $filepath){
 				if( ! file_exists($filepath) ){
 					throw new MkException("file not found");
 				}
 				$attach_mime_type = "application/octet-stream";
 				$filebase         = basename($filepath);
-				$body .= "\n--{$boundary}\n";
-				$body .= "Content-Type: {$attach_mime_type}; name=\"{$filebase}\"\n";
-				$body .= "Content-Disposition: attachment; filename=\"{$filebase}\"\n";
-				$body .= "Content-Transfer-Encoding: base64\n";
-				$body .= "\n";
-				$body .= chunk_split(base64_encode(file_get_contents($filepath))) . "\n";
+				$body_array[]     = '';
+				$body_array[] .= "--{$boundary}";
+				$body_array[] .= "Content-Type: {$attach_mime_type}; name=\"{$filebase}\"";
+				$body_array[] .= "Content-Disposition: attachment; filename=\"{$filebase}\"";
+				$body_array[] .= "Content-Transfer-Encoding: base64";
+				$body_array[] .= "";
+				$body_array = array_merge($body_array, str_split(base64_encode(file_get_contents($filepath)), 76));
+				//$body_array[] .= chunk_split(base64_encode(file_get_contents($filepath)), 76, "\n") . "\n";
 			}
-			$body .= "--{$boundary}--";
+			$body_array[] = "--{$boundary}--";
+			$body         = implode("\r\n", $body_array);
+		}
+		else{
+			$additional_header[] = 'Content-Type: text/plain; charset="UTF-8"';
 		}
 		
 		$from_address = null;
@@ -103,16 +113,18 @@ class Mail
 		if( isset($this->config['bcc']) && is_array($this->config['bcc']) ){
 			$additional_header[] = "Bcc: " . implode(',', $this->config['bcc']);
 		}
-		$imploded_additional_header = implode("\n", $additional_header);
+		$imploded_additional_header = implode("\r\n", $additional_header);
 		
 		$additional_parameter = null;
 		if( isset($this->config['envelope_from']) ){
 			$additional_parameter = "-f{$this->config['envelope_from']}";
 		}
 		
-		$to      = implode(',', $this->config['to']);
-		$subject = isset($this->config['subject']) ? $this->config['subject'] : '';
-		$r       = mb_send_mail($to, $subject, $body, $imploded_additional_header, $additional_parameter);
+		$to              = implode(',', $this->config['to']);
+		$subject         = $this->get_config('subject');
+		$encoded_subject = mb_encode_mimeheader($subject);
+		$r               = mail($to, $encoded_subject, $body, $imploded_additional_header, $additional_parameter);
+		
 		if( $r !== true ){
 			Log::error("メールの送信に失敗しました", $r, $to, $subject, $body, $additional_header);
 			throw new EmailSendingFailedException();
