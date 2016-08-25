@@ -72,15 +72,24 @@ class Mail
 			$body_array[] = '';
 			$body_array[] .= $this->get_config('body');
 			foreach($this->config['file'] as $filepath){
+				if( is_array($filepath) ){
+					$fileinfo = $filepath;
+					$filepath = Arr::get($fileinfo, 'filepath');
+					$filename = Arr::get($fileinfo, 'filename') ?: basename($filepath);
+					$filemime = Arr::get($fileinfo, 'mime') ?: "application/octet-stream";
+				}
+				else{
+					$filename = basename($filepath);
+					$filemime = "application/octet-stream";
+				}
+				
 				if( ! file_exists($filepath) ){
 					throw new MkException("file not found");
 				}
-				$attach_mime_type = "application/octet-stream";
-				$filebase         = basename($filepath);
-				$body_array[]     = '';
+				$body_array[] = '';
 				$body_array[] .= "--{$boundary}";
-				$body_array[] .= "Content-Type: {$attach_mime_type}; name=\"{$filebase}\"";
-				$body_array[] .= "Content-Disposition: attachment; filename=\"{$filebase}\"";
+				$body_array[] .= "Content-Type: {$filemime}; name=\"{$filename}\"";
+				$body_array[] .= "Content-Disposition: attachment; filename=\"{$filename}\"";
 				$body_array[] .= "Content-Transfer-Encoding: base64";
 				$body_array[] .= "";
 				$body_array = array_merge($body_array, str_split(base64_encode(file_get_contents($filepath)), 76));
