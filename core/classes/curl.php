@@ -14,12 +14,12 @@ class Curl
 	const OP_REQUEST_HEADERS        = 'request_headers';
 	const OP_REQUEST_DATA           = 'request_data';
 	const OP_USERPWD                = 'userpwd';
-
+	
 	const METHOD_GET    = 'GET';
 	const METHOD_POST   = 'POST';
 	const METHOD_PUT    = 'PUT';
 	const METHOD_DELETE = 'DELETE';
-
+	
 	/** @var array 実行時オプション */
 	private $options = [];
 	/** @var array curl初期化時オプション */
@@ -28,9 +28,11 @@ class Curl
 	private $method = '';
 	/** @var array リクエスト時のデータ */
 	private $request_data = [];
+	/** @var string リクエストデータ */
+	private $request_raw_data = null;
 	/** @var array */
 	private $response_header = [];
-
+	
 	/** @var  Resource curl handle */
 	private $curl;
 	/** @var  array */
@@ -41,14 +43,14 @@ class Curl
 	private $curl_error;
 	/** @var  array curl_getinfo()の結果 */
 	private $curl_info;
-
+	
 	/** @var  Resource エラーを出力するファイルポインタ */
 	private $error_output_file;
 	/** @var  Resource 転送ヘッダを出力するファイルポインタ */
 	private $transfer_header_file;
 	/** @var  string Cookie保存用ファイルのパス */
 	private $cookie_path;
-
+	
 	function __construct(array $options = [], array $curl_options = [])
 	{
 		$this->options = $options + [
@@ -63,7 +65,7 @@ class Curl
 			];
 		$this->setup_curl($curl_options);
 	}
-
+	
 	/**
 	 * 直前のリクエストのレスポンスヘッダを取得する
 	 *
@@ -80,7 +82,7 @@ class Curl
 			return Arr::get($this->response_header, $key);
 		}
 	}
-
+	
 	/**
 	 * 直前のリクエストの情報を取得する
 	 *
@@ -97,7 +99,7 @@ class Curl
 			return Arr::get($this->curl_info ?: [], $key);
 		}
 	}
-
+	
 	/**
 	 * オプションを設定する
 	 *
@@ -109,10 +111,10 @@ class Curl
 	public function set_option($key, $name)
 	{
 		Arr::set($this->options, $key, $name);
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * オプションを取得する
 	 *
@@ -124,7 +126,7 @@ class Curl
 	{
 		return Arr::get($this->options, $name);
 	}
-
+	
 	/**
 	 * GET APIを実行
 	 *
@@ -138,10 +140,10 @@ class Curl
 	{
 		$this->method       = static::METHOD_GET;
 		$this->request_data = $data;
-
+		
 		return $this->retrieve($url);
 	}
-
+	
 	/**
 	 * DELETE APIを実行
 	 *
@@ -155,10 +157,10 @@ class Curl
 	{
 		$this->method       = static::METHOD_DELETE;
 		$this->request_data = $data;
-
+		
 		return $this->retrieve($url);
 	}
-
+	
 	/**
 	 * POST APIを実行
 	 *
@@ -172,10 +174,17 @@ class Curl
 	{
 		$this->method       = static::METHOD_POST;
 		$this->request_data = $data;
-
+		
 		return $this->retrieve($url);
 	}
-
+	
+	public function set_request_raw_data($data = null)
+	{
+		$this->request_raw_data = $data;
+		
+		return $this;
+	}
+	
 	/**
 	 * 設定されているメソッドでcURLを実行
 	 *
@@ -187,7 +196,7 @@ class Curl
 	private function retrieve($path)
 	{
 		$curl_options = [];
-
+		
 		// メソッドごとのcURLの設定
 		switch($this->method){
 			case static::METHOD_GET:
@@ -206,7 +215,7 @@ class Curl
 				throw new MkException("unknown method");
 		}
 		//Log::coredebug('retrieve', $this->method, $curl_options);
-
+		
 		// ベースURLを使ったURLの設定
 		if( $base_url = $this->get_option(static::OP_BASE_URL) ){
 			$url = rtrim($base_url, '/') . '/' . ltrim($path, '/');
@@ -214,31 +223,41 @@ class Curl
 		else{
 			$url = $path;
 		}
-
+		
 		// 送信するデータの処理
-		$request_data = array_merge(Arr::get($this->options, static::OP_REQUEST_DATA, []), $this->request_data);
-		if( $this->method === static::METHOD_POST ){
-			if( $request_data ){
-				$curl_options[CURLOPT_POSTFIELDS] = is_array($request_data) ? http_build_query($request_data) : $request_data;
+		if( strlen($this->request_raw_data) ){
+			if( $this->method === static::METHOD_POST ){
+				$curl_options[CURLOPT_POSTFIELDS] = $this->request_raw_data;
 			}
 			else{
-				// データがないときでも値をセットしないと Content-Length: -1 を投げてしまう
-				$curl_options[CURLOPT_POSTFIELDS] = null;
+				$url .= '?' . http_build_query($this->request_raw_data);
 			}
 		}
 		else{
-			if( $request_data ){
-				$url .= '?' . http_build_query($request_data);
+			$request_data = array_merge(Arr::get($this->options, static::OP_REQUEST_DATA, []), $this->request_data);
+			if( $this->method === static::METHOD_POST ){
+				if( $request_data ){
+					$curl_options[CURLOPT_POSTFIELDS] = is_array($request_data) ? http_build_query($request_data) : $request_data;
+				}
+				else{
+					// データがないときでも値をセットしないと Content-Length: -1 を投げてしまう
+					$curl_options[CURLOPT_POSTFIELDS] = null;
+				}
+			}
+			else{
+				if( $request_data ){
+					$url .= '?' . http_build_query($request_data);
+				}
 			}
 		}
-
+		
 		// ユーザ名・パスワード
 		if( $userpwd = Arr::get($this->options, static::OP_USERPWD) ){
 			$curl_options[CURLOPT_USERPWD] = $userpwd[0] . ':' . $userpwd[1];
 		}
-
+		
 		$curl_options[CURLOPT_URL] = $url;
-
+		
 		/**
 		 * リクエストヘッダは[key => value]の形になっているので、['key: value']の形に整形する
 		 */
@@ -249,35 +268,41 @@ class Curl
 			}
 			$curl_options[CURLOPT_HTTPHEADER] = $curl_headers;
 		}
-
+		
 		Log::coredebug("cURL リクエストオプション", $curl_options);
 		curl_setopt_array($this->curl, $curl_options);
-
+		
 		Log::coredebug("cURLの実行準備が整いました: method={$this->method} / url={$url}");
-
+		
 		$this->execute_curl();
 		$http_code = intval($this->response_info('http_code'));
-
+		
 		if( Arr::get($this->options, static::OP_EXCEPTION_WHEN_NOT_200) && $http_code !== 200 ){
 			throw new MkException('Bad Http Response', $http_code);
 		}
 		if( $to_encoding = Arr::get($this->options, static::OP_CONVERT_ENCODING) ){
 			$this->curl_result = mb_convert_encoding($this->curl_result, $to_encoding, 'SJIS-win');
 		}
+		// JSONデコード (空文字列の場合はnull)
 		if( Arr::get($this->options, static::OP_RETURN_AS_JSON) ){
-			$result = json_decode($this->curl_result, true);
-			if( $result === null ){
-				Log::error("cURL: JSONのデコードに失敗しました", $this->curl_result);
-				throw new MkException('JSONのデコードに失敗しました');
+			if( strlen($this->curl_result) ){
+				$result = json_decode($this->curl_result, true);
+				if( $result === null ){
+					Log::error("cURL: JSONのデコードに失敗しました", $this->curl_result);
+					throw new MkException('JSONのデコードに失敗しました');
+				}
+			}
+			else{
+				$result = null;
 			}
 		}
 		else{
 			$result = $this->curl_result;
 		}
-
+		
 		return $result;
 	}
-
+	
 	/**
 	 * cURLを実行
 	 *
@@ -291,7 +316,7 @@ class Curl
 		$errno             = curl_errno($this->curl);
 		Log::coredebug("cURLの実行が完了しました errno={$errno}");
 		Log::coredebug("curl_info = " . print_r($this->curl_info, true));
-
+		
 		rewind($this->transfer_header_file);
 		$response_header_str = stream_get_contents($this->transfer_header_file);
 		Log::coredebug("header = {$response_header_str}");
@@ -303,11 +328,11 @@ class Curl
 			$response_header[$key] = $value;
 		}
 		$this->response_header = $response_header;
-
+		
 		rewind($this->error_output_file);
 		$error_output = stream_get_contents($this->error_output_file);
 		Log::coredebug("error = " . $error_output);
-
+		
 		$this->curl_error = [];
 		if( $errno !== 0 ){
 			$this->curl_error = [
@@ -318,12 +343,12 @@ class Curl
 			];
 			Log::debug("curl error", $this->curl_error);
 		}
-
+		
 		if( $this->curl_result === false ){
 			throw new MkException("curl execution failed");
 		}
 	}
-
+	
 	/**
 	 * cURLを初期化
 	 *
@@ -333,12 +358,12 @@ class Curl
 	{
 		$this->curl_version = curl_version();
 		$this->curl         = curl_init();
-
+		
 		$this->error_output_file    = tmpfile();
 		$this->transfer_header_file = tmpfile();
-
+		
 		$this->cookie_path = tempnam(null, 'CURL');
-
+		
 		$this->curl_options = $curl_options + [
 				CURLOPT_VERBOSE        => true,
 				CURLOPT_RETURNTRANSFER => true,
@@ -354,20 +379,20 @@ class Curl
 				CURLOPT_STDERR         => $this->error_output_file,
 				CURLOPT_WRITEHEADER    => $this->transfer_header_file,
 			];
-
+		
 		if( $camouflage_ua = Arr::get($this->options, static::OP_CAMOUFLAGE_UA) ){
 			$this->curl_options[CURLOPT_USERAGENT] = is_string($camouflage_ua) ? $camouflage_ua : Arr::get($this->options, 'default_ua');
 		}
-
+		
 		curl_setopt_array($this->curl, $this->curl_options);
-
+		
 		Log::coredebug("CURLを初期化しました", $this->curl_version);
 	}
-
+	
 	function __destruct()
 	{
 		curl_close($this->curl);
-
+		
 		fclose($this->error_output_file);
 		fclose($this->transfer_header_file);
 	}
