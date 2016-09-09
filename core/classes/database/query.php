@@ -11,7 +11,7 @@ class Database_Query
 	protected $fetch_as          = [];
 	protected $affected_rows     = null;
 	//protected $result = NULL;
-
+	
 	protected $_query_type        = null;
 	protected $_query_columns     = [];
 	protected $_query_where       = [];
@@ -29,14 +29,14 @@ class Database_Query
 	protected $_query_distinct_on = [];
 	protected $_query_returning   = [];
 	protected $_query_primarykey  = [];
-
-
+	
+	
 	public function __construct($sql = null, $parameters = [])
 	{
 		$this->_sql        = $sql;
 		$this->_parameters = $parameters;
 	}
-
+	
 	/*
 	public function param($param, $value)
 	{
@@ -54,7 +54,7 @@ class Database_Query
 		return $this;
 	}
 	*/
-
+	
 	/**
 	 * クエリを実行する
 	 *
@@ -87,7 +87,7 @@ class Database_Query
 				$result->set_query($this);
 				$this->affected_rows = $result->get_affected_rows();
 			}
-
+			
 			return $result;
 		} catch(Exception $e){
 			$message = $e->getMessage();
@@ -97,7 +97,7 @@ class Database_Query
 			throw $new_expception;
 		}
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 * @throws MkException
@@ -109,20 +109,20 @@ class Database_Query
 		}
 		$this->clear_parameter_index();
 		$this->_sql = $this->{'compile_' . $this->_query_type}();
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	function clear_parameter_index()
 	{
 		$this->_parameters_index = 1;
-
+		
 		return $this;
 	}
-
+	
 	function get_affected_rows()
 	{
 		/*
@@ -133,12 +133,12 @@ class Database_Query
 		*/
 		return $this->affected_rows;
 	}
-
+	
 	function get_fetch_as()
 	{
 		return $this->fetch_as;
 	}
-
+	
 	/**
 	 * @param $fetch_as
 	 *
@@ -147,10 +147,10 @@ class Database_Query
 	function set_fetch_as($fetch_as)
 	{
 		$this->fetch_as = $fetch_as;
-
+		
 		return $this;
 	}
-
+	
 	public function compile_update()
 	{
 		$from = is_array($this->_query_from) ? reset($this->_query_from) : $this->_query_from;
@@ -160,7 +160,7 @@ class Database_Query
 		if( ! $this->_query_values || ! is_array($this->_query_values) ){
 			throw new MkException('values required');
 		}
-
+		
 		$sql = "UPDATE $from SET ";
 		$ary = [];
 		foreach($this->_query_values as $key => $value){
@@ -179,10 +179,10 @@ class Database_Query
 		if( $this->_query_returning ){
 			$sql .= " RETURNING " . (is_array($this->_query_returning) ? implode(',', $this->_query_returning) : $this->_query_returning);
 		}
-
+		
 		return $sql;
 	}
-
+	
 	function parameter($value)
 	{
 		if( is_array($value) ){
@@ -190,21 +190,21 @@ class Database_Query
 			foreach($value as $_value){
 				$indexes[] = $this->parameter($_value);
 			}
-
+			
 			return $indexes;
 		}
 		else{
 			$this->_parameters[$this->_parameters_index - 1] = $value;
-
+			
 			return $this->_parameters_index++;
 		}
 	}
-
+	
 	function build_where()
 	{
 		//		Log::coredebug($this->_query_where,$this->_query_values);
 		$last_condition = null;
-
+		
 		$sql = '';
 		foreach($this->_query_where as $group){
 			// Process groups of conditions
@@ -216,7 +216,7 @@ class Database_Query
 						// Include logic operator
 						$sql .= ' ' . $logic . ' ';
 					}
-
+					
 					$sql .= '(';
 				}
 				elseif( $condition === ')' ){
@@ -224,7 +224,7 @@ class Database_Query
 					if( $last_condition === '(' ){
 						$sql .= 'true';
 					}
-
+					
 					$sql .= ')';
 				}
 				elseif( ($exp = Arr::get($condition, 0)) instanceof Database_Expression ){
@@ -235,12 +235,12 @@ class Database_Query
 						// Add the logic operator
 						$sql .= ' ' . $logic . ' ';
 					}
-
+					
 					// Split the condition
 					list($column, $op, $value) = $condition;
 					$op = trim($op);
 					//Log::coredebug($column,$op,$value);
-
+					
 					if( $value === null ){
 						if( $op === '=' ){
 							// Convert "val = NULL" to "val IS NULL"
@@ -251,7 +251,7 @@ class Database_Query
 							$op = 'IS NOT';
 						}
 					}
-
+					
 					if( is_bool($value) ){
 						if( $op === '=' ){
 							$op = 'IS';
@@ -260,10 +260,10 @@ class Database_Query
 							$op = 'IS NOT';
 						}
 					}
-
+					
 					// Database operators are always uppercase
 					$op = strtoupper($op);
-
+					
 					/*
 					if (($op === 'BETWEEN' OR $op === 'NOT BETWEEN') AND is_array($value))
 					{
@@ -286,7 +286,7 @@ class Database_Query
 						$value = $db->quote($min).' AND '.$db->quote($max);
 					}
 					*/
-
+					
 					// col in (select sql)に対応する
 					if( $value instanceof Database_Query ){
 						list($_insql_sql, $_insql_parameters) = $value->get_sql(true);
@@ -303,11 +303,11 @@ class Database_Query
 						$_insql_sql     = str_replace($_insql_search, $_insql_replace, $_insql_sql);
 						//						Log::coredebug($_insql_search,$_insql_replace);
 						//						Log::coredebug("replaced sql={$_insql_sql}");
-
+						
 						$value = DB::expr('(' . $_insql_sql . ')');
 						$op    = $op === '=' ? 'IN' : $op;
 					}
-
+					
 					if( $value instanceof Database_Expression ){
 						$sql .= $column . ' ' . $op . ' ' . (string)$value;
 					}
@@ -330,21 +330,21 @@ class Database_Query
 						}
 					}
 				}
-
+				
 				$last_condition = $condition;
 			}
 		}
-
+		
 		//Log::coredebug("sql=$sql",$this->_parameters);
 		return $sql;
 	}
-
+	
 	public function get_sql($with_parameters = false)
 	{
 		if( $this->_query_type ){
 			$this->compile();
 		}
-
+		
 		if( $with_parameters ){
 			return [$this->_sql, $this->_parameters];
 		}
@@ -352,7 +352,7 @@ class Database_Query
 			return $this->_sql;
 		}
 	}
-
+	
 	/**
 	 * @param $sql
 	 *
@@ -365,10 +365,10 @@ class Database_Query
 			throw new MkException('sql must be a string');
 		}
 		$this->_sql = $sql;
-
+		
 		return $this;
 	}
-
+	
 	public function compile_insert()
 	{
 		// intoが設定されている場合は優先
@@ -378,7 +378,7 @@ class Database_Query
 		if( ! $table ){
 			throw new Exception('table required');
 		}
-
+		
 		$sql = "INSERT INTO $table ";
 		if( ! $this->_query_values ){
 			$sql .= "DEFAULT VALUES";
@@ -388,23 +388,28 @@ class Database_Query
 			$ary = [];
 			//			Log::coredebug($this->_query_values);
 			foreach($this->_query_values as $value){
-				$ary[] = '$' . $this->parameter($value);
+				if( $value instanceof Database_Expression ){
+					$ary[] = strval($value);
+				}
+				else{
+					$ary[] = '$' . $this->parameter($value);
+				}
 			}
 			$sql .= ' VALUES (' . implode(',', $ary) . ')';
 		}
-
+		
 		$where = $this->build_where();
 		if( $where ){
 			$sql .= " WHERE $where";
 		}
-
+		
 		if( $this->_query_returning ){
 			$sql .= " RETURNING " . (is_array($this->_query_returning) ? implode(',', $this->_query_returning) : $this->_query_returning);
 		}
-
+		
 		return $sql;
 	}
-
+	
 	public function compile_select()
 	{
 		//Log::coredebug("_query_columns=",$this->_query_columns);
@@ -456,11 +461,11 @@ class Database_Query
 		if( $this->_query_for ){
 			$sql .= " FOR {$this->_query_for}";
 		}
-
+		
 		//Log::coredebug("[db query] sql=$sql");
 		return $sql;
 	}
-
+	
 	public function compile_delete()
 	{
 		$sql = "DELETE ";
@@ -475,10 +480,10 @@ class Database_Query
 		if( $this->_query_returning ){
 			$sql .= " RETURNING " . (is_array($this->_query_returning) ? implode(',', $this->_query_returning) : $this->_query_returning);
 		}
-
+		
 		return $sql;
 	}
-
+	
 	/**
 	 * where条件が設定されているか
 	 *
@@ -489,7 +494,7 @@ class Database_Query
 		//Log::coredebug("condition_where_exists=",$this->_query_where,!empty($this->_query_where));
 		return ( ! empty($this->_query_where));
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
@@ -497,50 +502,50 @@ class Database_Query
 	{
 		$this->_parameters       = [];
 		$this->_parameters_index = 1;
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	function clear_query_type()
 	{
 		$this->_query_type = null;
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	function clear_select()
 	{
 		$this->_query_columns = [];
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	function clear_into()
 	{
 		$this->_query_into = [];
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	function clear_from()
 	{
 		$this->_query_from = [];
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * SELECTクエリを作成
 	 *
@@ -566,7 +571,7 @@ class Database_Query
 		//echo "<PRE>"; debug_print_backtrace(); echo "</PRE>";
 		return $this;
 	}
-
+	
 	/**
 	 * UPDATEクエリを作成
 	 *
@@ -578,10 +583,10 @@ class Database_Query
 	{
 		$this->_query_type = 'UPDATE';
 		$this->from($table);
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param string $from
 	 *
@@ -590,10 +595,10 @@ class Database_Query
 	function from($from)
 	{
 		$this->_query_from[] = $from;
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param string $for
 	 *
@@ -602,10 +607,10 @@ class Database_Query
 	function select_for($for)
 	{
 		$this->_query_for = $for;
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param $into
 	 *
@@ -614,10 +619,10 @@ class Database_Query
 	function into($into)
 	{
 		$this->_query_into = $into;
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * INSERTクエリを作成
 	 *
@@ -629,10 +634,10 @@ class Database_Query
 	{
 		$this->_query_type = 'INSERT';
 		$this->into($table);
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * DELETEクエリを作成
 	 *
@@ -641,10 +646,10 @@ class Database_Query
 	function delete()
 	{
 		$this->_query_type = 'DELETE';
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param array $values
 	 *
@@ -654,7 +659,7 @@ class Database_Query
 	{
 		return $this->values($values);
 	}
-
+	
 	/**
 	 * @param array $values
 	 *
@@ -663,10 +668,10 @@ class Database_Query
 	function values(array $values)
 	{
 		$this->_query_values = array_merge($this->_query_values, $values);
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param string $with
 	 * @param string $with_query
@@ -681,10 +686,10 @@ class Database_Query
 		else{
 			$this->_query_with[] = ['name' => $with, 'query' => $with_query];
 		}
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
@@ -692,7 +697,7 @@ class Database_Query
 	{
 		return call_user_func_array([$this, 'and_where'], func_get_args());
 	}
-
+	
 	/**
 	 * @param mixed $column
 	 * @param mixed $op
@@ -706,7 +711,7 @@ class Database_Query
 			$this->and_where_open();
 			$column($this);
 			$this->and_where_close();
-
+			
 			return $this;
 		}
 		if( is_array($column) ){
@@ -726,30 +731,30 @@ class Database_Query
 			}
 			$this->_query_where[] = ['AND' => [$column, $op, $value]];
 		}
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	public function and_where_open()
 	{
 		$this->_query_where[] = ['AND' => '('];
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	public function and_where_close()
 	{
 		$this->_query_where[] = ['AND' => ')'];
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param string $column
 	 * @param string $op
@@ -763,10 +768,10 @@ class Database_Query
 			$this->or_where_open();
 			$column($this);
 			$this->or_where_close();
-
+			
 			return $this;
 		}
-
+		
 		if( is_array($column) ){
 			foreach($column as $key => $val){
 				if( is_array($val) ){
@@ -784,30 +789,30 @@ class Database_Query
 			}
 			$this->_query_where[] = ['OR' => [$column, $op, $value]];
 		}
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	public function or_where_open()
 	{
 		$this->_query_where[] = ['OR' => '('];
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	public function or_where_close()
 	{
 		$this->_query_where[] = ['OR' => ')'];
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
@@ -815,7 +820,7 @@ class Database_Query
 	{
 		return $this->and_where_open();
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
@@ -823,7 +828,7 @@ class Database_Query
 	{
 		return $this->and_where_close();
 	}
-
+	
 	/**
 	 * @param string $column
 	 * @param string $direction
@@ -843,10 +848,10 @@ class Database_Query
 				}
 			}
 		}
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param string $column
 	 *
@@ -864,20 +869,20 @@ class Database_Query
 				}
 			}
 		}
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	function clear_order_by()
 	{
 		$this->_query_orderby = [];
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param string|array $column
 	 *
@@ -891,20 +896,20 @@ class Database_Query
 		else{
 			$this->_query_returning[] = $column;
 		}
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
 	function clear_join()
 	{
 		$this->_query_join = [];
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param string $join_str
 	 *
@@ -919,10 +924,10 @@ class Database_Query
 		else{
 			$this->_query_join[] = $join_str;
 		}
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param integer $limit
 	 *
@@ -931,10 +936,10 @@ class Database_Query
 	function limit($limit)
 	{
 		$this->_query_limit = (int)$limit;
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param string $offset
 	 *
@@ -943,10 +948,10 @@ class Database_Query
 	function offset($offset)
 	{
 		$this->_query_offset = (int)$offset;
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param boolean $flag
 	 *
@@ -955,10 +960,10 @@ class Database_Query
 	function distinct($flag)
 	{
 		$this->_query_distinct = (boolean)$flag;
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @return Database_Query
 	 */
@@ -968,7 +973,7 @@ class Database_Query
 			$columns = [$columns];
 		}
 		$this->_query_distinct_on = array_merge($this->_query_distinct_on, $columns);
-
+		
 		return $this;
 	}
 }
