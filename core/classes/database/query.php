@@ -29,6 +29,7 @@ class Database_Query
 	protected $_query_distinct_on = [];
 	protected $_query_returning   = [];
 	protected $_query_primarykey  = [];
+	protected $_query_on_conflict = [];
 	
 	
 	public function __construct($sql = null, $parameters = [])
@@ -401,6 +402,27 @@ class Database_Query
 		$where = $this->build_where();
 		if( $where ){
 			$sql .= " WHERE $where";
+		}
+		
+		if( $this->_query_on_conflict ){
+			$sql .= " ON CONFLICT";
+			$on = Arr::get($this->_query_on_conflict, 'on');
+			if( $on === 'constraint' ){
+				$constraint = Arr::get($this->_query_on_conflict, 'constraint');
+				$sql .= " ON CONSTRAINT {$constraint}";
+			}
+			
+			$do = Arr::get($this->_query_on_conflict, 'do');
+			if( $do === 'update' ){
+				$do_values = [];
+				foreach($this->_query_values as $key => $value){
+					$do_values[] = "{$key}=EXCLUDED.{$key}";
+				}
+				if( $do_values ){
+					$sql .= " DO UPDATE SET ";
+					$sql .= implode(',', $do_values);
+				}
+			}
 		}
 		
 		if( $this->_query_returning ){
@@ -973,6 +995,17 @@ class Database_Query
 			$columns = [$columns];
 		}
 		$this->_query_distinct_on = array_merge($this->_query_distinct_on, $columns);
+		
+		return $this;
+	}
+	
+	function on_conflict_on_constraint($constraint, $do = 'update')
+	{
+		$this->_query_on_conflict = [
+			'on'         => 'constraint',
+			'constraint' => $constraint,
+			'do'         => $do,
+		];
 		
 		return $this;
 	}
