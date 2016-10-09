@@ -12,13 +12,13 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 	private $fields;
 	private $fields_hashed_by_name = [];
 	private $query;
-
+	
 	function __construct($result)
 	{
 		$this->result_resource = $result;
 		$this->rows            = pg_num_rows($result);
 		$this->position        = 0;
-
+		
 		$num_of_fields = pg_num_fields($result);
 		for($c = 0; $c < $num_of_fields; $c++){
 			$field = [
@@ -29,16 +29,16 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 				'prtlen'  => pg_field_prtlen($result, $c),
 				'is_null' => pg_field_is_null($result, $c),
 			];
-
+			
 			$this->fields[$c]                            = $field;
 			$this->fields_hashed_by_name[$field['name']] = $field;
 		}
-
+		
 		//Log::coredebug($fields_hashed_by_name);
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * 影響を受けた行数を取得する
 	 *
@@ -48,7 +48,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 	{
 		return pg_affected_rows($this->result_resource);
 	}
-
+	
 	/**
 	 * クエリオブジェクトを取得する
 	 *
@@ -58,7 +58,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 	{
 		return $this->query;
 	}
-
+	
 	/**
 	 * クエリオブジェクトを設定する
 	 *
@@ -70,17 +70,17 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 	{
 		return $this->query = $query;
 	}
-
+	
 	function fieldinfo()
 	{
 		return $this->fields;
 	}
-
+	
 	function get_first($column = null)
 	{
 		return $this->get($column, 0);
 	}
-
+	
 	function get($column = null, $position = null)
 	{
 		$row = $this->fetch(null, $position);
@@ -91,7 +91,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 			return $row;
 		}
 	}
-
+	
 	function fetch($fetch_as = null, $position = null, $forward = false)
 	{
 		//Log::coredebug("[db] fetch($fetch_as, $position, $forward)");
@@ -104,7 +104,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 		if( ! $this->offsetExists($position) ){
 			throw new OutOfRangeException('invalid offset ' . $position);
 		}
-
+		
 		$fetch_as = is_null($fetch_as) ? $this->fetch_as : $fetch_as;
 		//Log::coredebug("[db] fetch as ",$fetch_as,$position);
 		if( is_string($fetch_as) ){
@@ -122,10 +122,10 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 			$this->next();
 		}
 		$data = $this->correct_data($data);
-
+		
 		return $data;
 	}
-
+	
 	/**
 	 * 指定されたカラム名の値を配列で返す
 	 *
@@ -143,30 +143,30 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 			throw new Exception('column not found');
 		}
 		$num = $field['num'];
-
+		
 		$data = pg_fetch_all_columns($this->result_resource, $num);
-
+		
 		if( $correct_data ){
 			foreach($data as $key => $value){
 				$data[$key] = static::correct_value($value, $field['type']);
 			}
 		}
-
+		
 		return $data;
 	}
-
+	
 	public function offsetExists($offset)
 	{
 		return is_numeric($offset) && ($offset < $this->rows);
 	}
-
+	
 	function next()
 	{
 		$this->position++;
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * データを型にそって正しい形式へフォーマットする
 	 *
@@ -196,19 +196,19 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 				throw $e;
 			}
 		}
-
+		
 		return $data;
 	}
-
+	
 	protected static function correct_value($value, $type)
 	{
 		$type = Database_Type::get($type);
 		if( ! $type ){
 			throw new MkException('invalid type');
 		}
-
+		
 		//		Log::coredebug("correct_value : ",$value,$type);
-
+		
 		try {
 			switch($type['typcategory']){
 				case 'N':
@@ -247,7 +247,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 									$str = null;
 								}
 								$str = stripslashes($str);
-
+								
 								return $str;
 							}, str_getcsv(trim($value, '{}'), $delimiter, '"', '\\')
 							);
@@ -264,16 +264,16 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 			Log::coredebug("error at correct value", $type, $value, $e);
 			throw $e;
 		}
-
+		
 		//Log::coredebug("correct value [$value] as $type");
 		return $value;
 	}
-
+	
 	function get_last($column = null)
 	{
 		return $this->get($column, $this->rows ? ($this->rows - 1) : null);
 	}
-
+	
 	/**
 	 * 結果データを1レコード1オブジェクトの形式で格納した配列を返す
 	 *
@@ -288,24 +288,24 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 		if( $this->fetch_as && class_exists($this->fetch_as) && method_exists($this->fetch_as, 'before_as_object_array') ){
 			forward_static_call_array([$this->fetch_as, 'before_as_object_array'], [$this]);
 		}
-
+		
 		$list = [];
 		foreach($this as $item){
 			if( $array_key ){
-				$list[$item->$array_key] = $item;
+				$list[$item[$array_key]] = $item;
 			}
 			else{
 				$list[] = $item;
 			}
 		}
-
+		
 		if( $this->fetch_as && class_exists($this->fetch_as) && method_exists($this->fetch_as, 'after_as_object_array') ){
 			forward_static_call_array([$this->fetch_as, 'after_as_object_array'], [$this, $list]);
 		}
-
+		
 		return $list;
 	}
-
+	
 	/**
 	 * 結果データを1レコード1配列の形式で格納した配列を返す
 	 *
@@ -319,7 +319,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 	function as_array($correct_values = false, $array_key = null)
 	{
 		// Database_Type::retrieve()から、加工なしで返ることを期待して呼ばれているので注意
-
+		
 		$data = pg_fetch_all($this->result_resource);
 		if( ! $data ){
 			$data = [];
@@ -337,67 +337,67 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 			unset($data);
 			$data = $new_data;
 		}
-
+		
 		return $data;
 	}
-
+	
 	function get_fetch_as()
 	{
 		return $this->fetch_as;
 	}
-
+	
 	function set_fetch_as($fetch_as)
 	{
 		$this->fetch_as = $fetch_as;
-
+		
 		return $this;
 	}
-
+	
 	function rewind()
 	{
 		pg_result_seek($this->result_resource, 0);
 		$this->position = 0;
 	}
-
+	
 	function current()
 	{
 		return $this->fetch();
 	}
-
+	
 	function key()
 	{
 		return $this->position;
 	}
-
+	
 	function valid()
 	{
 		return $this->offsetExists($this->position);
 	}
-
+	
 	function count()
 	{
 		return $this->rows;
 	}
-
+	
 	function seek($position)
 	{
 		if( $this->offsetExists($position) ){
 			$this->position = $position;
 		}
-
+		
 		return $this;
 	}
-
+	
 	public function offsetSet($offset, $value)
 	{
 		// nop
 	}
-
+	
 	public function offsetUnset($offset)
 	{
 		// nop
 	}
-
+	
 	public function offsetGet($offset)
 	{
 		return $this->fetch(null, $offset);
