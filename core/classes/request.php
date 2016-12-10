@@ -75,6 +75,7 @@ class Request
 			$response = new Response($controller_return_var);
 		}
 		if( $controller_return_var instanceof View ){
+			//Log::coredebug('$controller_return_var',get_class($controller_return_var),get_object_vars($controller),get_object_vars($controller_return_var));
 			// コントローラとビューの両方に定義されているプロパティをコピーする
 			$controller_return_var->import_property($controller);
 

@@ -3,8 +3,8 @@
 class Config
 {
 	use Singleton;
-	static $config;
-
+	static $config = [];
+	
 	function __construct()
 	{
 		self::$config = [];
@@ -12,14 +12,14 @@ class Config
 			self::$config = Arr::merge(self::$config, $this->load_all($dir . 'config/'));
 		}
 	}
-
+	
 	function load_all($dir)
 	{
 		$dir = realpath($dir) . '/';
 		if( ! is_dir($dir) ){
 			return [];
 		}
-
+		
 		$config = [];
 		$files  = glob($dir . '*.php');
 		if( Mk::$env ){
@@ -29,7 +29,7 @@ class Config
 			if( ! is_file($file) || ! is_readable($file) ){
 				continue;
 			}
-
+			
 			$r = $this->load($file);
 			if( ! is_array($r) ){
 				$r = [];
@@ -44,20 +44,20 @@ class Config
 			unset($r);
 		}
 		unset($files);
-
+		
 		return $config;
 	}
-
+	
 	function load($filename)
 	{
 		return Mk::load($filename);
 	}
-
+	
 	static function get($key, $default = null)
 	{
 		return Arr::get(self::$config, $key, $default);
 	}
-
+	
 	static function set($key, $value)
 	{
 		return Arr::set(self::$config, $key, $value);

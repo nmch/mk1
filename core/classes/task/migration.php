@@ -9,13 +9,13 @@ class Task_Migration extends Task
 	{
 		Log::info("[db migration] データベースマイグレーションを実行します");
 		DB::clear_schema_cache();
-
+		
 		$argv = func_get_args();
-
+		
 		// renumberオプション
 		if( in_array('renumber', $argv) ){
 			Log::info("[db migration] リナンバリングを実行します");
-
+			
 			$seq = 10;
 			foreach($this->get_migration_files() as $groups){
 				foreach($groups as $file){
@@ -28,28 +28,28 @@ class Task_Migration extends Task
 					if( strlen($file['extension']) ){
 						$new_filename .= '.' . $file['extension'];
 					}
-
+					
 					Log::info("[db migration] [Renumber] {$group}/{$file['seq']} -> [$seq]");
 					echo "[Renumber] {$group}/{$file['seq']} -> [$seq]\n";
-
+					
 					rename($file['dirname'] . '/' . $file['basename'], $file['dirname'] . '/' . $new_filename);
-
+					
 					$seq += 10;
 				}
 			}
-
+			
 			// renumber時はinitオプションを自動追加
 			array_push($argv, 'init');
 		}
-
+		
 		// initオプション
 		if( in_array('init', $argv) ){
 			Log::info("[db migration] すべてのテーブルを削除します");
 			DB::delete_all_tables();
 		}
-
+		
 		$schema = Database_Schema::get('migrations');
-
+		
 		/**
 		 * migrationsテーブルのバージョンアップ
 		 */
@@ -64,7 +64,7 @@ class Task_Migration extends Task
 				$schema = null;
 			}
 		}
-
+		
 		if( ! $schema ){
 			$q = <<<SQL
 CREATE TABLE migrations (
@@ -76,7 +76,7 @@ SQL;
 			DB::query($q)->execute();
 			Log::info("[db migration] migrationsテーブルを作成しました");
 		}
-
+		
 		/**
 		 * migrationsテーブルのバージョンアップ
 		 */
@@ -86,14 +86,14 @@ SQL;
 			])->where('migration_group', 'NOGROUP')->execute();
 			Log::info("[db migration] migrationsテーブルのバージョンアップ(1 -> 2)が完了しました。");
 		}
-
+		
 		$last_seq_list = $this->get_latest_migrations();
-
+		
 		foreach($this->get_migration_files() as $groups){
 			foreach($groups as $group => $migration_file){
 				$seq  = $migration_file['seq'];
 				$name = $migration_file['name'];
-
+				
 				$last_seq_item = Arr::get($last_seq_list, $group);
 				$last_seq      = 0;
 				if( ! $last_seq_item ){
@@ -103,14 +103,14 @@ SQL;
 				else{
 					$last_seq = $last_seq_item['migration_last_seq'];
 				}
-
+				
 				if( $seq <= $last_seq ){
 					Log::info("[db migration] マイグレーションをスキップしました / group={$group} / seq={$seq}");
 					echo ".";
 				}
 				else{
 					printf("\n%10s : %4d : %s -> ", $group, $seq, $name);
-
+					
 					$query = file_get_contents($migration_file['dirname'] . '/' . $migration_file['basename']);
 					DB::start_transaction();
 					try {
@@ -125,7 +125,7 @@ SQL;
 						//Log::coredebug($e->getMessage());
 						//print_r( $e->getTrace());
 						Log::error("[db migration] マイグレーション失敗 / group={$group} / seq={$seq} / {$name}", $e);
-
+						
 						$msg = "Error\n{$e->getMessage()}";
 						echo $msg;
 						break 2;
@@ -134,46 +134,58 @@ SQL;
 			}
 		}
 		echo "\n";
-
+		
 		DB::clear_schema_cache();
 	}
-
+	
 	function get_latest_migrations()
 	{
 		return DB::select()->from('migrations')->execute()->as_array(false, 'migration_group');
 	}
-
+	
 	function get_migration_files()
 	{
-		$migration_files = glob(PROJECTPATH . 'migration/[0-9]*_*');
-		if( $migration_files === false ){
-			throw new MkException('マイグレーションファイルの取得に失敗しました');
+		$search_path_list = [
+			PROJECTPATH . 'migration/',
+		];
+		foreach(Mk::package_directories() as $dir){
+			$search_path_list[] = ($dir . '/migration/');
 		}
-
-		$data = [];
-		foreach($migration_files as $migration_file){
-			$pathinfo = pathinfo($migration_file);
-			$basename = $pathinfo['filename'];
-			if( preg_match('#^([0-9]+)(-([^_]+))?_(.*)$#', $basename, $match) ){
-				$seq   = intval(Arr::get($match, 1));
-				$group = Arr::get($match, 3);
-				if( strlen($group) === 0 ){
-					$group = 'NOGROUP'; // グループなしの場合の表記"NOGROUP"を変更するときは、既存DBのマイグレーションが必要なので注意!!
+		
+		foreach($search_path_list as $search_path){
+			if( ! file_exists($search_path) || ! is_dir($search_path) ){
+				continue;
+			}
+			$migration_files = glob($search_path . '[0-9]*_*');
+			if( $migration_files === false ){
+				throw new MkException('マイグレーションファイルの取得に失敗しました');
+			}
+			
+			$data = [];
+			foreach($migration_files as $migration_file){
+				$pathinfo = pathinfo($migration_file);
+				$basename = $pathinfo['filename'];
+				if( preg_match('#^([0-9]+)(-([^_]+))?_(.*)$#', $basename, $match) ){
+					$seq   = intval(Arr::get($match, 1));
+					$group = Arr::get($match, 3);
+					if( strlen($group) === 0 ){
+						$group = 'NOGROUP'; // グループなしの場合の表記"NOGROUP"を変更するときは、既存DBのマイグレーションが必要なので注意!!
+					}
+					
+					$pathinfo['seq']   = $seq;
+					$pathinfo['group'] = $group;
+					$pathinfo['name']  = Arr::get($match, 4);
+					
+					if( ! empty($data[$seq][$group]) ){
+						throw new MkException("グループ[{$group}]のシーケンス[{$seq}]の定義が重複しています");
+					}
+					
+					$data[$seq][$group] = $pathinfo;
 				}
-
-				$pathinfo['seq']   = $seq;
-				$pathinfo['group'] = $group;
-				$pathinfo['name']  = Arr::get($match, 4);
-
-				if( ! empty($data[$seq][$group]) ){
-					throw new MkException("グループ[{$group}]のシーケンス[{$seq}]の定義が重複しています");
-				}
-
-				$data[$seq][$group] = $pathinfo;
 			}
 		}
 		ksort($data);
-
+		
 		return $data;
 	}
 }
