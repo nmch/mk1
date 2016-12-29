@@ -152,20 +152,25 @@ SQL;
 			$search_path_list[] = ($dir . '/migration/');
 		}
 		
+		$data = [];
 		foreach($search_path_list as $search_path){
 			if( ! file_exists($search_path) || ! is_dir($search_path) ){
 				continue;
 			}
+			//Log::coredebug("migration: search_path={$search_path}");
 			$migration_files = glob($search_path . '[0-9]*_*');
+			//Log::coredebug("migration: migration_files", $migration_files);
 			if( $migration_files === false ){
 				throw new MkException('マイグレーションファイルの取得に失敗しました');
 			}
 			
-			$data = [];
 			foreach($migration_files as $migration_file){
+				//Log::coredebug("migration: migration_file={$migration_file}");
 				$pathinfo = pathinfo($migration_file);
 				$basename = $pathinfo['filename'];
+				Log::coredebug("migration: basename={$basename}");
 				if( preg_match('#^([0-9]+)(-([^_]+))?_(.*)$#', $basename, $match) ){
+					//Log::coredebug("migration: migration filename match", $match);
 					$seq   = intval(Arr::get($match, 1));
 					$group = Arr::get($match, 3);
 					if( strlen($group) === 0 ){
@@ -185,6 +190,7 @@ SQL;
 			}
 		}
 		ksort($data);
+		Log::coredebug("migration: targets", $data);
 		
 		return $data;
 	}
