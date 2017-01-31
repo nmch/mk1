@@ -43,7 +43,7 @@ trait Logic_Masterdetail_Controller
 				}
 			}
 			$model_name       = $this->get_model_name();
-			if( ! preg_match('/^Model_(.+)$/', $model_name, $match) ){
+			if( ! preg_match('/Model_(.+)$/', $model_name, $match) ){
 				throw new Exception("unexpected model name {$model_name}");
 			}
 			$primary_key_name  = $model_name::primary_key();
