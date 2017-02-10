@@ -13,7 +13,8 @@ class Security
 	{
 		$token          = static::generate_token();
 		$csrf_token_key = static::get_csrf_token_key();
-		Session::set_flash($csrf_token_key, $token);
+		
+		Session::set($csrf_token_key, $token);
 		
 		return $token;
 	}
@@ -24,5 +25,18 @@ class Security
 		$hashed_token = hash('sha512', $token_base);
 		
 		return $hashed_token;
+	}
+	
+	static function check_token($submitted_token)
+	{
+		$csrf_token_key = static::get_csrf_token_key();
+		$saved_token    = Session::get($csrf_token_key);
+		
+		Session::delete($csrf_token_key);
+		
+		if( $submitted_token !== $saved_token ){
+			Log::coredebug("[Security] CSRFトークンが一致しません saved_token=[{$saved_token}] / submitted_token=[{$submitted_token}]");
+			throw new MkException("CSRF Token not match");
+		}
 	}
 }
