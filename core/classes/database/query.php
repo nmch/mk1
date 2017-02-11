@@ -30,6 +30,8 @@ class Database_Query
 	protected $_query_returning   = [];
 	protected $_query_primarykey  = [];
 	protected $_query_on_conflict = [];
+	/** @var Database_Query */
+	protected $_query_insert_query = null;
 	
 	
 	public function __construct($sql = null, $parameters = [])
@@ -380,25 +382,60 @@ class Database_Query
 			throw new Exception('table required');
 		}
 		
-		$sql = "INSERT INTO $table ";
-		if( ! $this->_query_values ){
+		$sql = "INSERT INTO {$table} ";
+		/**
+		 * カラムも値も定義されていない場合はDEFAULT VALUESを使う
+		 */
+		if( ! count($this->_query_columns) && ! count($this->_query_values) ){
 			$sql .= "DEFAULT VALUES";
 		}
 		else{
-			$sql .= '(' . implode(',', array_keys($this->_query_values)) . ')';
-			$ary = [];
-			//			Log::coredebug($this->_query_values);
-			foreach($this->_query_values as $value){
-				if( $value instanceof Database_Expression ){
-					$ary[] = strval($value);
-				}
-				else{
-					$ary[] = '$' . $this->parameter($value);
+			/**
+			 * カラム
+			 */
+			if( count($this->_query_columns) ){
+				$sql .= '(' . implode(',', $this->_query_columns) . ')';
+				// カラムが定義されているときはINSERT...SELECTになる必要があるので
+				// _query_insert_selectが存在しない場合はエラーにする
+				if( ! $this->_query_insert_query || ! ($this->_query_insert_query instanceof Database_Query) ){
+					throw new MkException("INSERT用のクエリが設定されていません");
 				}
 			}
-			$sql .= ' VALUES (' . implode(',', $ary) . ')';
+			elseif( count($this->_query_values) ){
+				$sql .= '(' . implode(',', array_keys($this->_query_values)) . ')';
+			}
+			else{
+				throw new MkException("empty columns");
+			}
+			
+			/**
+			 * 値(VALUES)
+			 */
+			if( $this->_query_values ){
+				//$sql .= '(' . implode(',', array_keys($this->_query_values)) . ')';
+				$ary = [];
+				//			Log::coredebug($this->_query_values);
+				foreach($this->_query_values as $value){
+					if( $value instanceof Database_Expression ){
+						$ary[] = strval($value);
+					}
+					else{
+						$ary[] = '$' . $this->parameter($value);
+					}
+				}
+				$sql .= ' VALUES (' . implode(',', $ary) . ')';
+			}
+			
+			/**
+			 * 値をクエリで指定
+			 */
+			if( $this->_query_insert_query && $this->_query_insert_query instanceof Database_Query ){
+				$insert_select_sql = $this->_query_insert_query->get_sql();
+				$sql .= (' ' . $insert_select_sql);
+			}
 		}
 		
+		// fixme これ指定されるとクエリエラーになるのでは。。。
 		$where = $this->build_where();
 		if( $where ){
 			$sql .= " WHERE $where";
@@ -415,8 +452,15 @@ class Database_Query
 			$do = Arr::get($this->_query_on_conflict, 'do');
 			if( $do === 'update' ){
 				$do_values = [];
-				foreach($this->_query_values as $key => $value){
-					$do_values[] = "{$key}=EXCLUDED.{$key}";
+				if( $this->_query_columns ){
+					foreach($this->_query_columns as $key){
+						$do_values[] = "{$key}=EXCLUDED.{$key}";
+					}
+				}
+				if( $this->_query_values ){
+					foreach($this->_query_values as $key => $value){
+						$do_values[] = "{$key}=EXCLUDED.{$key}";
+					}
 				}
 				if( $do_values ){
 					$sql .= " DO UPDATE SET ";
@@ -569,9 +613,24 @@ class Database_Query
 	}
 	
 	/**
+	 * INSERTクエリ用のデータ取得クエリを設定
+	 *
+	 * @param Database_Query $query
+	 *
+	 * @return Database_Query
+	 */
+	function insert_query(Database_Query $query): Database_Query
+	{
+		$this->_query_insert_query = $query;
+		
+		return $this;
+	}
+	
+	/**
 	 * SELECTクエリを作成
 	 *
 	 * @param array $columns
+	 * @param bool  $permit_overlap_column
 	 *
 	 * @return Database_Query
 	 */
@@ -648,14 +707,19 @@ class Database_Query
 	/**
 	 * INSERTクエリを作成
 	 *
-	 * @param string $table テーブル名
+	 * @param string $table   テーブル名
+	 * @param array  $columns カラム名の配列
 	 *
 	 * @return Database_Query
 	 */
-	function insert($table = null)
+	function insert($table = null, array $columns = [])
 	{
 		$this->_query_type = 'INSERT';
 		$this->into($table);
+		
+		if( count($columns) ){
+			$this->_query_columns = $columns;
+		}
 		
 		return $this;
 	}
