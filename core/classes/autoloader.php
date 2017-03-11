@@ -1,6 +1,6 @@
 <?php
 
-define('DEBUG', 0);
+define('DEBUG', 1);
 
 if( DEBUG ){
 	require_once COREPATH . 'classes/singleton.php';
@@ -137,7 +137,7 @@ class Autoloader
 							if( DEBUG ){
 								Log::coredebug("コアNS探索: {$ns}");
 							}
-							if( class_exists("{$ns}\\{$class}", false) ){
+							if( class_exists("{$ns}\\{$class}", false) || trait_exists("{$ns}\\{$class}", false) ){
 								class_alias("{$ns}\\{$class}", $class);
 								if( DEBUG ){
 									Log::coredebug("Class Alias: {$ns}\\{$class} to {$class}");
