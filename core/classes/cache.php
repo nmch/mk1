@@ -6,24 +6,33 @@ class Cache
 	{
 		$cache_dir = static::cache_dir($key, $group);
 		$filepath  = $cache_dir . static::key($key, $group);
-
+		
 		if( file_exists($filepath) ){
 			//Log::coredebug("[cache] hit $key($group)");
-			return unserialize(file_get_contents($filepath));
+			$expire = Config::get('cache.default_expire');
+			if( $expire ){
+				$filemtime = filemtime($filepath);
+				$live_time = (time() - $filemtime);
+				if( $live_time < $expire ){
+					return unserialize(file_get_contents($filepath));
+				}
+				else{
+					unlink($filepath);
+				}
+			}
+		}
+		
+		if( $retrieve_handler ){
+			$data = call_user_func_array($retrieve_handler, [$key, $group]);
+			static::set($key, $group, $data);
+			
+			return $data;
 		}
 		else{
-			if( $retrieve_handler ){
-				$data = $retrieve_handler($key, $group);
-				static::set($key, $group, $data);
-
-				return $data;
-			}
-			else{
-				return null;
-			}
+			return null;
 		}
 	}
-
+	
 	public static function cache_dir($key, $group = null)
 	{
 		$cache_dir = Config::get('cache.cache_dir');
@@ -37,24 +46,24 @@ class Cache
 			// ここでkeyが必須ではないのは、migration時等にディレクトリだけ特定して全部消す用途でも使われるから。
 			$cache_dir .= substr(sha1($key), 0, 3) . '/';
 		}
-
+		
 		return $cache_dir;
 	}
-
+	
 	protected static function key($key, $group = null)
 	{
 		if( ! $key ){
 			throw new Exception('invalid key');
 		}
 		$key = sha1($key);
-
+		
 		if( $group ){
 			$key = $group . '_' . $key;
 		}
-
+		
 		return $key;
 	}
-
+	
 	public static function set()
 	{
 		$args = func_get_args();
@@ -73,7 +82,7 @@ class Cache
 				throw new Exception('invalid parameters');
 			}
 		}
-
+		
 		$cache_dir = static::cache_dir($key, $group);
 		if( ! file_exists($cache_dir) ){
 			$r = mkdir($cache_dir, 0777, true);
@@ -81,7 +90,7 @@ class Cache
 				throw new Exception('cannot make cache dir');
 			}
 		}
-
+		
 		$filepath = $cache_dir . static::key($key, $group);
 		$r        = file_put_contents($filepath, serialize($value));
 		if( $r === false ){

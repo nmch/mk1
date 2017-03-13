@@ -9,13 +9,13 @@ class Database_Connection
 	private $savepoint_counter = 0;
 	/** @var array 最後のエラー(最後のクエリが成功した場合は空配列) */
 	private $last_error_details = [];
-
+	
 	function __construct($config)
 	{
 		if( empty($config['connection']) ){
 			$config['connection'] = "";
 		}
-
+		
 		$connection_config = "";
 		if( is_array($config['connection']) ){
 			foreach($config['connection'] as $key => $value){
@@ -25,22 +25,22 @@ class Database_Connection
 		else{
 			$connection_config = $config['connection'];
 		}
-
+		
 		//Log::coredebug("[db connection] try connect to $connection_config");
 		$this->connection = pg_connect($connection_config);
 		pg_set_client_encoding($this->connection, 'UTF-8');
 		if( $this->connection === false ){
 			throw new MkException('failed establish to db');
 		}
-
+		
 		return $this;
 	}
-
+	
 	function get_connection()
 	{
 		return $this->connection;
 	}
-
+	
 	/**
 	 * @param string|null $name
 	 *
@@ -56,34 +56,34 @@ class Database_Connection
 			$config                   = \Config::get("db.{$name}");
 			static::$instances[$name] = new static($config);
 		}
-
+		
 		return static::$instances[$name];
 	}
-
+	
 	function dbname()
 	{
 		return pg_dbname($this->connection);
 	}
-
+	
 	function escape_literal($value)
 	{
 		return pg_escape_literal($this->connection, $value);
 	}
-
+	
 	function copy_from($table_name, $rows, $delimiter = "\t", $null_as = '')
 	{
 		return pg_copy_from($this->connection, $table_name, $rows, $delimiter, $null_as);
 	}
-
+	
 	function copy_to($table_name, $delimiter = "\t", $null_as = '')
 	{
 		return pg_copy_to($this->connection, $table_name, $delimiter, $null_as);
 	}
-
+	
 	function query($sql, $parameters = [])
 	{
 		Log::coredebug("[dbconn] SQL {$this->connection} = $sql / " . var_export($parameters, true));
-
+		
 		// クエリ送信
 		if( $parameters ){
 			pg_send_query_params($this->connection, $sql, $parameters);
@@ -91,7 +91,7 @@ class Database_Connection
 		else{
 			pg_send_query($this->connection, $sql);
 		}
-
+		
 		// 結果を全て取得して、エラーがあれば例外スロー、なければ最後の結果を返す
 		while($r = pg_get_result($this->connection)){
 			if( $r !== false ){
@@ -120,19 +120,19 @@ class Database_Connection
 			}
 		}
 		$this->last_error_details = [];
-
+		
 		if( empty($query_result) ){
 			throw new DatabaseQueryError("Result is empty");
 		}
-
+		
 		return new Database_Resultset($query_result);
 	}
-
+	
 	function rollback_transaction()
 	{
 		DB::query("ABORT")->execute($this);
 	}
-
+	
 	/**
 	 * セーブポイントを作成する
 	 *
@@ -145,30 +145,30 @@ class Database_Connection
 		if( ! $this->in_transaction() ){
 			$this->start_transaction();
 		}
-
+		
 		$point_name = preg_replace('/[^0-9a-z]/', '', strtolower(uniqid(gethostname())));
 		DB::query('SAVEPOINT ' . $point_name)->execute($this);
 		Log::coredebug('[dbconn] SAVEPOINT ' . $point_name);
 		$this->savepoint_counter++;
-
+		
 		return $point_name;
 	}
-
+	
 	function in_transaction()
 	{
 		return ($this->get_transaction_status() != PGSQL_TRANSACTION_IDLE);
 	}
-
+	
 	function get_transaction_status()
 	{
 		return pg_transaction_status($this->connection);
 	}
-
+	
 	function start_transaction()
 	{
 		DB::query("BEGIN")->execute($this);
 	}
-
+	
 	function commit_savepoint($point_name)
 	{
 		if( ! $this->in_transaction() ){
@@ -177,7 +177,7 @@ class Database_Connection
 		if( ! $point_name ){
 			throw new MkException('invalid point name');
 		}
-
+		
 		DB::query('RELEASE SAVEPOINT ' . $point_name)->execute($this);
 		$this->savepoint_counter--;
 		if( $this->savepoint_counter < 1 ){
@@ -185,12 +185,12 @@ class Database_Connection
 			$this->commit_transaction();
 		}
 	}
-
+	
 	function commit_transaction()
 	{
 		DB::query("COMMIT")->execute($this);
 	}
-
+	
 	function rollback_savepoint($point_name)
 	{
 		if( ! $this->in_transaction() ){
@@ -199,12 +199,28 @@ class Database_Connection
 		if( ! $point_name ){
 			throw new MkException('invalid point name');
 		}
-
+		
+		$this->destruct_all_results();
+		
 		DB::query('ROLLBACK TO SAVEPOINT ' . $point_name)->execute($this);
 		$this->savepoint_counter--;
 		if( $this->savepoint_counter < 1 ){
 			$this->savepoint_counter = 0;
 			$this->rollback_transaction();
 		}
+	}
+	
+	/**
+	 * コルクションに残っているクエリ結果をすべて破棄する
+	 *
+	 * @return $this
+	 */
+	function destruct_all_results()
+	{
+		while(pg_get_result($this->connection)){
+			// nop
+		}
+		
+		return $this;
 	}
 }
