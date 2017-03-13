@@ -315,11 +315,11 @@ class Curl
 		$this->curl_info   = curl_getinfo($this->curl);
 		$errno             = curl_errno($this->curl);
 		Log::coredebug("cURLの実行が完了しました errno={$errno}");
-		Log::coredebug("curl_info = " . print_r($this->curl_info, true));
+		//Log::coredebug("curl_info = " . print_r($this->curl_info, true));
 		
 		rewind($this->transfer_header_file);
 		$response_header_str = stream_get_contents($this->transfer_header_file);
-		Log::coredebug("header = {$response_header_str}");
+		//Log::coredebug("header = {$response_header_str}");
 		$response_header = [];
 		foreach(explode("\n", $response_header_str) as $line){
 			$line                  = explode(':', $line, 2);
@@ -331,7 +331,7 @@ class Curl
 		
 		rewind($this->error_output_file);
 		$error_output = stream_get_contents($this->error_output_file);
-		Log::coredebug("error = " . $error_output);
+		//Log::coredebug("error = " . $error_output);
 		
 		$this->curl_error = [];
 		if( $errno !== 0 ){
@@ -341,7 +341,7 @@ class Curl
 				'error'    => curl_error($this->curl),
 				'stderr'   => $error_output,
 			];
-			Log::debug("curl error", $this->curl_error);
+			Log::debug("curl error", $this->curl_error, $error_output);
 		}
 		
 		if( $this->curl_result === false ){
