@@ -22,6 +22,7 @@ class Database_Query
 	protected $_query_values      = [];
 	protected $_query_orderby     = [];
 	protected $_query_groupby     = [];
+	protected $_query_having      = [];
 	protected $_query_for         = null;
 	protected $_query_limit       = null;
 	protected $_query_offset      = null;
@@ -511,6 +512,9 @@ class Database_Query
 		if( $this->_query_groupby ){
 			$sql .= " GROUP BY " . implode(',', $this->_query_groupby);
 		}
+		if( $this->_query_having ){
+			$sql .= " HAVING " . $this->_query_having;
+		}
 		if( $this->_query_orderby ){
 			$sql .= " ORDER BY " . implode(',', array_map(function ($ary){
 						return implode(' ', $ary);
@@ -776,6 +780,11 @@ class Database_Query
 		return $this;
 	}
 	
+	public function having($exp)
+	{
+		$this->_query_having = $exp;
+	}
+	
 	/**
 	 * @return Database_Query
 	 */
@@ -938,6 +947,13 @@ class Database_Query
 		return $this;
 	}
 	
+	function overwrite_order_by(array $order_by_array)
+	{
+		$this->_query_orderby = $order_by_array;
+		
+		return $this;
+	}
+	
 	/**
 	 * @param string $column
 	 *
@@ -967,6 +983,11 @@ class Database_Query
 		$this->_query_orderby = [];
 		
 		return $this;
+	}
+	
+	function get_order_by(): array
+	{
+		return $this->_query_orderby ?: [];
 	}
 	
 	/**

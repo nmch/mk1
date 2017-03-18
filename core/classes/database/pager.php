@@ -37,46 +37,51 @@ class Database_Pager
 		$rows         = intval($rows) ?: 10;
 		//Log::coredebug("[db pager] rows=$rows / page=$page");
 		
-		if( $this->db_query instanceof Model_Query ){
-			$query_for_total = clone $this->db_query->get_query();
-		}
-		else{
-			$query_for_total = clone $this->db_query;
-		}
-		$query_for_total->clear_order_by()->clear_select()->clear_into()
-		                ->select('count(*) as count')->set_fetch_as(null);
-		
-		// 合計数といっしょに計算する内容の追加
-		$add_col_to_total = Arr::get($this->query_options, 'add_col_to_total');
-		if( $add_col_to_total && ! is_array($add_col_to_total) ){
-			$add_col_to_total = [$add_col_to_total];
-		}
-		if( $add_col_to_total ){
-			foreach($add_col_to_total as $add_key => $add_item){
-				$query_for_total->select("{$add_item} as {$add_key}");
+		/**
+		 * レコード数・オフセット計算
+		 */
+		{
+			if( $this->db_query instanceof Model_Query ){
+				$query_for_total = clone $this->db_query->get_query();
 			}
-		}
-		
-		$total_result = $query_for_total->execute();
-		$total_rows   = $total_result->get('count');
-		unset($query_for_total);
-		if( $nolimit_rows ){
-			// 行数無制限
-			$rows        = $total_rows;
-			$total_pages = 1;
-			$offset      = 0;
-		}
-		else{
-			$total_pages = ceil($total_rows / $rows);    // 結果の全ページ数
-			if( $total_pages < $page ){
-				$page = $total_pages;
+			else{
+				$query_for_total = clone $this->db_query;
+			}
+			$query_for_total->clear_order_by()->clear_select()->clear_into()
+			                ->select('count(*) as count')->set_fetch_as(null);
+			
+			// 合計数といっしょに計算する内容の追加
+			$add_col_to_total = Arr::get($this->query_options, 'add_col_to_total');
+			if( $add_col_to_total && ! is_array($add_col_to_total) ){
+				$add_col_to_total = [$add_col_to_total];
+			}
+			if( $add_col_to_total ){
+				foreach($add_col_to_total as $add_key => $add_item){
+					$query_for_total->select("{$add_item} as {$add_key}");
+				}
 			}
 			
-			$offset = $page ? $rows * ($page - 1) : 0;
+			$total_result = $query_for_total->execute();
+			$total_rows   = $total_result->get('count');
+			unset($query_for_total);
+			if( $nolimit_rows ){
+				// 行数無制限
+				$rows        = $total_rows;
+				$total_pages = 1;
+				$offset      = 0;
+			}
+			else{
+				$total_pages = ceil($total_rows / $rows);    // 結果の全ページ数
+				if( $total_pages < $page ){
+					$page = $total_pages;
+				}
+				
+				$offset = $page ? $rows * ($page - 1) : 0;
+			}
 		}
 		
 		//Log::coredebug("[db pager] total_pages=$total_pages / page=$page / offset=$offset");
-		$r2 = $this->db_query->offset($offset)->limit($rows)->execute();
+		$result_list = $this->db_query->offset($offset)->limit($rows)->execute();
 		
 		$paging_data = [
 			'total_rows'    => $total_rows,
@@ -105,7 +110,7 @@ class Database_Pager
 		$this->set($paging_data);
 		$this->set('paging_data', $paging_data);
 		
-		return $r2;
+		return $result_list;
 	}
 	
 	function get($name)
