@@ -5,10 +5,10 @@ class File
 	/**
 	 * DBのデータをCSVにエクスポートする
 	 *
-	 * @param Database_Resultset $data
-	 * @param array              $headers
-	 * @param string             $csv_filename
-	 * @param array              $funcs
+	 * @param Database_Resultset|array $data
+	 * @param array                    $headers
+	 * @param string                   $csv_filename
+	 * @param array                    $funcs
 	 *
 	 * @return Response_File|null
 	 * @throws Exception
