@@ -33,6 +33,18 @@ class Cache
 		}
 	}
 	
+	public static function clear($key = null, $group = null)
+	{
+		$cache_dir = static::cache_dir($key, $group);
+		$filepath  = $cache_dir . static::key($key, $group);
+		Log::coredebug("[Cache]: キャッシュクリア({$key}/{$group}", $filepath);
+		try {
+			File::rm($filepath);
+		} catch(Exception $e){
+			// 削除できなくてもエラーにはしない
+		}
+	}
+	
 	public static function cache_dir($key, $group = null)
 	{
 		$cache_dir = Config::get('cache.cache_dir');
