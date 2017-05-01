@@ -172,7 +172,7 @@ class Database_Query
 				$ary[] = "$key=$" . $this->parameter($value);
 			}
 		}
-		$sql .= implode(',', $ary);
+		$sql   .= implode(',', $ary);
 		$where = $this->build_where();
 		if( $where ){
 			$sql .= " WHERE $where";
@@ -406,10 +406,10 @@ class Database_Query
 		
 		if( $this->_query_on_conflict ){
 			$sql .= " ON CONFLICT";
-			$on = Arr::get($this->_query_on_conflict, 'on');
+			$on  = Arr::get($this->_query_on_conflict, 'on');
 			if( $on === 'constraint' ){
 				$constraint = Arr::get($this->_query_on_conflict, 'constraint');
-				$sql .= " ON CONSTRAINT {$constraint}";
+				$sql        .= " ON CONSTRAINT {$constraint}";
 			}
 			
 			$do = Arr::get($this->_query_on_conflict, 'do');
@@ -490,8 +490,8 @@ class Database_Query
 	
 	public function compile_delete()
 	{
-		$sql = "DELETE ";
-		$sql .= " FROM " . implode(',', $this->_query_from);
+		$sql   = "DELETE ";
+		$sql   .= " FROM " . implode(',', $this->_query_from);
 		$where = $this->build_where();
 		if( $where ){
 			$sql .= " WHERE $where";
@@ -544,6 +544,20 @@ class Database_Query
 	function clear_select()
 	{
 		$this->_query_columns = [];
+		
+		return $this;
+	}
+	
+	function clear_offset()
+	{
+		$this->_query_offset = null;
+		
+		return $this;
+	}
+	
+	function clear_limit()
+	{
+		$this->_query_limit = null;
 		
 		return $this;
 	}
