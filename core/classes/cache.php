@@ -45,6 +45,18 @@ class Cache
 		}
 	}
 	
+	public static function clear_group($group)
+	{
+		$cache_dir = static::cache_dir(null, $group);
+		try {
+			if( is_dir($cache_dir) ){
+				File::rm($cache_dir);
+			}
+		} catch(Exception $e){
+			// 削除できなくてもエラーにはしない
+		}
+	}
+	
 	public static function cache_dir($key, $group = null)
 	{
 		$cache_dir = Config::get('cache.cache_dir');
