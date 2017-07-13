@@ -2,6 +2,20 @@
 
 class File
 {
+	protected $filepath;
+	protected $filename;
+	protected $mime;
+	
+	function __construct($filepath, $filename = null, $mime = null)
+	{
+		if( ! file_exists($filepath) ){
+			throw new MkException("file not found");
+		}
+		$this->filepath = $filepath;
+		$this->filename = $filename ?: basename($filepath);
+		$this->mime     = $mime ?: "application/octet-stream";
+	}
+	
 	/**
 	 * 再帰的にファイルまたはディレクトリを削除
 	 */
@@ -15,7 +29,7 @@ class File
 				if( $object == "." || $object == ".." ){
 					continue;
 				}
-
+				
 				static::rm($filepath . "/" . $object);
 			}
 			unset($objects);
