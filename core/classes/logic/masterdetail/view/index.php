@@ -5,7 +5,7 @@
  *
  * @package    App
  * @subpackage Logic
- * @author     Hakonet Inc
+ * @author
  */
 trait Logic_Masterdetail_View_Index
 {
