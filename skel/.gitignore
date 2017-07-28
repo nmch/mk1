@@ -3,3 +3,7 @@ logs/*
 .AppleDouble
 .DS_Store
 ._.DS_Store
+.idea
+.vagrant
+*.codekit3
+*.codekit

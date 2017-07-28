@@ -2,6 +2,20 @@
 
 class File
 {
+	protected $filepath;
+	protected $filename;
+	protected $mime;
+	
+	function __construct($filepath, $filename = null, $mime = null)
+	{
+		if( ! file_exists($filepath) ){
+			throw new MkException("file not found");
+		}
+		$this->filepath = $filepath;
+		$this->filename = $filename ?: basename($filepath);
+		$this->mime     = $mime ?: "application/octet-stream";
+	}
+	
 	/**
 	 * DBのデータをCSVにエクスポートする
 	 *
