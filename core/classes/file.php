@@ -2,6 +2,9 @@
 
 class File
 {
+	const ENCODING_SJIS = 'SJIS-win';
+	const ENCODING_UTF8 = 'UTF-8';
+	
 	protected $filepath;
 	protected $filename;
 	protected $mime;
@@ -14,6 +17,61 @@ class File
 		$this->filepath = $filepath;
 		$this->filename = $filename ?: basename($filepath);
 		$this->mime     = $mime ?: "application/octet-stream";
+	}
+	
+	function fopen($mode = 'rt')
+	{
+		return fopen($this->filepath, $mode);
+	}
+	
+	function unlink()
+	{
+		unlink($this->filepath);
+	}
+	
+	function get_filepath()
+	{
+		return $this->filepath;
+	}
+	
+	function read_as_csv($convert_encoding = File::ENCODING_SJIS, $ignore_head_lines = 0, $csv_header = null)
+	{
+		$src_file = $convert_encoding ? $this->convert_encoding(File::ENCODING_UTF8, $convert_encoding) : $this;
+		
+		$fp       = $src_file->fopen();
+		$line_num = 0;
+		
+		// $ignore_head_linesのぶんだけ先頭行を捨てる
+		for($c = 0; $c < $ignore_head_lines; $c++){
+			$line_num++;
+			fgets($fp);
+		}
+		
+		if( $csv_header === null ){
+			$line_num++;
+			$csv_header = fgetcsv($fp);
+			if( ! $csv_header ){
+				throw new AppException('ヘッダがありません');
+			}
+		}
+		
+		while($line = fgetcsv($fp)){
+			$line_num++;
+			
+			$item = [];
+			foreach($csv_header as $header_key => $header){
+				// headerにドットが入っているとArr::get()したときに1次元配列として扱えないため、アンダースコアに変換する
+				$header        = str_replace('.', '_', $header);
+				$item[$header] = (string)array_key_exists($header_key, $line) ? str_replace(["\n",
+				                                                                             "\r"], '', trim($line[$header_key])) : null;
+			}
+			
+			yield $line_num => $item;
+			
+			unset($item);
+		}
+		
+		fclose($fp);
 	}
 	
 	/**
@@ -91,31 +149,32 @@ class File
 		
 		fclose($fp);
 		
-		$converted_filepath = static::convert_encoding($tmp_filepath, 'SJIS', 'UTF-8');
+		$tmp_file       = new File($tmp_filepath);
+		$converted_file = $tmp_file->convert_encoding();
 		unlink($tmp_filepath);
 		
 		if( ! $csv_filename ){
 			$csv_filename = 'data.csv';
 		}
 		
-		return new Response_File($converted_filepath, static::make_download_filename($csv_filename));
+		return new Response_File($converted_file->get_filepath(), static::make_download_filename($csv_filename));
 	}
 	
-	static function convert_encoding($filepath, $to = null, $from = null)
+	function convert_encoding($to = File::ENCODING_SJIS, $from = File::ENCODING_UTF8): File
 	{
-		$fp = fopen($filepath, "rt");
+		$fp = fopen($this->filepath, "rt");
 		
 		$tmp_filepath = tempnam(null, "CSV");
 		$fw           = fopen($tmp_filepath, "w+t");
 		
 		while($line = fgets($fp)){
-			fputs($fw, mb_convert_encoding($line, 'SJIS-win', 'UTF-8'));
+			fputs($fw, mb_convert_encoding($line, $to, $from));
 		}
 		
 		fclose($fw);
 		fclose($fp);
 		
-		return $tmp_filepath;
+		return new File($tmp_filepath);
 	}
 	
 	/**
