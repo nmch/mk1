@@ -155,6 +155,10 @@ trait Logic_Masterdetail_Controller
 
 	function get_detail($id = null)
 	{
+		if( method_exists($this, 'before_get_detail') ){
+			$this->before_get_detail($id);
+		}
+
 		$view_class_name = 'View_' . $this->get_base_class_name() . '_Detail';
 
 		return $this->prepare_view($view_class_name, $id);
