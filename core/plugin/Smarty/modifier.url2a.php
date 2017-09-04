@@ -53,8 +53,7 @@ function smarty_modifier_url2a($content)
 		'-,/:;=?+@])*+)?+(?:#(?:[-.0-9_a-z~]|%[0-9a-f][0-9a' .
 		'-f]|[!$&-,/:;=?+@])*+)?+`i';
 	$replacement = '<a target="_blank" href="$0">$0</a>';
-	$str         = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
-	$content     = preg_replace($regex, $replacement, $str);
+	$content     = preg_replace($regex, $replacement, $content);
 	
 	return $content;
 }
