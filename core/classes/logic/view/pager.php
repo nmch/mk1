@@ -76,7 +76,7 @@ trait Logic_View_Pager
 		foreach($this->search_elements() as list($key, $value)){
 			$method_name = 'search_' . $key;
 			if( method_exists($this, $method_name) ){
-				$this->$method_name($key, $value, $query);
+				$this->{$method_name}($key, $value, $query);
 			}
 		}
 		
