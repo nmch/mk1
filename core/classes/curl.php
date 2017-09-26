@@ -127,6 +127,11 @@ class Curl
 		return Arr::get($this->options, $name);
 	}
 	
+	function get_curl_result()
+	{
+		return $this->curl_result;
+	}
+	
 	/**
 	 * GET APIを実行
 	 *
