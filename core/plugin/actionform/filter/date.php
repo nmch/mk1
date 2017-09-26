@@ -6,6 +6,8 @@
  *
  * @return string
  */
-return function ($value) {
-	return $value ? date('Y-m-d', strtotime($value)) : null;
+return function ($value){
+	$time = strtotime($value);
+	
+	return $time ? date('Y-m-d', $time) : null;
 };

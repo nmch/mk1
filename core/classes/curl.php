@@ -127,6 +127,11 @@ class Curl
 		return Arr::get($this->options, $name);
 	}
 	
+	function get_curl_result()
+	{
+		return $this->curl_result;
+	}
+	
 	/**
 	 * GET APIを実行
 	 *
@@ -275,6 +280,8 @@ class Curl
 		Log::coredebug("cURLの実行準備が整いました: method={$this->method} / url={$url}");
 		
 		$this->execute_curl();
+		
+		Log::coredebug("cURL HTTPレスポンスコード: {$this->response_info('http_code')}");
 		$http_code = intval($this->response_info('http_code'));
 		
 		if( Arr::get($this->options, static::OP_EXCEPTION_WHEN_NOT_200) && $http_code !== 200 ){
