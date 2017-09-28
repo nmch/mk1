@@ -8,12 +8,15 @@
 	<title>{capture name="title"}{block name=title}{/block}{/capture}{$smarty.capture.title|default:''|addstr:"":" - "}{Config::get('app.name')}</title>
 	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/assets/css/bootstrap-datepicker.min.css">
 	<link rel="stylesheet" href="/assets/css/common.css">
 	{block name=cssfiles}{/block}
 	<style>{block name=css}{/block}</style>
 	
 	<script src="/assets/js/jquery-3.2.1.min.js"></script>
 	<script src="/assets/js/bootstrap.min.js"></script>
+	<script src="/assets/js/bootstrap-datepicker.js"></script>
+	<script src="/assets/js/bootstrap-datepicker.ja.min.js"></script>
 	<script src="/assets/js/common.js"></script>
 	{block name=jsfiles}{/block}
 	<script>{block name=js}{/block}</script>

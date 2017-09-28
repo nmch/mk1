@@ -11,4 +11,14 @@ $(function(){
 		
 	    return false;
 	});
+	
+	$('.datepicker').datepicker({
+		language          : 'ja',
+		format            : 'yyyy-mm-dd',
+		todayBtn          : "linked",
+		keyboardNavigation: false,
+		forceParse        : false,
+		calendarWeeks     : true,
+		autoclose         : true
+	});
 });
