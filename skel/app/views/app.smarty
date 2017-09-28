@@ -4,16 +4,16 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
 	<meta http-equiv="Content-Style-Type" content="text/css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>{capture name="title"}{block name=title}{/block}{/capture}{$smarty.capture.title|default:''|addstr:"":" - "}{Config::get('app.name')}</title>
 	<link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/assets/css/common.css">
 	{block name=cssfiles}{/block}
 	<style>{block name=css}{/block}</style>
 	
-	<script src="/assets/js/jquery-1.11.1.min.js"></script>
+	<script src="/assets/js/jquery-3.2.1.min.js"></script>
 	<script src="/assets/js/bootstrap.min.js"></script>
-	<script src="/assets/js/jquery.ah-placeholder.js"></script>
 	<script src="/assets/js/common.js"></script>
 	{block name=jsfiles}{/block}
 	<script>{block name=js}{/block}</script>
@@ -21,62 +21,62 @@
 <body>
 
 <div class="container">
-
-<nav class="navbar navbar-default" role="navigation">
-	<div class="navbar-header">
-		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-		</button>
-		
-		<a class="navbar-brand" href="/">{Config::get('app.name')}</a>
-	</div>
-	<div class="collapse navbar-collapse navbar-ex1-collapse">
-		<ul class="nav navbar-nav">
-		{*
-		<li><A href="/page">PAGE</A>
-		<li class="dropdown">
-			<a href="#" class="dropdown-toggle" data-toggle="dropdown">MENU<b class="caret"></b></a>
-			<ul class="dropdown-menu">
-			<li class="divider"></li>
-			<li><a href="/login/logout">ログアウト</a></li>
+	
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a class="navbar-brand" href="/">{Config::get('app.name')}</a>
+		</div>
+		<div class="collapse navbar-collapse navbar-ex1-collapse">
+			<ul class="nav navbar-nav">
+				{*
+				<li><A href="/page">PAGE</A>
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">MENU<b class="caret"></b></a>
+					<ul class="dropdown-menu">
+					<li class="divider"></li>
+					<li><a href="/login/logout">ログアウト</a></li>
+					</ul>
+				*}
 			</ul>
-		*}
-		</ul>
-	</div>
-</nav>
-
-<div class="messages">
-{* メッセージ *}
-{foreach from=Session::get_flash('messages') key=message_type item=messages}
-	{if $message_type == 'error'}{$message_type = 'danger'}{/if}
-	{foreach from=(array)$messages item=message}
-		<p class='alert alert-{$message_type}'>{$message}</p>
-	{/foreach}
-{/foreach}
-
-{* バリデーションエラー *}
-{if $af->validation_results()}
-	{foreach from=$af->validation_results() key=validation_name item=results}
-		{foreach from=$results key=name item=result}
-			{if $result}
-			<p class='alert alert-danger'>
-				{$result.rules.name|default:''|addstr:'':' : '}
-				{$result.message|default:''}
-			</p>
-			{/if}
+		</div>
+	</nav>
+	
+	<div class="messages">
+		{* メッセージ *}
+		{foreach from=Session::get_flash('messages') key=message_type item=messages}
+			{if $message_type == 'error'}{$message_type = 'danger'}{/if}
+			{foreach from=(array)$messages item=message}
+				<p class='alert alert-{$message_type}'>{$message}</p>
+			{/foreach}
 		{/foreach}
-	{/foreach}
-{/if}
-</div>
-
-{block name="contents"}{/block}
-
-<hr>
-<div class="footer" style="color:gray; text-align:center">{Config::get('app.name')}</div>
-
-<script>{Config::get('app.ga_tag') nofilter}</script>
+		
+		{* バリデーションエラー *}
+		{if $af->validation_results()}
+			{foreach from=$af->validation_results() key=validation_name item=results}
+				{foreach from=$results key=name item=result}
+					{if $result}
+						<p class='alert alert-danger'>
+							{$result.rules.name|default:''|addstr:'':' : '}
+							{$result.message|default:''}
+						</p>
+					{/if}
+				{/foreach}
+			{/foreach}
+		{/if}
+	</div>
+	
+	{block name="contents"}{/block}
+	
+	<hr>
+	<div class="footer" style="color:gray; text-align:center">{Config::get('app.name')}</div>
+	
+	<script>{Config::get('app.ga_tag') nofilter}</script>
 
 </body>
 </html>
