@@ -14,6 +14,7 @@ class Curl
 	const OP_REQUEST_HEADERS        = 'request_headers';
 	const OP_REQUEST_DATA           = 'request_data';
 	const OP_USERPWD                = 'userpwd';
+	const OP_FUNC_SET_POSTFIELDS    = 'func_set_postfields';
 	
 	const METHOD_GET    = 'GET';
 	const METHOD_POST   = 'POST';
@@ -132,6 +133,19 @@ class Curl
 		return $this->curl_result;
 	}
 	
+	function set_curl_option_array(array $options, $replace = false)
+	{
+		if( $replace ){
+			$this->curl_options = $options;
+		}
+		else{
+			$this->curl_options = Arr::merge($this->curl_options, $options);
+		}
+		curl_setopt_array($this->curl, $this->curl_options);
+		
+		return $this;
+	}
+	
 	/**
 	 * GET APIを実行
 	 *
@@ -235,7 +249,7 @@ class Curl
 				$curl_options[CURLOPT_POSTFIELDS] = $this->request_raw_data;
 			}
 			else{
-				$url .= '?' . http_build_query($this->request_raw_data);
+				$url .= '?' . $this->request_raw_data;
 			}
 		}
 		else{
@@ -247,6 +261,11 @@ class Curl
 				else{
 					// データがないときでも値をセットしないと Content-Length: -1 を投げてしまう
 					$curl_options[CURLOPT_POSTFIELDS] = null;
+				}
+				if( $func = Arr::get($this->options, static::OP_FUNC_SET_POSTFIELDS) ){
+					if( is_callable($func) ){
+						$curl_options[CURLOPT_POSTFIELDS] = $func($curl_options[CURLOPT_POSTFIELDS]);
+					}
 				}
 			}
 			else{
@@ -308,6 +327,18 @@ class Curl
 		}
 		
 		return $result;
+	}
+	
+	function add_request_headers(array $headers, $replace = false)
+	{
+		if( $replace ){
+			$this->options[static::OP_REQUEST_HEADERS] = $headers;
+		}
+		else{
+			$this->options[static::OP_REQUEST_HEADERS] = Arr::merge($this->options[static::OP_REQUEST_HEADERS], $headers);
+		}
+		
+		return $this;
 	}
 	
 	/**
@@ -372,6 +403,7 @@ class Curl
 		$this->cookie_path = tempnam(null, 'CURL');
 		
 		$this->curl_options = $curl_options + [
+				CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
 				CURLOPT_VERBOSE        => true,
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_FOLLOWLOCATION => true,
