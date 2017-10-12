@@ -1,10 +1,4 @@
 $(function(){
-    $('input').ahPlaceholder({
-        placeholderColor : 'silver',
-        placeholderAttr  : 'placeholder',
-        likeApple        : false
-    });
-    
 	$(".pagination a").on('click',function(){
 		if( $(this).parents('li:first').is('.disabled') ){
 			return false;
@@ -16,5 +10,15 @@ $(function(){
 	    form.submit();
 		
 	    return false;
+	});
+	
+	$('.datepicker').datepicker({
+		language          : 'ja',
+		format            : 'yyyy-mm-dd',
+		todayBtn          : "linked",
+		keyboardNavigation: false,
+		forceParse        : false,
+		calendarWeeks     : true,
+		autoclose         : true
 	});
 });
