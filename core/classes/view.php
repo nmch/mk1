@@ -3,10 +3,16 @@ require_once('Smarty/libs/Smarty.class.php');
 
 class View
 {
+	const TEMPLATE_RESOURCE_DEFAULT = '';
+	const TEMPLATE_RESOURCE_FILE    = 'file: ';
+	const TEMPLATE_RESOURCE_STRING  = 'string: ';
+	
 	/** @var Actionform $af */
 	protected $af;
 	protected $smarty;
+	protected $template_resource = \View::TEMPLATE_RESOURCE_DEFAULT;
 	protected $template_filename;
+	protected $template_string;
 	protected $data;
 	/** @var bool render()時にフラッシュメッセージをクリアしない */
 	private $do_not_clear_flash = false;
@@ -134,11 +140,20 @@ class View
 	 */
 	public function template_filename($filename)
 	{
+		$this->template_resource = '';
+		
 		$this->template_filename = $filename . '.' . Config::get('smarty.extension');
 		
 		return $this;
 	}
 	
+	public function template_string($template_string)
+	{
+		$this->template_resource = static::TEMPLATE_RESOURCE_STRING;
+		$this->template_string   = $template_string;
+		
+		return $this;
+	}
 	
 	/**
 	 * view()の実行結果を得る
@@ -168,6 +183,7 @@ class View
 	 *
 	 * @return string
 	 * @throws HttpNotFoundException
+	 * @throws MkException
 	 */
 	function render()
 	{
@@ -184,14 +200,21 @@ class View
 			$return_value = $r;
 		}
 		else{
-			$template_filename = $this->change_template_filename() ?: $this->template_filename;
-			if( ! $this->template_exists($template_filename) ){
-				if( is_scalar($template_filename) ){
-					Log::error("template not found {$template_filename}");
+			if( strval($this->template_resource) === static::TEMPLATE_RESOURCE_DEFAULT ){
+				$template_filename = $this->change_template_filename() ?: $this->template_filename;
+				if( ! $this->template_exists($template_filename) ){
+					if( is_scalar($template_filename) ){
+						Log::error("template not found {$template_filename}");
+					}
+					throw new HttpNotFoundException();
 				}
-				throw new HttpNotFoundException();
 			}
-			//echo "<PRE>"; print_r($this->smarty); echo "</PRE>";
+			elseif( strval($this->template_resource) === static::TEMPLATE_RESOURCE_STRING ){
+				$template_filename = ($this->template_resource . $this->template_string);
+			}
+			else{
+				throw new MkException("invalid template settings");
+			}
 			
 			foreach(get_object_vars($this) as $name => $value){
 				$this->smarty->assign($name, $value);
@@ -234,7 +257,6 @@ class View
 		}
 		foreach(get_object_vars($obj) as $key => $value){
 			if( property_exists($this, $key) ){
-				//Log::coredebug(__CLASS__ . '::' . __METHOD__ . ' ' . $key);
 				$this->{$key} = $value;
 			}
 		}
@@ -254,13 +276,13 @@ class View
 	
 	function get($name)
 	{
-		return property_exists($this, $name) ? $this->$name : null;
+		return property_exists($this, $name) ? $this->{$name} : null;
 	}
 	
 	function set($name, $value)
 	{
 		if( property_exists($this, $name) ){
-			$this->$name = $value;
+			$this->{$name} = $value;
 		}
 		
 		return $this;
