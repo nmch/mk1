@@ -8,7 +8,7 @@ class Log_File implements Logic_Interface_Log_Driver
 	private $config = [];
 	private $logfile_dir;
 	private $fp;
-
+	
 	function __construct($config)
 	{
 		$path = Arr::get($config, 'path');
@@ -24,14 +24,14 @@ class Log_File implements Logic_Interface_Log_Driver
 		$this->config      = $config;
 		$this->logfile_dir = $path;
 	}
-
+	
 	function __destruct()
 	{
-		if($this->fp){
+		if( $this->fp ){
 			fclose($this->fp);
 		}
 	}
-
+	
 	function write($data)
 	{
 		if( ! $this->fp ){
@@ -43,8 +43,28 @@ class Log_File implements Logic_Interface_Log_Driver
 				throw new MkException('cannot open log file');
 			}
 		}
-
-		$str = empty($data['str']) ? '' : $data['str'];
+		
+		$format = Arr::get($this->config, 'format', 'plain');
+		if( $format === 'json' ){
+			$str = json_encode($data);
+		}
+		elseif( $format === 'json-es' ){
+			// for ElasticSearch
+			$es_json = [
+				'json' => $data,
+			];;
+			if( $timestamp_unixtime = Arr::get($data, "timestamp_unixtime") ){
+				$es_json['@timestamp'] = date(DATE_ATOM, $timestamp_unixtime);
+			}
+			$es_json['message'] = Arr::get($es_json, "json.message");
+			$es_json['uniqid']  = Arr::get($es_json, "json.config.uniqid");
+			unset($es_json['json']['config']);
+			$str = json_encode($es_json);
+		}
+		else{
+			$str = empty($data['str']) ? '' : $data['str'];
+		}
+		
 		fwrite($this->fp, rtrim($str) . "\n");
 	}
 }
