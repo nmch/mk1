@@ -1,24 +1,24 @@
-<?
+<?php
 
 class Session_Driver_Db implements SessionHandlerInterface
 {
 	private $config;
 	private $data;
-
+	
 	function __construct($config = [])
 	{
 		$this->config = $config;
 	}
-
+	
 	function gc($maxlifetime)
 	{
 	}
-
+	
 	function destroy($id)
 	{
 		DB::delete()->from($this->config['table'])->where('id', $id)->execute();
 	}
-
+	
 	function write($id, $data)
 	{
 		//Log::coredebug("session write",$id,$data);
@@ -28,7 +28,8 @@ class Session_Driver_Db implements SessionHandlerInterface
 					'data'       => serialize($data),
 					'updated_at' => 'now()',
 				]
-			)->where('id', $id)->execute();
+			)->where('id', $id)->execute()
+			;
 		}
 		else{
 			DB::insert($this->config['table'])->values([
@@ -36,13 +37,14 @@ class Session_Driver_Db implements SessionHandlerInterface
 					'data'       => serialize($data),
 					'updated_at' => 'now()',
 				]
-			)->execute();
+			)->execute()
+			;
 		}
-
+		
 		//Log::coredebug("session wrote");
 		return true;
 	}
-
+	
 	function read($id)
 	{
 		$data = null;
@@ -50,16 +52,33 @@ class Session_Driver_Db implements SessionHandlerInterface
 		if( $r->count() ){
 			$data = unserialize($r->get('data'));
 		}
-
+		
 		//Log::coredebug("session read",$id,$data);
-		return $data;
+		return strval($data);
 	}
-
+	
 	function close()
 	{
+		return true;
 	}
-
+	
 	function open($savePath, $sessionName)
 	{
+		$table_name = Arr::get($this->config, "table");
+		$schema     = Database_Schema::get($table_name);
+		
+		if( ! $schema ){
+			$q = <<<SQL
+CREATE TABLE sessions (
+	id TEXT PRIMARY KEY,
+	data TEXT ,
+	updated_at TIMESTAMP DEFAULT now()
+);
+SQL;
+			DB::query($q)->execute();
+			\Database_Schema::clear_cache();
+		}
+		
+		return true;
 	}
 }
