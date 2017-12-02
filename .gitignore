@@ -1,4 +1,12 @@
+tmp/*
+logs/*
+data/*
 .AppleDouble
 .DS_Store
 ._.DS_Store
 nbproject
+.idea
+.vagrant
+.afpDeleted*
+*.codekit3
+*.codekit
