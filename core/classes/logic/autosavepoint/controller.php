@@ -4,6 +4,7 @@
  * Class Logic_Controller_Autosavepoint
  *
  * @mixin Controller
+ * @property  Actionform af
  */
 trait Logic_Autosavepoint_Controller
 {
