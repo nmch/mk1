@@ -34,8 +34,8 @@ class Mk
 		self::$include_path_list = self::get_include_path_list();
 		$this->config            = Config::instance();
 		$start_log               = "Mk1 Start ";
-		$start_log .= "(env:" . self::$env . (self::is_production() ? ' [PRODUCTION]' : '') . ")";
-		$start_log .= " ============================================";
+		$start_log               .= "(env:" . self::$env . (self::is_production() ? ' [PRODUCTION]' : '') . ")";
+		$start_log               .= " ============================================";
 		Log::info($start_log);
 		//Log::coredebug("[mk] env=" . self::$env . (self::is_production() ? ' [PRODUCTION]' : ''));
 		if( self::is_production() ){
