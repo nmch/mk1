@@ -3,7 +3,7 @@
 class Mk
 {
 	use Singleton;
-
+	
 	const DEVELOPMENT = 'development';
 	const TEST        = 'test';
 	const PRODUCTION  = 'production';
@@ -13,7 +13,7 @@ class Mk
 	public static $session;
 	public static $encoding = 'UTF-8';
 	public        $config;
-
+	
 	function __construct()
 	{
 		// 実行環境の決定
@@ -30,12 +30,12 @@ class Mk
 		if( ! static::is_production() ){
 			static::$env = Arr::get($_REQUEST, 'MK_ENV') ?: static::$env;
 		}
-
+		
 		self::$include_path_list = self::get_include_path_list();
 		$this->config            = Config::instance();
-		$start_log = "Mk1 Start ";
-		$start_log .= "(env:".self::$env.(self::is_production() ? ' [PRODUCTION]' : '').")";
-		$start_log .= " ============================================";
+		$start_log               = "Mk1 Start ";
+		$start_log               .= "(env:" . self::$env . (self::is_production() ? ' [PRODUCTION]' : '') . ")";
+		$start_log               .= " ============================================";
 		Log::info($start_log);
 		//Log::coredebug("[mk] env=" . self::$env . (self::is_production() ? ' [PRODUCTION]' : ''));
 		if( self::is_production() ){
@@ -45,35 +45,35 @@ class Mk
 		else{
 			error_reporting(E_ALL);
 		}
-
+		
 		$locale = setlocale(LC_ALL, Config::get('locale', 'en_US'));
 		//Log::coredebug("locale=$locale");
-
+		
 		// テスト時はセッション維持が必要なのでcli判定を削除
 		if( Config::get('session.auto_initialize') ){
 			self::$session = Session::instance();
 		}
 	}
-
+	
 	static function is_unittesting()
 	{
 		return UNITTESTMODE;
 	}
-
+	
 	static function is_cli()
 	{
 		return php_sapi_name() === 'cli';
 	}
-
+	
 	static function env($env = null)
 	{
 		if( $env ){
 			static::$env = $env;
 		}
-
+		
 		return static::$env;
 	}
-
+	
 	/**
 	 * 本番環境かどうかの判定
 	 *
@@ -83,31 +83,31 @@ class Mk
 	{
 		return (strncmp(strtolower(self::$env), static::PRODUCTION, strlen(static::PRODUCTION)) === 0);
 	}
-
+	
 	// 優先度 低→高の並び
 	static function get_include_path_list()
 	{
 		$list = [COREPATH];
-
+		
 		// パッケージのロード
 		foreach(glob(PKGPATH . '*', GLOB_ONLYDIR) as $dir){
 			$list[] = $dir . '/';
 		}
 		$list[] = APPPATH;
-
+		
 		return $list;
 	}
-
+	
 	public static function load($file)
 	{
 		return include $file;
 	}
-
+	
 	public static function value($var)
 	{
 		return ($var instanceof \Closure) ? $var() : $var;
 	}
-
+	
 	/**
 	 * ランダム文字列を生成する
 	 */
@@ -116,12 +116,27 @@ class Mk
 		if( ! $char_seed ){
 			$char_seed = array_merge(range('a', 'z'), range('A', 'Z'), range('0', '9'));
 		}
-
+		
 		$code = "";
 		for($i = 0; $i < $length; $i++){
 			$code .= $char_seed[mt_rand(0, count($char_seed) - 1)];
 		}
-
+		
 		return $code;
+	}
+	
+	static function json_encode($value): string
+	{
+		$json = json_encode($value, JSON_HEX_TAG
+		                            | JSON_HEX_APOS
+		                            | JSON_HEX_QUOT
+		                            | JSON_HEX_AMP
+		                            | JSON_PARTIAL_OUTPUT_ON_ERROR
+		                            | JSON_PRETTY_PRINT);
+		if( $json === false ){
+			throw new UnexpectedValueException();
+		}
+		
+		return $json;
 	}
 }
