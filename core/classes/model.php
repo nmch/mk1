@@ -31,7 +31,7 @@ class Model implements Iterator, Countable, ArrayAccess
 	protected static $_views;
 	protected static $_to_array_exclude = array();
 	*/
-
+	
 	protected static $_primary_keys         = [];
 	public           $_data                 = [];
 	protected        $_is_new               = true;
@@ -41,18 +41,18 @@ class Model implements Iterator, Countable, ArrayAccess
 	protected        $_iter_curkey          = 0;
 	/** @var array save()時にとられるdiff */
 	protected $_save_diff = [];
-
+	
 	protected static $after_load_functions = [];
-
+	
 	function __construct($options = [])
 	{
 		if( empty($options['deferred_init']) ){
 			$this->_is_new = false;
 		}
-
+		
 		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
 	}
-
+	
 	function execute_after_load_functions()
 	{
 		$this->after_load();
@@ -63,24 +63,24 @@ class Model implements Iterator, Countable, ArrayAccess
 			}
 		}
 	}
-
+	
 	static function add_after_load_functions($func)
 	{
 		$class_name                                  = get_called_class();
 		static::$after_load_functions[$class_name][] = $func;
 	}
-
+	
 	protected function after_load(){ }
-
+	
 	static function __callStatic($name, $arguments)
 	{
 		if( preg_match('/^find_by_(.+)$/', $name, $match) && count($arguments) >= 1 ){
 			$column_name = $match[1];
-
+			
 			return static::find(reset($arguments), $column_name);
 		}
 	}
-
+	
 	/**
 	 * 特定の行を取得する
 	 *
@@ -99,11 +99,11 @@ class Model implements Iterator, Countable, ArrayAccess
 		$id_field          = Arr::get($args, '1');
 		$ignore_conditions = Arr::get($args, '2');
 		$ignore_joins      = Arr::get($args, '3');
-
+		
 		$query = static::_build_select_query();
 		$query->ignore_joins($ignore_joins);
 		$query->ignore_conditions($ignore_conditions);
-
+		
 		if( $argc ){
 			if( $id === 'all' ){    // 型判定なし(==)で比較すると文字列を比較する際に文字列が数値にキャストされてしまう。そのため$idに0が入っているとtrueになるので注意。
 				return $query->get();
@@ -117,7 +117,7 @@ class Model implements Iterator, Countable, ArrayAccess
 				if( $r === null ){
 					throw new RecordNotFoundException;
 				}
-
+				
 				return $r;
 			}
 		}
@@ -125,7 +125,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			return $query;
 		}
 	}
-
+	
 	/**
 	 * @return Model_Query
 	 */
@@ -133,14 +133,14 @@ class Model implements Iterator, Countable, ArrayAccess
 	{
 		$query = new Model_Query(get_called_class());
 		$query->select('*');
-
+		
 		if( ! empty(static::$_add_field) ){
 			$query->select(static::$_add_field);
 		}
-
+		
 		return $query;
 	}
-
+	
 	static function primary_key()
 	{
 		if( empty(static::$_primary_key) ){
@@ -156,7 +156,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		else{
 			$primary_key = static::$_primary_key;
 		}
-
+		
 		if( is_array($primary_key) ){
 			if( count($primary_key) == 0 ){
 				throw new MkException('empty primary key');
@@ -164,27 +164,27 @@ class Model implements Iterator, Countable, ArrayAccess
 			if( count($primary_key) != 1 ){
 				throw new MkException('too many primary keys');
 			}
-
+			
 			$primary_key = reset($primary_key);
 		}
-
+		
 		static::$_primary_keys[get_called_class()] = $primary_key;
-
+		
 		return $primary_key;
 	}
-
+	
 	static function table()
 	{
 		return isset(static::$_table_name) ? static::$_table_name : Inflector::tableize(get_called_class());
 	}
-
+	
 	static function _get_join_items()
 	{
 		$join = isset(static::$_join) ? static::$_join : [];
 		if( ! is_array($join) ){
 			$join = [$join];
 		}
-
+		
 		if( empty(static::$_do_not_inherit_join) ){
 			$parent = get_parent_class(get_called_class());
 			if( $parent ){
@@ -193,12 +193,12 @@ class Model implements Iterator, Countable, ArrayAccess
 			$join = array_unique($join);
 			ksort($join);
 		}
-
+		
 		//		Log::coredebug("_get_join_items",get_called_class(),$join);
-
+		
 		return $join;
 	}
-
+	
 	/**
 	 * データ取得時の強制条件を取得する
 	 *
@@ -220,12 +220,12 @@ class Model implements Iterator, Countable, ArrayAccess
 		return isset(static::$_join) ? static::$_join : [];
 	}
 	*/
-
+	
 	static function get_all()
 	{
 		return static::find('all');
 	}
-
+	
 	/**
 	 * 指定カラムでユニークとなるコードを生成する
 	 *
@@ -237,7 +237,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		$unique_code = "";
 		for($c = 0; $c < 100; $c++){
 			$unique_code_candidate = Mk::make_random_code($length, $char_seed);
-
+			
 			$r = DB::select($column_name)->from(static::table())->where($column_name, $unique_code_candidate)->execute();
 			if( $r->count() == 0 ){
 				$unique_code = $unique_code_candidate;
@@ -247,10 +247,10 @@ class Model implements Iterator, Countable, ArrayAccess
 		if( ! $unique_code ){
 			throw new Exception('generate unique id failed');
 		}
-
+		
 		return $unique_code;
 	}
-
+	
 	/**
 	 * joinsetを取得する
 	 *
@@ -262,16 +262,16 @@ class Model implements Iterator, Countable, ArrayAccess
 	{
 		return isset(static::$_joinset) ? Arr::get(static::$_joinset, $name, []) : [];
 	}
-
+	
 	function set_array(array $data, $force_original = false)
 	{
 		foreach($data as $key => $value){
 			$this->set($key, $value, $force_original);
 		}
-
+		
 		return $this;
 	}
-
+	
 	function set($name, $value, $force_original = false)
 	{
 		if( $this->_is_new || $force_original ){
@@ -283,21 +283,21 @@ class Model implements Iterator, Countable, ArrayAccess
 				$this->_data[$name] = $value;
 			}
 		}
-
+		
 		//echo "set $name ($force_original) to "; print_r($value); print_r($this->_data);
 		return $this;
 	}
-
+	
 	function __get($name)
 	{
 		return $this->get($name);
 	}
-
+	
 	function __set($name, $arg)
 	{
 		return $this->set($name, $arg);
 	}
-
+	
 	function get($name, $default = null, $rel_options = [])
 	{
 		if( array_key_exists($name, $this->_data) ){
@@ -322,14 +322,14 @@ class Model implements Iterator, Countable, ArrayAccess
 			}
 		}
 	}
-
+	
 	function get_related($relation_type, $options)
 	{
 		//Log::coredebug("Model::get_related() : $relation_type", $options);
 		$query = null;
-
+		
 		if( $relation_type == 'belongs_to' || $relation_type == 'has_many' ){
-
+			
 			$method     = [$options['model_to'], 'find'];
 			$key_from   = $options['key_from'];
 			$from_value = $this->{$key_from};
@@ -343,7 +343,7 @@ class Model implements Iterator, Countable, ArrayAccess
 				}
 			}
 		}
-
+		
 		switch($relation_type){
 			case 'belongs_to':
 				$target = $query->get_one();
@@ -352,7 +352,7 @@ class Model implements Iterator, Countable, ArrayAccess
 					$target                       = new $options['model_to'];
 					$target->{$options['key_to']} = $this->{$options['key_from']};
 				}
-
+				
 				return $target;
 			case 'has_many':
 				return $query->get();
@@ -360,7 +360,7 @@ class Model implements Iterator, Countable, ArrayAccess
 				throw new MkException('invalid relation type');
 		}
 	}
-
+	
 	/**
 	 * Modelに定義されたカラムをもとにしてデータをセットする
 	 *
@@ -381,27 +381,27 @@ class Model implements Iterator, Countable, ArrayAccess
 				}
 			}
 		}
-
+		
 		return $this;
 	}
-
+	
 	function columns()
 	{
 		$schema = $this->schema();
-
+		
 		return array_keys($schema['columns']);
 	}
-
+	
 	function schema()
 	{
 		return Database_Schema::get($this->table());
 	}
-
+	
 	function __unset($name)
 	{
 		$this->_unset($name);
 	}
-
+	
 	function _unset($name)
 	{
 		if( array_key_exists($name, $this->_data) ){
@@ -411,14 +411,14 @@ class Model implements Iterator, Countable, ArrayAccess
 			unset($this->_original[$name]);
 		}
 	}
-
+	
 	function __clone()
 	{
 		$this->_data     = array_merge($this->_original, $this->_data);
 		$this->_original = [];
 		$this->_unset($this->primary_key());
 	}
-
+	
 	/**
 	 * 現在のデータの内容を新しいレコードに保存して、新しいオブジェクトを返す
 	 *
@@ -431,10 +431,10 @@ class Model implements Iterator, Countable, ArrayAccess
 	function get_clone($ignore_list = [])
 	{
 		$new_obj = $this->duplicate($ignore_list);
-
+		
 		return $new_obj->save();
 	}
-
+	
 	/**
 	 * 現在のモデルのデータを引き継いだ新しいオブジェクトを作成する
 	 *
@@ -447,7 +447,7 @@ class Model implements Iterator, Countable, ArrayAccess
 	function duplicate($ignore_list = [])
 	{
 		$primary_key = static::primary_key();
-
+		
 		$new = new static;
 		foreach($this->get_all_data() as $key => $value){
 			if( $key == $primary_key || in_array($key, $ignore_list) ){
@@ -455,26 +455,26 @@ class Model implements Iterator, Countable, ArrayAccess
 			}
 			$new->$key = $value;
 		}
-
+		
 		return $new;
 	}
-
+	
 	function get_all_data()
 	{
 		return array_merge($this->_original, $this->_data);
 	}
-
+	
 	function save()
 	{
 		$primary_key = static::primary_key();
 		if( ! $primary_key ){
 			throw new MkException('primary key required');
 		}
-
+		
 		$this->before_save();
 		$this->_typecheck();
 		$schema = Database_Schema::get($this->table());
-
+		
 		// DBスキーマに存在して、プライマリキーではないアイテムのみセーブ対象とする
 		$data = [];
 		foreach($this->_data as $key => $value){
@@ -488,7 +488,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		//Log::coredebug("[model] save data",$this->_data,$data);
 		//echo "this->_data = "; print_r($this->_data);
 		//echo "data = "; print_r($data);
-
+		
 		try {
 			$r = null;
 			if( $this->get($primary_key) ){
@@ -528,14 +528,14 @@ class Model implements Iterator, Countable, ArrayAccess
 				throw $e;
 			}
 		}
-
+		
 		// 更新・挿入されたアイテムはoriginalとして保存し、_dataからは消す
 		if( $r ){
 			$this->_original_before_save = $this->_original;
-
+			
 			$new_data         = $r->get();
 			$this->_save_diff = [];
-
+			
 			//echo "new_data = "; print_r($new_data);
 			//Log::debug2("[model] new_data = ",$new_data,$this->_original);
 			if( $new_data ){
@@ -561,12 +561,12 @@ class Model implements Iterator, Countable, ArrayAccess
 			}
 		}
 		//Log::coredebug("[model] saved data = ",$this);
-
+		
 		$this->after_save();
-
+		
 		return $this;
 	}
-
+	
 	public function get_save_diff($key = null)
 	{
 		if( $key ){
@@ -579,9 +579,9 @@ class Model implements Iterator, Countable, ArrayAccess
 			return $this->_save_diff;
 		}
 	}
-
+	
 	protected function before_save(){ }
-
+	
 	protected function _typecheck($throw = null, $skip_unchanged_item = true)
 	{
 		$schema = Database_Schema::get($this->table());
@@ -589,7 +589,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		if( empty($schema['columns']) ){
 			return;
 		}
-
+		
 		foreach($schema['columns'] as $key => $property){
 			//			Log::coredebug("[model typecheck]", $key, $property);
 			//echo "[model typecheck] $key"; print_r($property);
@@ -608,11 +608,11 @@ class Model implements Iterator, Countable, ArrayAccess
 			if( $skip_unchanged_item && ! array_key_exists($key, $this->_data) ){
 				continue;
 			}
-
+			
 			$data_type = Arr::get($property, 'type', null);        // int4, timestamp, text
 			$type_cat  = Arr::get($property, 'type_cat', null);    // S, N, A, U
 			$value     = $this->$key;
-
+			
 			switch($type_cat){
 				case 'N':
 					if( ! is_numeric($value) ){
@@ -677,22 +677,22 @@ class Model implements Iterator, Countable, ArrayAccess
 					break;
 				case 'U':
 					if( $data_type === 'json' || $data_type === 'jsonb' ){
-						$value = $value === null ? null : json_encode($value);
+						$value = ($value === null) ? null : Mk::json_encode($value);
 					}
 					if( $data_type === 'hstore' ){
 						// fixme
 					}
 					break;
 			}
-			if( $this->$key !== $value ){
+			if( $this->{$key} !== $value ){
 				//Log::coredebug("typecheck $key ($data_type) {$this->$key} → $value");
-				$this->$key = $value;
+				$this->{$key} = $value;
 			}
 		}
 	}
-
+	
 	protected function after_save(){ }
-
+	
 	/**
 	 * 同じテーブル内で別のIDからデータをコピーする
 	 *
@@ -724,10 +724,10 @@ class Model implements Iterator, Countable, ArrayAccess
 			DB::query($q)->execute();
 			$this->reload();
 		}
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * データを再ロードする
 	 *
@@ -744,7 +744,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		if( $r === null ){
 			throw new RecordNotFoundException;
 		}
-
+		
 		// 取得したデータをoriginalに入れ、dataは削除する
 		$this->_original = [];
 		foreach($r as $key => $value){
@@ -753,17 +753,17 @@ class Model implements Iterator, Countable, ArrayAccess
 				unset($this->_data[$key]);
 			}
 		}
-
+		
 		$this->after_load();
-
+		
 		return $this;
 	}
-
+	
 	function as_array($array_key = null)
 	{
 		return array_merge($this->_original, $this->_data);
 	}
-
+	
 	/**
 	 * 指定されたカラムまたはデータのどれかが変更されたかをチェックする
 	 *
@@ -780,7 +780,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			return true;
 		}
 	}
-
+	
 	/**
 	 * originalとのdiffを取得する
 	 *
@@ -796,10 +796,10 @@ class Model implements Iterator, Countable, ArrayAccess
 			$diff[0][$key] = array_key_exists($key, $this->_original) ? $this->_original[$key] : null;
 			$diff[1][$key] = $value;
 		}
-
+		
 		return $diff;
 	}
-
+	
 	function delete()
 	{
 		$primary_key = static::primary_key();
@@ -809,19 +809,19 @@ class Model implements Iterator, Countable, ArrayAccess
 		if( ! $this->get($primary_key) ){
 			throw new MkException('empty primary key');
 		}
-
+		
 		$this->before_delete();
 		$r = DB::delete()->from($this->table())->where($primary_key, $this->get($primary_key))->execute();
 		unset($this->$primary_key);
 		$this->after_delete();
-
+		
 		return $r->get_affected_rows();
 	}
-
+	
 	protected function before_delete(){ }
-
+	
 	protected function after_delete(){ }
-
+	
 	/*
 	public static function instance_from_query_data()
 	{
@@ -830,14 +830,14 @@ class Model implements Iterator, Countable, ArrayAccess
 	}
 	 * 
 	 */
-
+	
 	function drop_isnew_flag()
 	{
 		$this->_is_new = false;
-
+		
 		return $this;
 	}
-
+	
 	static function form()
 	{
 		if( property_exists(get_called_class(), 'form') ){
@@ -847,7 +847,7 @@ class Model implements Iterator, Countable, ArrayAccess
 			return null;
 		}
 	}
-
+	
 	/**
 	 * このModelのデータを取得する際のselectクエリを得る
 	 *
@@ -856,67 +856,68 @@ class Model implements Iterator, Countable, ArrayAccess
 	public function get_select_query()
 	{
 		$model_query = static::_build_select_query();    // Model_Queryにjoinやadd_fieldを加える
+		
 		return $model_query->get_query();                // Database_Queryを得る
 	}
-
+	
 	public function offsetSet($offset, $value)
 	{
 		return $this->set($offset, $value);
 	}
-
+	
 	public function offsetExists($offset)
 	{
 		return $this->is_exist($offset);
 	}
-
+	
 	function is_exist($name)
 	{
 		return (array_key_exists($name, $this->_data) || array_key_exists($name, $this->_original));
 	}
-
+	
 	public function offsetUnset($offset)
 	{
 		$this->_unset($offset);
 	}
-
+	
 	public function offsetGet($offset)
 	{
 		return $this->get($offset);
 	}
-
+	
 	function rewind()
 	{
 		$this->_iter_keylist = $this->keys();
 		$this->_iter_curkey  = 0;
 	}
-
+	
 	function keys()
 	{
 		return array_merge(array_keys($this->_original), array_keys($this->_data));
 	}
-
+	
 	function current()
 	{
 		return $this->get($this->key());
 	}
-
+	
 	function key()
 	{
 		return $this->_iter_keylist[$this->_iter_curkey];
 	}
-
+	
 	function next()
 	{
 		if( $this->valid() ){
 			$this->_iter_curkey++;
 		}
 	}
-
+	
 	function valid()
 	{
 		return ($this->_iter_curkey < $this->count());
 	}
-
+	
 	function count()
 	{
 		return count($this->_iter_keylist);
