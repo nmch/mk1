@@ -88,6 +88,21 @@ class Mk
 		return (strncmp(strtolower(self::$env), static::PRODUCTION, strlen(static::PRODUCTION)) === 0);
 	}
 	
+	static function json_encode($value): string
+	{
+		$json = json_encode($value, JSON_HEX_TAG
+		                            | JSON_HEX_APOS
+		                            | JSON_HEX_QUOT
+		                            | JSON_HEX_AMP
+		                            | JSON_PARTIAL_OUTPUT_ON_ERROR
+		                            | JSON_PRETTY_PRINT);
+		if( $json === false ){
+			throw new UnexpectedValueException();
+		}
+		
+		return $json;
+	}
+	
 	// 優先度 低→高の並び
 	static function get_include_path_list()
 	{
@@ -127,20 +142,5 @@ class Mk
 		}
 		
 		return $code;
-	}
-	
-	static function json_encode($value): string
-	{
-		$json = json_encode($value, JSON_HEX_TAG
-		                            | JSON_HEX_APOS
-		                            | JSON_HEX_QUOT
-		                            | JSON_HEX_AMP
-		                            | JSON_PARTIAL_OUTPUT_ON_ERROR
-		                            | JSON_PRETTY_PRINT);
-		if( $json === false ){
-			throw new UnexpectedValueException();
-		}
-		
-		return $json;
 	}
 }
