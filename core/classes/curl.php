@@ -197,6 +197,23 @@ class Curl
 		return $this->retrieve($url);
 	}
 	
+	/**
+	 * PUT APIを実行
+	 *
+	 * @param string $url
+	 * @param array  $data
+	 *
+	 * @return mixed|string
+	 * @throws MkException
+	 */
+	public function put($url, array $data = [])
+	{
+		$this->method       = static::METHOD_PUT;
+		$this->request_data = $data;
+		
+		return $this->retrieve($url);
+	}
+	
 	public function set_request_raw_data($data = null)
 	{
 		$this->request_raw_data = $data;
@@ -226,6 +243,10 @@ class Curl
 				$curl_options[CURLOPT_POST]          = 0;
 				$curl_options[CURLOPT_CUSTOMREQUEST] = 'DELETE';
 				break;
+			case static::METHOD_PUT:
+				$curl_options[CURLOPT_POST]          = 0;
+				$curl_options[CURLOPT_CUSTOMREQUEST] = 'PUT';
+				break;
 			case static::METHOD_POST:
 				$curl_options[CURLOPT_POST]          = true;
 				$curl_options[CURLOPT_CUSTOMREQUEST] = null;
@@ -254,7 +275,7 @@ class Curl
 		}
 		else{
 			$request_data = array_merge(Arr::get($this->options, static::OP_REQUEST_DATA, []), $this->request_data);
-			if( $this->method === static::METHOD_POST ){
+			if( $this->method === static::METHOD_POST || $this->method === static::METHOD_PUT ){
 				if( $request_data ){
 					$curl_options[CURLOPT_POSTFIELDS] = is_array($request_data) ? http_build_query($request_data) : $request_data;
 				}
