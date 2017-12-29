@@ -313,26 +313,31 @@ class Database_Query
 					}
 					
 					if( $value instanceof Database_Expression ){
-						$sql .= $column . ' ' . $op . ' ' . (string)$value;
+						$exp = $column . ' ' . $op . ' ' . strval($value);
 					}
 					else{
 						if( $value === null ){
-							$sql .= $column . ' ' . $op . ' NULL';
+							$exp = $column . ' ' . $op . ' NULL';
 						}
 						else{
 							if( $value === true ){
-								$sql .= $column . ' ' . $op . ' TRUE';
+								$exp = $column . ' ' . $op . ' TRUE';
 							}
 							else{
 								if( $value === false ){
-									$sql .= $column . ' ' . $op . ' FALSE';
+									$exp = $column . ' ' . $op . ' FALSE';
 								}
 								else{
-									$sql .= $column . ' ' . $op . ' $' . $this->parameter($value);
+									$exp = $column . ' ' . $op . ' $' . $this->parameter($value);
 								}
 							}
 						}
 					}
+					if( $op === '#' ){
+						// ビット演算子を利用する場合は式を括弧で囲む
+						$exp = "({$exp})";
+					}
+					$sql .= $exp;
 				}
 				
 				$last_condition = $condition;

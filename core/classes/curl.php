@@ -17,6 +17,7 @@ class Curl
 	const OP_REQUEST_HEADERS        = 'request_headers';
 	const OP_REQUEST_DATA           = 'request_data';
 	const OP_USERPWD                = 'userpwd';
+	const OP_FUNC_SET_POSTFIELDS    = 'func_set_postfields';
 	
 	const METHOD_GET    = 'GET';
 	const METHOD_POST   = 'POST';
@@ -142,6 +143,19 @@ class Curl
 		return $this->curl_result;
 	}
 	
+	function set_curl_option_array(array $options, $replace = false)
+	{
+		if( $replace ){
+			$this->curl_options = $options;
+		}
+		else{
+			$this->curl_options = Arr::merge($this->curl_options, $options);
+		}
+		curl_setopt_array($this->curl, $this->curl_options);
+		
+		return $this;
+	}
+	
 	/**
 	 * GET APIを実行
 	 *
@@ -193,6 +207,23 @@ class Curl
 		return $this->retrieve($url);
 	}
 	
+	/**
+	 * PUT APIを実行
+	 *
+	 * @param string $url
+	 * @param array  $data
+	 *
+	 * @return mixed|string
+	 * @throws MkException
+	 */
+	public function put($url, array $data = [])
+	{
+		$this->method       = static::METHOD_PUT;
+		$this->request_data = $data;
+		
+		return $this->retrieve($url);
+	}
+	
 	public function set_request_raw_data($data = null)
 	{
 		$this->request_raw_data = $data;
@@ -222,6 +253,10 @@ class Curl
 				$curl_options[CURLOPT_POST]          = 0;
 				$curl_options[CURLOPT_CUSTOMREQUEST] = 'DELETE';
 				break;
+			case static::METHOD_PUT:
+				$curl_options[CURLOPT_POST]          = 0;
+				$curl_options[CURLOPT_CUSTOMREQUEST] = 'PUT';
+				break;
 			case static::METHOD_POST:
 				$curl_options[CURLOPT_POST]          = true;
 				$curl_options[CURLOPT_CUSTOMREQUEST] = null;
@@ -245,12 +280,12 @@ class Curl
 				$curl_options[CURLOPT_POSTFIELDS] = $this->request_raw_data;
 			}
 			else{
-				$url .= '?' . http_build_query($this->request_raw_data);
+				$url .= '?' . $this->request_raw_data;
 			}
 		}
 		else{
 			$request_data = array_merge(Arr::get($this->options, static::OP_REQUEST_DATA, []), $this->request_data);
-			if( $this->method === static::METHOD_POST ){
+			if( $this->method === static::METHOD_POST || $this->method === static::METHOD_PUT ){
 				if( $request_data ){
 					if( is_array($request_data) ){
 						$curl_options[CURLOPT_POSTFIELDS] = Arr::get($this->options, static::OP_POST_AS_JSON)
@@ -263,6 +298,11 @@ class Curl
 				else{
 					// データがないときでも値をセットしないと Content-Length: -1 を投げてしまう
 					$curl_options[CURLOPT_POSTFIELDS] = null;
+				}
+				if( $func = Arr::get($this->options, static::OP_FUNC_SET_POSTFIELDS) ){
+					if( is_callable($func) ){
+						$curl_options[CURLOPT_POSTFIELDS] = $func($curl_options[CURLOPT_POSTFIELDS]);
+					}
 				}
 			}
 			else{
@@ -336,6 +376,18 @@ class Curl
 		return $result;
 	}
 	
+	function add_request_headers(array $headers, $replace = false)
+	{
+		if( $replace ){
+			$this->options[static::OP_REQUEST_HEADERS] = $headers;
+		}
+		else{
+			$this->options[static::OP_REQUEST_HEADERS] = Arr::merge($this->options[static::OP_REQUEST_HEADERS], $headers);
+		}
+		
+		return $this;
+	}
+	
 	/**
 	 * cURLを実行
 	 *
@@ -398,6 +450,7 @@ class Curl
 		$this->cookie_path = tempnam(null, 'CURL');
 		
 		$this->curl_options = $curl_options + [
+				CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
 				CURLOPT_VERBOSE        => true,
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_FOLLOWLOCATION => true,

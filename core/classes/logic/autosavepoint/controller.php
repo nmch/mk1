@@ -4,6 +4,7 @@
  * Class Logic_Controller_Autosavepoint
  *
  * @mixin Controller
+ * @property  Actionform af
  */
 trait Logic_Autosavepoint_Controller
 {
@@ -15,7 +16,7 @@ trait Logic_Autosavepoint_Controller
 	{
 		$ref = new ReflectionMethod($this, $method_name);
 		$doc = $ref->getDocComment();
-		if( strpos($doc, '@autostart_transaction') !== null ){
+		if( strpos($doc, '@autostart_transaction') !== false ){
 			$this->autostart_transaction = true;
 		}
 		
