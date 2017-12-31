@@ -267,7 +267,9 @@ class Curl
 		//Log::coredebug('retrieve', $this->method, $curl_options);
 		
 		// ベースURLを使ったURLの設定
-		if( $base_url = $this->get_option(static::OP_BASE_URL) ){
+		$parsed_url = parse_url($path);
+		$scheme     = Arr::get($parsed_url, 'scheme');
+		if( ! $scheme && $base_url = $this->get_option(static::OP_BASE_URL) ){
 			$url = rtrim($base_url, '/') . '/' . ltrim($path, '/');
 		}
 		else{
