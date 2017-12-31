@@ -6,6 +6,9 @@
 class Curl
 {
 	const OP_RETURN_AS_JSON         = 'return_as_json';
+	const OP_RETURN_AS_JSON_SUCCESS = 'return_as_json_success';
+	const OP_RETURN_AS_JSON_FAIL    = 'return_as_json_fail';
+	const OP_POST_AS_JSON           = 'post_as_json';
 	const OP_CONVERT_ENCODING       = 'convert_encoding';
 	const OP_EXCEPTION_WHEN_NOT_200 = 'exception_when_not_200';
 	const OP_CAMOUFLAGE_UA          = 'camouflage_ua';
@@ -56,6 +59,7 @@ class Curl
 	{
 		$this->options = $options + [
 				static::OP_RETURN_AS_JSON         => true,
+				static::OP_POST_AS_JSON           => false,
 				static::OP_CONVERT_ENCODING       => false,
 				static::OP_EXCEPTION_WHEN_NOT_200 => false,
 				static::OP_CAMOUFLAGE_UA          => true,
@@ -100,6 +104,12 @@ class Curl
 			return Arr::get($this->curl_info ?: [], $key);
 		}
 	}
+	
+	public function get_response_code()
+	{
+		return intval($this->response_info('http_code'));
+	}
+	
 	
 	/**
 	 * オプションを設定する
@@ -257,7 +267,9 @@ class Curl
 		//Log::coredebug('retrieve', $this->method, $curl_options);
 		
 		// ベースURLを使ったURLの設定
-		if( $base_url = $this->get_option(static::OP_BASE_URL) ){
+		$parsed_url = parse_url($path);
+		$scheme     = Arr::get($parsed_url, 'scheme');
+		if( ! $scheme && $base_url = $this->get_option(static::OP_BASE_URL) ){
 			$url = rtrim($base_url, '/') . '/' . ltrim($path, '/');
 		}
 		else{
@@ -277,7 +289,13 @@ class Curl
 			$request_data = array_merge(Arr::get($this->options, static::OP_REQUEST_DATA, []), $this->request_data);
 			if( $this->method === static::METHOD_POST || $this->method === static::METHOD_PUT ){
 				if( $request_data ){
-					$curl_options[CURLOPT_POSTFIELDS] = is_array($request_data) ? http_build_query($request_data) : $request_data;
+					if( is_array($request_data) ){
+						$curl_options[CURLOPT_POSTFIELDS] = Arr::get($this->options, static::OP_POST_AS_JSON)
+							? json_encode($request_data) : http_build_query($request_data);
+					}
+					else{
+						$curl_options[CURLOPT_POSTFIELDS] = $request_data;
+					}
 				}
 				else{
 					// データがないときでも値をセットしないと Content-Length: -1 を投げてしまう
@@ -321,17 +339,27 @@ class Curl
 		
 		$this->execute_curl();
 		
-		Log::coredebug("cURL HTTPレスポンスコード: {$this->response_info('http_code')}");
-		$http_code = intval($this->response_info('http_code'));
+		Log::coredebug("cURL HTTPレスポンスコード: {$this->get_response_code()}");
+		$http_code                = $this->get_response_code();
+		$response_code_is_not_200 = ($http_code !== 200);
 		
-		if( Arr::get($this->options, static::OP_EXCEPTION_WHEN_NOT_200) && $http_code !== 200 ){
+		if( Arr::get($this->options, static::OP_EXCEPTION_WHEN_NOT_200) && $response_code_is_not_200 ){
 			throw new MkException('Bad Http Response', $http_code);
 		}
 		if( $to_encoding = Arr::get($this->options, static::OP_CONVERT_ENCODING) ){
 			$this->curl_result = mb_convert_encoding($this->curl_result, $to_encoding, 'SJIS-win');
 		}
+		
 		// JSONデコード (空文字列の場合はnull)
-		if( Arr::get($this->options, static::OP_RETURN_AS_JSON) ){
+		if( $response_code_is_not_200 ){
+			// エラー時
+			$decode_to_json = (Arr::get($this->options, static::OP_RETURN_AS_JSON) || Arr::get($this->options, static::OP_RETURN_AS_JSON_FAIL));
+		}
+		else{
+			// 成功時
+			$decode_to_json = (Arr::get($this->options, static::OP_RETURN_AS_JSON) || Arr::get($this->options, static::OP_RETURN_AS_JSON_SUCCESS));
+		}
+		if( $decode_to_json ){
 			if( strlen($this->curl_result) ){
 				$result = json_decode($this->curl_result, true);
 				if( $result === null ){
