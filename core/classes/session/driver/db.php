@@ -12,11 +12,14 @@ class Session_Driver_Db implements SessionHandlerInterface
 	
 	function gc($maxlifetime)
 	{
+		return true;
 	}
 	
 	function destroy($id)
 	{
 		DB::delete()->from($this->config['table'])->where('id', $id)->execute();
+		
+		return true;
 	}
 	
 	function write($id, $data)

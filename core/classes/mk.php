@@ -63,7 +63,7 @@ class Mk
 		 */
 		foreach(static::package_directories() as $dir){
 			$bootstrap_filepath = "{$dir}/bootstrap.php";
-			if( $bootstrap_filepath ){
+			if( file_exists($bootstrap_filepath) ){
 				include($bootstrap_filepath);
 			}
 		}
