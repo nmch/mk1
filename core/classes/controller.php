@@ -9,6 +9,7 @@ class Controller
 	protected $af;
 	/** @var  Request */
 	protected $request;
+	protected $response_code = 200;
 	
 	function __construct($options = [])
 	{
@@ -51,6 +52,15 @@ class Controller
 		}
 		
 		return $r;
+	}
+	
+	function response_code($code = null)
+	{
+		if( $code ){
+			$this->response_code = $code;
+		}
+		
+		return $this->response_code;
 	}
 	
 	//	function before_execute($name, array $arguments = []) { }

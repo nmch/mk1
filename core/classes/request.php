@@ -9,7 +9,7 @@ class Request
 	public $response;
 	/** @var View */
 	public $view;
-
+	
 	function __construct($uri, $method = null, $data = [])
 	{
 		$this->uri    = $uri;
@@ -19,7 +19,7 @@ class Request
 			$this->af->set($data);
 		}
 	}
-
+	
 	/**
 	 * @param null $offset
 	 *
@@ -35,7 +35,7 @@ class Request
 			return isset($exploded[$offset]) ? $exploded[$offset] : null;
 		}
 	}
-
+	
 	/**
 	 * @throws Exception
 	 * @throws MkException
@@ -45,12 +45,13 @@ class Request
 		$route_class_name = Config::get('class.route', 'Route');
 		list($controller_name, $controller_method_name, $controller_method_options) = $route_class_name::get_controller($this->uri, $this->method);
 		Log::coredebug("[$route_class_name] controller = $controller_name / method = $controller_method_name");
-
+		
+		/** @var Controller $controller */
 		$controller = new $controller_name([
 				'request' => $this,
 			]
 		);
-
+		
 		// 実行するメソッドのパラメータをActioformにもセットする
 		$af                           = Actionform::instance();
 		$controller_method_reflection = new ReflectionMethod($controller, $controller_method_name);
@@ -60,14 +61,14 @@ class Request
 				$af->set($controller_method_parameters[$option_key]->name, $option_value);
 			}
 		}
-
+		
 		$controller_return_var = call_user_func_array([$controller, 'execute'], [$controller_method_name,
 		                                                                         $controller_method_options]);
-
+		
 		if( $controller_return_var === null ){
 			return;
 		}
-
+		
 		if( $controller_return_var instanceof Response ){
 			$response = $controller_return_var;
 		}
@@ -78,18 +79,18 @@ class Request
 			//Log::coredebug('$controller_return_var',get_class($controller_return_var),get_object_vars($controller),get_object_vars($controller_return_var));
 			// コントローラとビューの両方に定義されているプロパティをコピーする
 			$controller_return_var->import_property($controller);
-
+			
 			$this->view = $controller_return_var;
-
-			$response = new Response($controller_return_var);
+			
+			$response = new Response($controller_return_var, $controller->response_code());
 		}
-
+		
 		if( empty($response) || ! $response instanceof Response ){
 			throw new MkException('invalid response object');
 		}
-
+		
 		$this->response = $response;
-
+		
 		if( Mk::is_unittesting() ){
 			$response->do_not_display(true);
 		}
