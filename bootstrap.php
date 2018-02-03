@@ -26,12 +26,12 @@ class HttpNotFoundException extends MkException
 class ValidateErrorException extends MkException
 {
 	protected static $af;
-
+	
 	public function set_af(Actionform $af)
 	{
 		static::$af = $af;
 	}
-
+	
 	public function get_af()
 	{
 		return static::$af ?: Actionform::instance();
@@ -100,6 +100,9 @@ set_include_path(get_include_path()
 // オートローダー + コアbootstrap
 require COREPATH . 'classes/autoloader.php';
 require COREPATH . 'bootstrap.php';
+if( file_exists(APPPATH . 'bootstrap.php') ){
+	require APPPATH . 'bootstrap.php';
+}
 Autoloader::register();
 
 $composer_autoloader = PROJECTPATH . 'vendor/autoload.php';
@@ -122,13 +125,13 @@ if( Mk::is_unittesting() ){
 	echo "APPPATH=".APPPATH."\n";
 	echo "PKGPATH=".PKGPATH."\n";
 	*/
-	if(!isset($_SERVER['UNITTESTMODE_WITHOUT_MIGRATION'])){
+	if( ! isset($_SERVER['UNITTESTMODE_WITHOUT_MIGRATION']) ){
 		// DB初期化
 		DB::delete_all_tables();
 		// マイグレーション実行
 		Task_Coretask::refine('migration');
 	}
-
+	
 	return;
 }
 
@@ -159,7 +162,7 @@ else{
 	}
 	$request_method = Arr::get($_SERVER, 'REQUEST_METHOD');
 	Log::info("[REQUEST] $request_method $uri");
-
+	
 	ErrorHandler::add_error_handler(function ($e){
 		$af = Actionform::instance();
 		$af->set('error', $e);
@@ -168,7 +171,7 @@ else{
 		$request_500->execute();
 	}
 	);
-
+	
 	try {
 		$request = new Request($uri);
 		$request->execute();
