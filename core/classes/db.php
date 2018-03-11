@@ -10,6 +10,7 @@
  */
 class DB
 {
+	const INT_MAX      = 2147483647;
 	const ROWS_NOLIMIT = 'nolimit';
 	
 	private $connections = [];
