@@ -449,10 +449,14 @@ class Database_Query
 		
 		if( $this->_query_on_conflict ){
 			$sql .= " ON CONFLICT";
-			$on  = Arr::get($this->_query_on_conflict, 'on');
-			if( $on === 'constraint' ){
-				$constraint = Arr::get($this->_query_on_conflict, 'constraint');
-				$sql        .= " ON CONSTRAINT {$constraint}";
+			if( $conflict_columns = Arr::get($this->_query_on_conflict, 'columns') ){
+				$sql .= (" (" . implode(',', $conflict_columns) . ")");
+			}
+			if( $on = Arr::get($this->_query_on_conflict, 'on') ){
+				if( $on === 'constraint' ){
+					$constraint = Arr::get($this->_query_on_conflict, 'constraint');
+					$sql        .= " ON CONSTRAINT {$constraint}";
+				}
 			}
 			
 			$do = Arr::get($this->_query_on_conflict, 'do');
@@ -460,11 +464,19 @@ class Database_Query
 				$do_values = [];
 				if( $this->_query_columns ){
 					foreach($this->_query_columns as $key){
+						if( isset($conflict_columns) && is_array($conflict_columns) && in_array($key, $conflict_columns) ){
+							// on conflictで制約の推定を使っている場合、推定に使われたキーは更新しない
+							continue;
+						}
 						$do_values[] = "{$key}=EXCLUDED.{$key}";
 					}
 				}
 				if( $this->_query_values ){
 					foreach($this->_query_values as $key => $value){
+						if( isset($conflict_columns) && is_array($conflict_columns) && in_array($key, $conflict_columns) ){
+							// on conflictで制約の推定を使っている場合、推定に使われたキーは更新しない
+							continue;
+						}
 						$do_values[] = "{$key}=EXCLUDED.{$key}";
 					}
 				}
@@ -1099,6 +1111,16 @@ class Database_Query
 			$columns = [$columns];
 		}
 		$this->_query_distinct_on = array_merge($this->_query_distinct_on, $columns);
+		
+		return $this;
+	}
+	
+	function on_conflict(array $columns, $do = 'update')
+	{
+		$this->_query_on_conflict = [
+			'columns' => $columns,
+			'do'      => $do,
+		];
 		
 		return $this;
 	}
