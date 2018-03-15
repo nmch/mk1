@@ -65,7 +65,7 @@ trait Logic_Masterdetail_Controller
 				Log::coredebug("保存前af", $this->af->as_array());
 
 				if( method_exists($this, 'before_save_detail') ){
-					$r = $this->before_save_detail();
+					$r = $this->before_save_detail($id);
 					if( is_array($r) ){
 						$options = array_merge($options, $r);
 					}
