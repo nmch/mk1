@@ -97,7 +97,8 @@ class Database_Query
 			$message = $e->getMessage();
 			//Log::error("Database_Query::execute() Exception : message={$message} / code={$e->getCode()} / prev_exception=",$e);
 			$new_expception = new DatabaseQueryError($message, $e->getCode(), $e);
-			Log::error($message);
+			// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
+			//Log::error($message);
 			throw $new_expception;
 		}
 	}
