@@ -134,6 +134,10 @@ SQL;
 							if( ! method_exists($task_class, $task_method_name) ){
 								throw new MkException("{$task_class_name}:{$task_method_name} が実行できません");
 							}
+							
+							// migrationしたデータをModelで変更する場合はスキーマキャッシュを削除しなければいけない
+							DB::clear_schema_cache();
+							
 							call_user_func([$task_class, $task_method_name]);
 						}
 						else{
@@ -142,9 +146,9 @@ SQL;
 							 */
 							$r = DB::query($query)->execute();
 							//Log::coredebug($query,$r);
-							DB::update("migrations")->set(['migration_last_seq' => $seq])->where('migration_group', $group)->execute();
 						}
 						
+						DB::update("migrations")->set(['migration_last_seq' => $seq])->where('migration_group', $group)->execute();
 						DB::commit_transaction();
 						Log::info("[db migration] マイグレーションの実行に成功しました / group={$group} / seq={$seq} / {$name}");
 						echo "OK";
