@@ -6,8 +6,8 @@ class Task
 	{
 		$this->before();
 	}
-
-	function before()
-	{
-	}
+	
+	function before(){ }
+	
+	function run(){ }
 }
