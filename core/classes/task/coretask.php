@@ -13,7 +13,7 @@ class Task_Coretask extends Task
 				throw new MkException('invalid cmd');
 		}
 	}
-
+	
 	public static function _job_run()
 	{
 		/*
@@ -34,17 +34,17 @@ class Task_Coretask extends Task
 			$job = Job::fetch();
 			if( $job instanceof Job && $job->job_id ){
 				Log::info("[job] Job {$job->job_id} fetched by " . gethostname() . '(PID:' . getmypid() . ')');
-
+				
 				if( ! $job->job_task_name || ! $job->job_method_name ){
 					throw new Exception('invalid task');
 				}
-
+				
 				$cmd = $job->job_task_name . ':' . $job->job_method_name;
-
+				
 				if( $job->job_timeout ){
 					set_time_limit($job->job_timeout);
 				}
-
+				
 				Task_Coretask::refine($cmd, [$job]);
 				$job->success();
 				Log::info("[job] Job {$job->job_id} was succeeded");
@@ -62,11 +62,11 @@ class Task_Coretask extends Task
 			}
 		}
 	}
-
+	
 	public static function refine()
 	{
 		ErrorHandler::add_error_handler(['Task_Coretask', 'refine_error']);
-
+		
 		$args = func_get_args();
 		if( count($args) < 1 ){
 			throw new MkException('invalid task option');
@@ -77,7 +77,7 @@ class Task_Coretask extends Task
 		}
 		$class_name  = $task_name[0];
 		$method_name = $task_name[1];
-
+		
 		$class_name = 'Task_' . ucfirst($class_name);
 		if( ! class_exists($class_name) ){
 			throw new MkException("task class {$class_name} not found");
@@ -86,21 +86,21 @@ class Task_Coretask extends Task
 		if( ! method_exists($task_object, $method_name) ){
 			throw new MkException("task method {$method_name} not found");
 		}
-
+		
 		Log::coredebug("[task] run {$class_name}->{$method_name}", $args);
-
+		
 		return call_user_func_array([$task_object, $method_name], $args);
 	}
-
+	
 	public static function _job_daemon($concurrency = 3)
 	{
 		$cmd      = PROJECTPATH . "job_runner.sh";
 		$downfile = PROJECTPATH . "down";
-
+		
 		Log::info("[job] ジョブ実行デーモン 多重度=$concurrency");
 		$procs = [];
 		$stats = [];
-		while( 1 ){
+		while(1){
 			for($num = 0; $num < $concurrency; $num++){
 				if( ! empty($procs[$num]) ){
 					$stats[$num] = proc_get_status($procs[$num]);
@@ -108,7 +108,7 @@ class Task_Coretask extends Task
 				else{
 					$stats[$num] = false;
 				}
-
+				
 				if( empty($stats[$num]['running']) && ! file_exists($downfile) ){
 					$procs[$num] = proc_open($cmd, [], $pipes);
 					if( $procs[$num] === false ){
@@ -123,7 +123,7 @@ class Task_Coretask extends Task
 			sleep(1);
 		}
 	}
-
+	
 	public static function refine_error($error)
 	{
 		echo "[Error]---\n";
@@ -135,7 +135,7 @@ class Task_Coretask extends Task
 		}
 		echo $error . "\n";
 	}
-
+	
 	public static function init()
 	{
 		if( func_num_args() == 0 ){
@@ -162,7 +162,7 @@ class Task_Coretask extends Task
 			exit;
 		}
 		*/
-
+		
 		// スケルトンのコピー
 		$cmd = "cp -ar " . FWPATH . "skel/* ./";
 		echo $cmd . "\n";
@@ -170,7 +170,7 @@ class Task_Coretask extends Task
 		$cmd = "cp -ar " . FWPATH . "skel/.git* ./";
 		echo $cmd . "\n";
 		passthru($cmd);
-
+		
 		// Git 初期化
 		passthru("git init");
 		// フレームワークをサブモジュールとして追加
