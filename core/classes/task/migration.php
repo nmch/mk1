@@ -83,7 +83,8 @@ SQL;
 		if( $migrations_migration_1_to_2 ){
 			DB::update('migrations')->set([
 				'migration_last_seq' => $migrations_migration_1_to_2_lastseq,
-			])->where('migration_group', 'NOGROUP')->execute();
+			])->where('migration_group', 'NOGROUP')->execute()
+			;
 			Log::info("[db migration] migrationsテーブルのバージョンアップ(1 -> 2)が完了しました。");
 		}
 		
