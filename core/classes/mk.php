@@ -50,15 +50,6 @@ class Mk
 		//Log::coredebug("locale=$locale");
 		
 		/**
-		 * セッション自動開始
-		 *
-		 * ユニットテストモード以外のCLI環境では開始しない
-		 */
-		if( Config::get('session.auto_initialize') && (php_sapi_name() !== 'cli' || \Mk::is_unittesting()) ){
-			self::$session = Session::instance();
-		}
-		
-		/**
 		 * パッケージごとのbootstrapを実行
 		 */
 		foreach(static::package_directories() as $dir){
@@ -66,6 +57,15 @@ class Mk
 			if( file_exists($bootstrap_filepath) ){
 				include($bootstrap_filepath);
 			}
+		}
+		
+		/**
+		 * セッション自動開始
+		 *
+		 * ユニットテストモード以外のCLI環境では開始しない
+		 */
+		if( Config::get('session.auto_initialize') && (php_sapi_name() !== 'cli' || \Mk::is_unittesting()) ){
+			self::$session = Session::instance();
 		}
 	}
 	
