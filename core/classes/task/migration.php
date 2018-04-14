@@ -83,7 +83,8 @@ SQL;
 		if( $migrations_migration_1_to_2 ){
 			DB::update('migrations')->set([
 				'migration_last_seq' => $migrations_migration_1_to_2_lastseq,
-			])->where('migration_group', 'NOGROUP')->execute();
+			])->where('migration_group', 'NOGROUP')->execute()
+			;
 			Log::info("[db migration] migrationsテーブルのバージョンアップ(1 -> 2)が完了しました。");
 		}
 		
@@ -112,10 +113,41 @@ SQL;
 					printf("\n%10s : %4d : %s -> ", $group, $seq, $name);
 					
 					$query = file_get_contents($migration_file['dirname'] . '/' . $migration_file['basename']);
+					
 					DB::start_transaction();
 					try {
-						$r = DB::query($query)->execute();
-						//Log::coredebug($query,$r);
+						if( Arr::get($migration_file, 'extension') === 'task' ){
+							/**
+							 * タスク実行
+							 */
+							$task_target      = explode(':', trim($query));
+							$task_class_name  = $task_target[0];
+							$task_method_name = isset($task_target[1]) ? $task_target[1] : 'run';
+							if( ! class_exists($task_class_name) ){
+								throw new MkException("タスク {$task_class_name} がみつかりません");
+							}
+							/** @var Task $task_class */
+							$task_class = new $task_class_name;
+							if( ! ($task_class instanceof Task) ){
+								throw new MkException("{$task_class_name} が実行できません");
+							}
+							if( ! method_exists($task_class, $task_method_name) ){
+								throw new MkException("{$task_class_name}:{$task_method_name} が実行できません");
+							}
+							
+							// migrationしたデータをModelで変更する場合はスキーマキャッシュを削除しなければいけない
+							DB::clear_schema_cache();
+							
+							call_user_func([$task_class, $task_method_name]);
+						}
+						else{
+							/**
+							 * SQL実行
+							 */
+							$r = DB::query($query)->execute();
+							//Log::coredebug($query,$r);
+						}
+						
 						DB::update("migrations")->set(['migration_last_seq' => $seq])->where('migration_group', $group)->execute();
 						DB::commit_transaction();
 						Log::info("[db migration] マイグレーションの実行に成功しました / group={$group} / seq={$seq} / {$name}");

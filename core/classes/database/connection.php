@@ -113,7 +113,8 @@ class Database_Connection
 						, PGSQL_DIAG_SOURCE_LINE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_LINE)
 						, PGSQL_DIAG_SOURCE_FUNCTION    => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FUNCTION),
 					];
-					Log::error("Query Error", $error_details);
+					// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
+					Log::debug2("Query Error", $error_details);
 					$this->last_error_details = $error_details;
 					throw new DatabaseQueryError($error_msg);
 				}

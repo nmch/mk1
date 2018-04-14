@@ -34,7 +34,18 @@ class File
 		return $this->filepath;
 	}
 	
-	function read_as_csv($convert_encoding = File::ENCODING_SJIS, $ignore_head_lines = 0, $csv_header = null)
+	/**
+	 * CSVとして読み込む
+	 *
+	 * @param string $convert_encoding
+	 * @param int    $ignore_head_lines
+	 * @param array  $csv_header
+	 * @param bool   $pass_raw_column true=読み込んだデータをそのまま返す / false=改行を削除し、trimして返す
+	 *
+	 * @return Generator
+	 * @throws AppException
+	 */
+	function read_as_csv($convert_encoding = File::ENCODING_SJIS, $ignore_head_lines = 0, $csv_header = null, $pass_raw_column = false)
 	{
 		$src_file = $convert_encoding ? $this->convert_encoding(File::ENCODING_UTF8, $convert_encoding) : $this;
 		
@@ -61,9 +72,16 @@ class File
 			$item = [];
 			foreach($csv_header as $header_key => $header){
 				// headerにドットが入っているとArr::get()したときに1次元配列として扱えないため、アンダースコアに変換する
-				$header        = str_replace('.', '_', $header);
-				$item[$header] = (string)array_key_exists($header_key, $line) ? str_replace(["\n",
-				                                                                             "\r"], '', trim($line[$header_key])) : null;
+				$header = str_replace('.', '_', $header);
+				
+				$column = array_key_exists($header_key, $line) ? strval($line[$header_key]) : null;
+				
+				if( ! $pass_raw_column ){
+					$column = str_replace(["\n", "\r"], '', $column);
+					$column = trim($column);
+				}
+				
+				$item[$header] = $column;
 			}
 			
 			yield $line_num => $item;
