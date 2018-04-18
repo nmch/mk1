@@ -45,8 +45,20 @@ class File
 	 * @return Generator
 	 * @throws AppException
 	 */
-	function read_as_csv($convert_encoding = File::ENCODING_SJIS, $ignore_head_lines = 0, $csv_header = null, $pass_raw_column = false)
+	function read_as_csv($convert_encoding = null, $ignore_head_lines = 0, $csv_header = null, $pass_raw_column = false)
 	{
+		/**
+		 * エンコーディング自動検出
+		 */
+		if( ! $convert_encoding ){
+			$fp              = fopen($this->filepath, "rt");
+			$fitst_line      = fgets($fp);
+			$source_encoding = mb_detect_encoding($fitst_line);
+			if( $source_encoding !== File::ENCODING_UTF8 ){
+				$convert_encoding = $source_encoding;
+			}
+		}
+		
 		$src_file = $convert_encoding ? $this->convert_encoding(File::ENCODING_UTF8, $convert_encoding) : $this;
 		
 		$fp       = $src_file->fopen();
