@@ -52,7 +52,7 @@ class File
 		 */
 		if( ! $convert_encoding ){
 			$fp              = fopen($this->filepath, "rt");
-			$fitst_line      = fgets($fp);
+			$fitst_line      = fread($fp, 1024 * 1024);
 			$source_encoding = mb_detect_encoding($fitst_line, [
 				'ASCII',
 				'UTF-8',
