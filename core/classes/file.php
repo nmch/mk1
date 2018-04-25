@@ -53,7 +53,11 @@ class File
 		if( ! $convert_encoding ){
 			$fp              = fopen($this->filepath, "rt");
 			$fitst_line      = fgets($fp);
-			$source_encoding = mb_detect_encoding($fitst_line);
+			$source_encoding = mb_detect_encoding($fitst_line, [
+				'ASCII',
+				'UTF-8',
+				'SJIS-win',
+			]);
 			if( $source_encoding !== File::ENCODING_UTF8 ){
 				$convert_encoding = $source_encoding;
 			}
