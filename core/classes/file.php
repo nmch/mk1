@@ -149,16 +149,21 @@ class File
 				}
 			}
 			foreach($headers['columns'] as $header){
-				if( isset($header['col']) ){
-					if( is_object($item) ){
-						$line[] = $item->{$header['col']};
-					}
-					else{
-						$line[] = Arr::get($item, $header['col']);
-					}
+				if( isset($funcs['get_value']) ){
+					$line[] = $funcs['get_value']($item, $header);
 				}
 				else{
-					$line[] = Arr::get($header, 'value');
+					if( isset($header['col']) ){
+						if( is_object($item) ){
+							$line[] = $item->{$header['col']};
+						}
+						else{
+							$line[] = Arr::get($item, $header['col']);
+						}
+					}
+					else{
+						$line[] = Arr::get($header, 'value');
+					}
 				}
 			}
 			fputcsv($fp, $line);
