@@ -63,8 +63,10 @@ class Response_File extends Response
 	{
 		if( $this->before() ){
 			header('Content-Type: ' . $this->mime_type);
-			$enc = '=?utf-8?B?' . base64_encode($this->filename) . '?=';
-			header('Content-Disposition: attachment; filename="' . $enc . '"');
+			$encoded_filename = rawurlencode($this->filename);
+			header('Content-Disposition: attachment; filename*=UTF-8\'\'' . $encoded_filename);
+			//$enc = '=?utf-8?B?' . base64_encode($this->filename) . '?=';
+			//header('Content-Disposition: attachment; filename="' . $enc . '"'); // これだとIE/Edgeでファイル名が正しく認識されない
 			//header('Content-Disposition: attachment; filename=' . $this->filename);
 			header('Content-Transfer-Encoding: binary');
 			header('Content-Length: ' . strlen($this->filebody));
