@@ -3,7 +3,7 @@
 class Actionform implements ArrayAccess
 {
 	use Singleton;
-
+	
 	public  $validation_results = [];
 	private $config             = [];
 	private $values             = [];
@@ -13,7 +13,7 @@ class Actionform implements ArrayAccess
 	private $useragent;
 	private $referer;
 	private $server_vars;
-
+	
 	/*
 	private $target_array_key;
 	private $models = array();
@@ -25,7 +25,7 @@ class Actionform implements ArrayAccess
 	private $af_filter;
 	var $validation_results = array();
 	*/
-
+	
 	/**
 	 * コンストラクタ
 	 *
@@ -34,7 +34,7 @@ class Actionform implements ArrayAccess
 	function __construct($clean_init = false)
 	{
 		$this->config = Config::get('form', []);
-
+		
 		if( ! $clean_init ){
 			$this->values = array_merge($_GET ?: [], $_POST ?: [], $_REQUEST ?: []);
 			//echo "<PRE>values = "; print_r($this->values); echo "</PRE>";
@@ -43,7 +43,7 @@ class Actionform implements ArrayAccess
 			$this->referer     = Arr::get($_SERVER, 'HTTP_REFERER');
 			$this->useragent   = Arr::get($_SERVER, 'HTTP_USER_AGENT');
 			$this->server_vars = $_SERVER;
-
+			
 			// アップロードされたファイル
 			if( is_array($_FILES) && count($_FILES) ){
 				foreach($_FILES as $file_key => $file){
@@ -77,7 +77,7 @@ class Actionform implements ArrayAccess
 					}
 				}
 			}
-
+			
 			if( $this->get_config('import_db_schemas') ){
 				$autoconfig = Cache::get('af_autoconfig', 'core_db', function (){
 					$autoconfig = [];
@@ -93,7 +93,7 @@ class Actionform implements ArrayAccess
 								// 数値型
 								case 'N':
 									$rule['filter'] = ['hankaku', 'only0to9'];
-
+									
 									$autoconfig['global.key.' . $col_name . '_from'] = [
 										'name'   => $rule['name'] . ' FROM',
 										'filter' => $rule['filter'],
@@ -106,7 +106,7 @@ class Actionform implements ArrayAccess
 								// 日付時刻型
 								case 'D':
 									$rule['filter'] = ['hankaku', 'hantozen', 'trim'];
-
+									
 									$autoconfig['global.key.' . $col_name . '_from'] = [
 										'name'   => $rule['name'] . ' FROM',
 										'filter' => $rule['filter'],
@@ -116,13 +116,13 @@ class Actionform implements ArrayAccess
 										'filter' => $rule['filter'],
 									];
 									break;
-
+								
 								case 'B': // 論理値型
 								case 'S': // 文字列型
 								case 'A': // 配列型
 									$rule['filter'] = ['hankaku', 'hantozen', 'trim', 'empty2null'];
 									break;
-
+								
 								case 'C': // 複合型
 								case 'U': // ユーザ定義型
 								case 'E': // 列挙型
@@ -139,7 +139,7 @@ class Actionform implements ArrayAccess
 							$autoconfig['global.key.' . $col_name] = $rule;
 						}
 					}
-
+					
 					return $autoconfig;
 				});
 				foreach($autoconfig as $key => $value){
@@ -147,10 +147,10 @@ class Actionform implements ArrayAccess
 				}
 			}
 		}
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param string|array $name
 	 * @param mixed        $value
@@ -167,7 +167,7 @@ class Actionform implements ArrayAccess
 		}
 		else{
 			//echo "<PRE>[af] set $name (default:$set_default)"; var_dump($value); print_r(debug_backtrace(NULL,3));
-
+			
 			if( $set_default ){
 				$this->values_default[$name] = $value;
 			}
@@ -175,16 +175,16 @@ class Actionform implements ArrayAccess
 				$this->values[$name] = $value;
 			}
 		}
-
+		
 		return $this;
 	}
-
+	
 	//public function save($name,$model_list = array())
-
+	
 	public function get_config($name, $default = [])
 	{
 		$config = Config::get('form.' . $name, $default);
-
+		
 		if( is_array($config) ){
 			// Modelの定義があった場合はModel内のformコンフィグもマージする
 			if( $model_name = Arr::get($config, 'model') ){
@@ -195,33 +195,33 @@ class Actionform implements ArrayAccess
 				}
 			}
 		}
-
+		
 		return $config;
 	}
-
+	
 	private function set_config($name, $value)
 	{
 		Config::set('form.' . $name, $value);
-
+		
 		//Arr::set($this->config,$name,$value);
 		return $this;
 	}
-
+	
 	public static function method()
 	{
 		return strtoupper(Arr::get($_SERVER, 'REQUEST_METHOD', ''));
 	}
-
+	
 	public static function request_uri()
 	{
 		return Arr::get($_SERVER, 'REQUEST_URI', '');
 	}
-
+	
 	function __unset($name)
 	{
 		return $this->delete($name);
 	}
-
+	
 	/**
 	 * キーを削除する
 	 *
@@ -244,15 +244,15 @@ class Actionform implements ArrayAccess
 		if( array_key_exists($name, $this->validation_results) ){
 			unset($this->validation_results[$name]);
 		}
-
+		
 		return $this;
 	}
-
+	
 	public function save($name, $model = null)
 	{
 		$this->validate($name);
 		//Log::coredebug("validated_values = ",$this->validated_values);
-
+		
 		$preset = Config::get('form.preset.' . $name, []);
 		// Modelの定義があった場合はModel内のformコンフィグもマージする
 		if( class_exists($name) && is_subclass_of($name, 'Model') ){
@@ -265,7 +265,7 @@ class Actionform implements ArrayAccess
 		if( ! $preset ){
 			throw new MkException('invalid preset name');
 		}
-
+		
 		if( ! $model ){
 			$model = Arr::get($preset, 'model');
 			if( ! $model ){
@@ -275,7 +275,7 @@ class Actionform implements ArrayAccess
 		if( is_array($model) ){
 			$model = reset($model);
 		}
-
+		
 		if( ! is_object($model) ){
 			if( ! class_exists($model) ){
 				throw new MkException('model not defined');
@@ -300,7 +300,7 @@ class Actionform implements ArrayAccess
 		else{
 			$obj = $model;
 		}
-
+		
 		//Log::coredebug("[af save] keys=",$obj->columns(),$obj);
 		foreach($obj->columns() as $key){
 			if( array_key_exists($key, $this->validated_values[$name]) ){
@@ -309,10 +309,10 @@ class Actionform implements ArrayAccess
 			}
 		}
 		$obj->save();
-
+		
 		return $obj;
 	}
-
+	
 	/**
 	 * バリデーション実行
 	 *
@@ -325,13 +325,13 @@ class Actionform implements ArrayAccess
 	public function validate($name = null)
 	{
 		$validation = $this->get_validation_rules($name);
-
+		
 		$this->validated_values[$name] = $validated_values = [];
 		$validation_results[$name]     = $validation_results = [];
 		$is_error                      = false;
-
+		
 		$default_rules = Arr::get($validation, 'default_rules', []);
-
+		
 		foreach($validation['key'] as $key => $rules){
 			if( ! is_array($rules) ){
 				$key   = $rules;
@@ -341,23 +341,23 @@ class Actionform implements ArrayAccess
 				$rules = array_merge($default_rules, $rules);
 			}
 			//Log::coredebug("[af] validate $key","key_exists = ".$this->key_exists($key,true).'/'.$this->key_exists($key),$rules);
-
+			
 			// only_existsがtrueの場合、キーがデータに存在しない場合に一切の処理を行わない
 			if( Arr::get($rules, 'only_exists') === true ){
 				if( ! $this->key_exists($key) ){
 					continue;
 				}
 			}
-
+			
 			try {
 				// デフォルトが設定されていて、キーがデータに存在しない場合はデフォルトをset()する。キーのチェックはvalue_defaultを省く。
 				if( ! $this->key_exists($key, true) && array_key_exists('default', $rules) ){
 					$this->set($key, $rules['default']);
 				}
-
+				
 				$value = $this->get($key);
 				//Log::coredebug("[af] target value=",$value);
-
+				
 				// 値がデータに存在しない場合はフィルタを適用しない
 				if( $this->key_exists($key, true) ){
 					//Log::coredebug("rules filter (key=$key) ",$rules['filter']);
@@ -367,7 +367,7 @@ class Actionform implements ArrayAccess
 								$filter = $option;
 								$option = [];
 							}
-
+							
 							// フィルタ名が配列として指定されている場合は
 							// 値が配列の場合にのみ適用し、フィルタには値を配列のまま渡す
 							if( is_array($filter) ){
@@ -391,13 +391,13 @@ class Actionform implements ArrayAccess
 					$this->set($key, $value);
 					//Log::coredebug("[af] set $key",$value);
 				}
-
+				
 				if( isset($rules['validation']) ){
 					foreach($rules['validation'] as $validation => $option){
 						static::unit_validate($value, $validation, $option, Arr::get($rules, 'ignore_validation', []));
 					}
 				}
-
+				
 				// 値がデータに存在しない場合はvalidated_valuesに代入しない
 				if( $this->key_exists($key) ){
 					//Log::coredebug("store validated_values $key",$value);
@@ -422,11 +422,11 @@ class Actionform implements ArrayAccess
 			$exception->set_af($this);
 			throw $exception;
 		}
-
+		
 		//Log::coredebug("[af validate] validated_values=",$this->validated_values,$this->values);
 		return $this;
 	}
-
+	
 	private function get_validation_rules($name = null)
 	{
 		if( ! $name ){
@@ -441,7 +441,7 @@ class Actionform implements ArrayAccess
 				//Log::coredebug("merged rules = ",$validation);
 			}
 		}
-
+		
 		// Modelの定義があった場合はModel内のformコンフィグもマージする
 		if( class_exists($name) && is_subclass_of($name, 'Model') ){
 			/** @see \Model::form() */
@@ -450,14 +450,14 @@ class Actionform implements ArrayAccess
 				$validation = Arr::merge($validation, $r);
 			}
 		}
-
+		
 		if( ! $validation ){
 			throw new MkException("empty validation rules ($name)");
 		}
-
+		
 		return $validation;
 	}
-
+	
 	/**
 	 * 値データに指定キーが存在するか調べる
 	 *
@@ -475,7 +475,7 @@ class Actionform implements ArrayAccess
 			return (array_key_exists($name, $this->values) || array_key_exists($name, $this->values_default));
 		}
 	}
-
+	
 	function get($name, $default = null)
 	{
 		if( array_key_exists($name, $this->values) ){
@@ -490,7 +490,7 @@ class Actionform implements ArrayAccess
 			}
 		}
 	}
-
+	
 	/**
 	 * Actionformフィルタを値に対して実行
 	 *
@@ -504,20 +504,21 @@ class Actionform implements ArrayAccess
 	public static function unit_filter($value, $filter, $option = [])
 	{
 		//Log::coredebug("filter $filter", $value, $option);
-
+		
 		$func = static::load("actionform/filter/" . strtolower($filter) . ".php");
 		if( ! is_callable($func) ){
 			throw new MkException("illegal filter");
 		}
 		$value = call_user_func($func, $value, $option);    //返り値は配列の可能性がある
+		
 		return $value;
 	}
-
+	
 	public static function load($filename)
 	{
 		return include $filename;
 	}
-
+	
 	/**
 	 * 単体のバリデーションを実行する
 	 *
@@ -544,7 +545,7 @@ class Actionform implements ArrayAccess
 					$validation = $option;
 					$option     = [];
 				}
-
+				
 				if( ! is_string($validation) && is_callable($validation) ){    //is_callable()だけだと'date'などの標準関数と同じ名前だと標準関数が呼ばれてしまう
 					// validationがコードの場合、実行して必要なvalidation名を戻してもらう
 					$af             = static::instance();
@@ -566,12 +567,12 @@ class Actionform implements ArrayAccess
 			}
 		}
 	}
-
+	
 	function get_by_path($name, $default = null)
 	{
 		return Arr::get($this->values, $name, Arr::get($this->values_default, $name, $default));
 	}
-
+	
 	/**
 	 * @param string $name
 	 *
@@ -580,44 +581,44 @@ class Actionform implements ArrayAccess
 	public function get_validation_result_messages($name = null)
 	{
 		$messages = [];
-
+		
 		foreach($this->validation_results as $key => $validation_results){
 			if( $name && $name !== $key ){
 				continue;
 			}
-
+			
 			foreach($validation_results as $validation_result){
 				if( ! is_array($validation_result) ){
 					$validation_result = [];
 				}
 				$message = Arr::get($validation_result, 'message');
-
+				
 				if( $message ){
 					$item_name  = Arr::get($validation_result, 'name', Arr::get($validation_result, 'key'));
 					$message    = "{$item_name} : {$message}";
 					$messages[] = $message;
 				}
 			}
-
+			
 		}
-
+		
 		return $messages;
 	}
-
+	
 	public function validation_results($results = null)
 	{
 		if( is_array($results) ){
 			$this->validation_results = $results;
 		}
-
+		
 		return $this->validation_results;
 	}
-
+	
 	public function referer()
 	{
 		return $this->referer;
 	}
-
+	
 	function get_default($name = null)
 	{
 		if( ! $name ){
@@ -627,24 +628,24 @@ class Actionform implements ArrayAccess
 			return Arr::get($this->values_default, $name);
 		}
 	}
-
+	
 	function set_default($name, $value = null)
 	{
 		return $this->set($name, $value, true);
 	}
-
+	
 	function __get($name)
 	{
 		return $this->get($name);
 	}
-
+	
 	function __set($name, $value)
 	{
 		$this->set($name, $value);
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * Arr::get()を使って値を得る
 	 */
@@ -652,12 +653,12 @@ class Actionform implements ArrayAccess
 	{
 		return Arr::get($this->as_array(), $name, $default);
 	}
-
+	
 	function as_array()
 	{
 		return array_merge($this->values_default, $this->values);
 	}
-
+	
 	/**
 	 * validated_valuesを得る
 	 *
@@ -669,19 +670,24 @@ class Actionform implements ArrayAccess
 	{
 		return $name ? Arr::get($this->validated_values, $name, []) : $this->validated_values;
 	}
-
+	
 	function value_exists($name)
 	{
 		return key_exists($name);
 	}
-
+	
 	function useragent()
 	{
 		return $this->useragent;
 	}
-
+	
 	function is_mobiledevice()
 	{
+		// CloudFront対応
+		if( Arr::get($_SERVER, "HTTP_CLOUDFRONT_IS_MOBILE_VIEWER") ){
+			return true;
+		}
+		
 		if( $this->useragent ){
 			return Cache::get($this->useragent, 'ismobiledevice_by_ua', function ($useragent){
 				$browser = get_browser($useragent);
@@ -691,10 +697,10 @@ class Actionform implements ArrayAccess
 			}
 			);
 		}
-
+		
 		return null;
 	}
-
+	
 	/**
 	 * 配列対応htmlspecialchars
 	 *
@@ -710,39 +716,39 @@ class Actionform implements ArrayAccess
 		else{
 			$value = htmlspecialchars($value);
 		}
-
+		
 		return $value;
 	}
-
+	
 	function is_ssl()
 	{
 		// #3271 AWS対応
 		return ($this->server_vars('HTTPS') === 'on' || $this->server_vars('HTTP_X_FORWARDED_PROTO') === 'https');
 	}
-
+	
 	function server_vars($name)
 	{
 		return Arr::get($this->server_vars, $name);
 	}
-
+	
 	function is_ajax_request()
 	{
 		return strtolower($this->server_vars('HTTP_X_REQUESTED_WITH')) == 'xmlhttprequest';
 	}
-
+	
 	function set_message($type, $message)
 	{
 		$messages = Session::get_flash('messages');
 		if( ! $messages || ! is_array($messages) ){
 			$messages = [];
 		}
-
+		
 		$messages[$type][] = $message;
 		Log::coredebug("set message($type) : $message");
-
+		
 		Session::set_flash('messages', $messages);
 	}
-
+	
 	/**
 	 * 与えられたModelのカラムと同じ名前の配列全てを統合し、レコードと同じ形の配列にする
 	 *
@@ -764,28 +770,28 @@ class Actionform implements ArrayAccess
 		if( $default_items ){
 			foreach($list as $key => $item){
 				$list[$key] = $item + $default_items;
-
+				
 			}
 		}
-
+		
 		return $list;
 	}
-
+	
 	public function offsetSet($offset, $value)
 	{
 		$this->set($offset, $value);
 	}
-
+	
 	public function offsetGet($offset)
 	{
 		return $this->get($offset);
 	}
-
+	
 	public function offsetExists($offset)
 	{
 		return $this->key_exists($offset);
 	}
-
+	
 	public function offsetUnset($offset)
 	{
 		$this->delete($offset);
