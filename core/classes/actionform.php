@@ -684,7 +684,7 @@ class Actionform implements ArrayAccess
 	function is_mobiledevice()
 	{
 		// CloudFront対応
-		if( Arr::get($_SERVER, "HTTP_CLOUDFRONT_IS_MOBILE_VIEWER") ){
+		if( Arr::get($_SERVER, "HTTP_CLOUDFRONT_IS_MOBILE_VIEWER") === 'true' ){
 			return true;
 		}
 		
