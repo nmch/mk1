@@ -9,7 +9,7 @@ class Response
 	protected $before_send_functions = [];
 	/** @var bool send()実行時にコンテンツをechoしない */
 	protected $do_not_display = false;
-
+	
 	public function __construct($body = null, $status = 200, array $headers = [])
 	{
 		Log::coredebug("[response] status=$status");
@@ -17,7 +17,7 @@ class Response
 		$this->status  = $status;
 		$this->headers = $headers;
 	}
-
+	
 	/**
 	 * 即座にリダイレクトする
 	 *
@@ -30,16 +30,16 @@ class Response
 	public static function redirect($url = '', $method = 'location', $redirect_code = 302)
 	{
 		$response = new static;
-
+		
 		$response->set_status($redirect_code);
-
-//		if (strpos($url, '://') === false)
-//		{
-//			$url = $url !== '' ? \Uri::create($url) : \Uri::base();
-//		}
-//
-//		strpos($url, '*') !== false and $url = \Uri::segment_replace($url);
-
+		
+		//		if (strpos($url, '://') === false)
+		//		{
+		//			$url = $url !== '' ? \Uri::create($url) : \Uri::base();
+		//		}
+		//
+		//		strpos($url, '*') !== false and $url = \Uri::segment_replace($url);
+		
 		if( $method == 'location' ){
 			$response->set_header('Location', $url);
 		}
@@ -49,11 +49,11 @@ class Response
 		else{
 			return;
 		}
-
+		
 		$response->send(true);
 		exit;
 	}
-
+	
 	/**
 	 * レスポンスコードを設定する
 	 *
@@ -63,7 +63,7 @@ class Response
 	{
 		$this->status = $status;
 	}
-
+	
 	/**
 	 * HTTPヘッダを設定する
 	 *
@@ -74,7 +74,7 @@ class Response
 	{
 		$this->headers[$name] = $value;
 	}
-
+	
 	/**
 	 * 送出前実行関数を設定する
 	 *
@@ -85,7 +85,7 @@ class Response
 	{
 		$this->before_send_functions[$name] = $func;
 	}
-
+	
 	/**
 	 * コンテンツ送出前処理
 	 *
@@ -96,32 +96,36 @@ class Response
 		if( ! Mk::is_cli() ){
 			if( headers_sent() ){
 				Log::warning("HTTPヘッダがすでに送出されているためResponse処理を中断します");
-
+				
 				return false;
 			}
 			http_response_code($this->status);
 			foreach($this->headers as $key => $header){
+				if( is_bool($header) ){
+					$header = $header ? 'true' : 'false';
+				}
+				//Log::debug2($key, var_export($header, true));
 				header($key . ':' . $header);
 			}
 		}
-
+		
 		return true;
 	}
-
+	
 	/**
 	 * コンテンツ送出後処理
 	 *
 	 * 送出が行われなかった場合は実行されない
 	 */
-	protected function after() { }
-
+	protected function after(){ }
+	
 	/**
 	 * @return Response
 	 * @throws HttpNotFoundException
 	 */
 	public function send()
 	{
-//		Log::coredebug(__CLASS__,__METHOD__,__FILE__,__LINE__);
+		//		Log::coredebug(__CLASS__,__METHOD__,__FILE__,__LINE__);
 		if( $this->before() ){
 			if( is_array($this->before_send_functions) ){
 				foreach($this->before_send_functions as $func){
@@ -130,10 +134,10 @@ class Response
 					}
 				}
 			}
-
+			
 			if( $this->body instanceof View ){
 				$body = $this->body->render();
-
+				
 				// bodyがResponseオブジェクトだった場合(View::view()がResponseインスタンスを返した場合)、そこから先はそのインスタンスのsend()に任せる
 				if( $body instanceof Response ){
 					return $body->send();
@@ -142,20 +146,20 @@ class Response
 			else{
 				$body = $this->body;
 			}
-
+			
 			if( ! $this->do_not_display ){
 				echo $body;
 			}
-
+			
 			$this->after();
 		}
 		else{
 			Log::coredebug("Response::before()がfalseを返したため実行を中断しました");
 		}
-
+		
 		return $this;
 	}
-
+	
 	/**
 	 * @param bool $flag send()実行時にコンテンツをechoしないフラグ
 	 */
