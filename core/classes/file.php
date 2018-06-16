@@ -119,7 +119,7 @@ class File
 	 * @return Response_File|null
 	 * @throws Exception
 	 */
-	static function respond_obj_as_csv($data, $headers, $csv_filename = null, $funcs = [])
+	static function respond_obj_as_csv($data, $headers, $csv_filename = null, $funcs = [], $array_delimiter = ',')
 	{
 		$columns = [];
 		if( $data instanceof Database_Resultset ){
@@ -180,6 +180,12 @@ class File
 					else{
 						$line[] = Arr::get($header, 'value');
 					}
+				}
+			}
+			
+			foreach($line as $line_key => $line_item){
+				if( is_array($line_item) ){
+					$line[$line_key] = implode($array_delimiter, $line_item);
 				}
 			}
 			fputcsv($fp, $line);
