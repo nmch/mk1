@@ -300,12 +300,12 @@ class Database_Query
 						$_insql_search  = [];
 						$_insql_replace = [];
 						foreach($_insql_parameters as $_insql_parameter_index => $_insql_parameter_value){
-							$_insql_search[]  = '$' . ($_insql_parameter_index + 1);
-							$_insql_replace[] = '$' . $this->parameter($_insql_parameter_value);
+							$_insql_search[]  = '/\$' . ($_insql_parameter_index + 1) . '\b/';
+							$_insql_replace[] = '\$' . $this->parameter($_insql_parameter_value);
 						}
 						$_insql_search  = array_reverse($_insql_search);
 						$_insql_replace = array_reverse($_insql_replace);
-						$_insql_sql     = str_replace($_insql_search, $_insql_replace, $_insql_sql);
+						$_insql_sql     = preg_replace($_insql_search, $_insql_replace, $_insql_sql);
 						//						Log::coredebug($_insql_search,$_insql_replace);
 						//						Log::coredebug("replaced sql={$_insql_sql}");
 						
