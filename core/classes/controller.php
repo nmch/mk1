@@ -31,13 +31,17 @@ class Controller
 	
 	function execute($name, array $arguments = [])
 	{
-		if( method_exists($this, 'before_execute') ){
-			call_user_func_array([$this, 'before_execute'], [$name, $arguments]);
-		}
-		
 		$r = null;
 		try {
+			if( method_exists($this, 'before_execute') ){
+				call_user_func_array([$this, 'before_execute'], [$name, $arguments]);
+			}
+			
 			$r = call_user_func_array([$this, $name], $arguments);
+			
+			if( method_exists($this, 'after_execute') ){
+				call_user_func_array([$this, 'after_execute'], [$r, $name, $arguments]);
+			}
 		} catch(Exception $e){
 			if( method_exists($this, 'onerror') ){
 				$r = call_user_func_array([$this, 'onerror'], [$e, $name, $arguments]);
@@ -45,10 +49,6 @@ class Controller
 			else{
 				throw $e;
 			}
-		}
-		
-		if( method_exists($this, 'after_execute') ){
-			call_user_func_array([$this, 'after_execute'], [$r, $name, $arguments]);
 		}
 		
 		return $r;
