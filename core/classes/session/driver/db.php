@@ -12,6 +12,11 @@ class Session_Driver_Db implements SessionHandlerInterface
 	
 	function gc($maxlifetime)
 	{
+		if( $maxlifetime > 0 ){
+			$maxlifetime = intval($maxlifetime);
+			DB::delete()->from($this->config['table'])->where('age(updated_at)', '>', "{$maxlifetime} sec")->execute();
+		}
+		
 		return true;
 	}
 	
