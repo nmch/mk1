@@ -736,6 +736,15 @@ class Actionform implements ArrayAccess
 		return strtolower($this->server_vars('HTTP_X_REQUESTED_WITH')) == 'xmlhttprequest';
 	}
 	
+	function set_messages(array $messages)
+	{
+		foreach($messages as $item){
+			$this->set_message(Arr::get($item, 'type'), Arr::get($item, 'message'));
+		}
+		
+		return $this;
+	}
+	
 	function set_message($type, $message)
 	{
 		$messages = Session::get_flash('messages');
