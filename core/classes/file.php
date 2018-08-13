@@ -165,7 +165,11 @@ class File
 				}
 			}
 			foreach($headers['columns'] as $header){
-				if( isset($funcs['get_value']) ){
+				if( array_key_exists('export', $header) && ! $header['export'] ){
+					// export=falseが明示的に設定されていた場合は値をセットしない
+					$line[] = '';
+				}
+				elseif( isset($funcs['get_value']) ){
 					$line[] = $funcs['get_value']($item, $header);
 				}
 				else{
