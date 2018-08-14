@@ -31,7 +31,7 @@ class Session
 			}
 			$driver = new $driver_class_name($driver_config);
 			
-			session_set_save_handler($driver);
+			session_set_save_handler($driver, true);
 		}
 		
 		
@@ -42,7 +42,12 @@ class Session
 		
 		session_name($cookie_name);
 		session_set_cookie_params($config['expiration_time'], $config['cookie_path'], $config['cookie_domain']);
-		$r = session_start();
+		$r = false;
+		try {
+			$r = session_start();
+		} catch(Exception $e){
+			Log::error("セッションが開始できませんでした", $e);
+		}
 		if( $r === false ){
 			throw new MkException("セッションが開始できませんでした");
 		}
