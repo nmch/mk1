@@ -80,6 +80,7 @@ class Session_Driver_Db implements SessionHandlerInterface
 CREATE TABLE sessions (
 	id TEXT PRIMARY KEY,
 	data TEXT ,
+	created_at TIMESTAMP DEFAULT now(),
 	updated_at TIMESTAMP DEFAULT now()
 );
 SQL;
