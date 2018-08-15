@@ -127,7 +127,7 @@ class Mail
 		
 		$additional_parameter = null;
 		if( isset($this->config['envelope_from']) ){
-			$additional_parameter = "-f{$this->config['envelope_from']}";
+			$additional_parameter = "-f {$this->config['envelope_from']}";
 		}
 		
 		$to              = implode(',', $this->config['to']);
