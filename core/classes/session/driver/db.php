@@ -29,36 +29,43 @@ class Session_Driver_Db implements SessionHandlerInterface
 	
 	function write($id, $data)
 	{
-		//Log::coredebug("session write",$id,$data);
-		$_check = DB::select()->from($this->config['table'])->where('id', $id)->execute()->count();
-		if( $_check ){
-			DB::update($this->config['table'])->values([
-					'data'       => serialize($data),
-					'updated_at' => 'now()',
-				]
-			)->where('id', $id)->execute()
-			;
-		}
-		else{
-			DB::insert($this->config['table'])->values([
-					'id'         => $id,
-					'data'       => serialize($data),
-					'updated_at' => 'now()',
-				]
-			)->execute()
-			;
-		}
+		$encoded_data = base64_encode($data);
+		$hash         = md5($encoded_data);
 		
-		//Log::coredebug("session wrote");
+		DB::insert($this->config['table'])
+		  ->values([
+				  'id'         => $id,
+				  'data'       => $encoded_data,
+				  'hash'       => $hash,
+				  'updated_at' => 'now()',
+			  ]
+		  )
+		  ->on_conflict(['id'])
+		  ->execute()
+		;
+		
 		return true;
 	}
 	
 	function read($id)
 	{
 		$data = null;
-		$r    = DB::select()->from($this->config['table'])->where('id', $id)->execute();
+		
+		$r = DB::select()->from($this->config['table'])->where('id', $id)->execute();
 		if( $r->count() ){
-			$data = unserialize($r->get('data'));
+			$record       = $r->get();
+			$hash         = Arr::get($record, 'hash');
+			$encoded_data = Arr::get($record, 'data');
+			
+			if( $hash ){
+				$decoded_data = base64_decode($encoded_data);
+				if( $encoded_data !== false ){
+					$encoded_data_hash = md5($encoded_data);
+					if( $encoded_data_hash === $hash ){
+						$data = $decoded_data;
+					}
+				}
+			}
 		}
 		
 		//Log::coredebug("session read",$id,$data);
@@ -79,12 +86,34 @@ class Session_Driver_Db implements SessionHandlerInterface
 			$q = <<<SQL
 CREATE TABLE sessions (
 	id TEXT PRIMARY KEY,
-	data TEXT ,
+	data TEXT,
+	hash TEXT,
 	created_at TIMESTAMP DEFAULT now(),
 	updated_at TIMESTAMP DEFAULT now()
 );
 SQL;
 			DB::query($q)->execute();
+			\Database_Schema::clear_cache();
+			$schema = Database_Schema::get($table_name);
+		}
+		
+		$schema_modified = false;
+		if( ! Arr::get($schema, 'columns.created_at') ){
+			$q = <<<SQL
+alter table sessions add created_at TIMESTAMP DEFAULT now();
+update sessions set created_at=updated_at;
+SQL;
+			DB::query($q)->execute();
+			$schema_modified = true;
+		}
+		if( ! Arr::get($schema, 'columns.hash') ){
+			$q = <<<SQL
+alter table sessions add hash text;
+SQL;
+			DB::query($q)->execute();
+			$schema_modified = true;
+		}
+		if( $schema_modified ){
 			\Database_Schema::clear_cache();
 		}
 		

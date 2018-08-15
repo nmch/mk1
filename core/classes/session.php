@@ -31,7 +31,7 @@ class Session
 			}
 			$driver = new $driver_class_name($driver_config);
 			
-			session_set_save_handler($driver, true);
+			session_set_save_handler($driver, false);
 		}
 		
 		
