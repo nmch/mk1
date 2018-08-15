@@ -29,6 +29,7 @@ class Log_File implements Logic_Interface_Log_Driver
 	{
 		if( $this->fp ){
 			fclose($this->fp);
+			$this->fp = null;
 		}
 	}
 	
