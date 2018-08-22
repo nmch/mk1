@@ -47,12 +47,16 @@ class Log_File implements Logic_Interface_Log_Driver
 		
 		$format = Arr::get($this->config, 'format', 'plain');
 		if( $format === 'json' ){
-			$str = json_encode($data);
+			$str = json_encode($data, JSON_HEX_TAG
+			                          | JSON_HEX_APOS
+			                          | JSON_HEX_QUOT
+			                          | JSON_HEX_AMP
+			                          | JSON_PARTIAL_OUTPUT_ON_ERROR);
 		}
 		elseif( $format === 'json-es' ){
 			// for ElasticSearch
 			$es_json = [
-				'json' => $data,
+				'data' => $data,
 			];;
 			if( $timestamp_unixtime = Arr::get($data, "timestamp_unixtime") ){
 				$es_json['@timestamp'] = date(DATE_ATOM, $timestamp_unixtime);
@@ -60,7 +64,11 @@ class Log_File implements Logic_Interface_Log_Driver
 			$es_json['message'] = Arr::get($es_json, "json.message");
 			$es_json['uniqid']  = Arr::get($es_json, "json.config.uniqid");
 			unset($es_json['json']['config']);
-			$str = json_encode($es_json);
+			$str = json_encode($es_json, JSON_HEX_TAG
+			                             | JSON_HEX_APOS
+			                             | JSON_HEX_QUOT
+			                             | JSON_HEX_AMP
+			                             | JSON_PARTIAL_OUTPUT_ON_ERROR);
 		}
 		else{
 			$str = empty($data['str']) ? '' : $data['str'];
