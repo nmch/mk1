@@ -61,9 +61,9 @@ class Log_File implements Logic_Interface_Log_Driver
 			if( $timestamp_unixtime = Arr::get($data, "timestamp_unixtime") ){
 				$es_json['@timestamp'] = date(DATE_ATOM, $timestamp_unixtime);
 			}
-			$es_json['message'] = Arr::get($es_json, "json.message");
-			$es_json['uniqid']  = Arr::get($es_json, "json.config.uniqid");
-			unset($es_json['json']['config']);
+			$es_json['message'] = Arr::get($es_json, "data.message");
+			$es_json['uniqid']  = Arr::get($es_json, "data.config.uniqid");
+			unset($es_json['data']['config']);
 			$str = json_encode($es_json, JSON_HEX_TAG
 			                             | JSON_HEX_APOS
 			                             | JSON_HEX_QUOT
