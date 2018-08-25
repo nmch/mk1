@@ -47,6 +47,9 @@ class Log_File implements Logic_Interface_Log_Driver
 		
 		$format = Arr::get($this->config, 'format', 'plain');
 		if( $format === 'json' ){
+			if( Arr::get($this->config, 'add_uniqid') ){
+				$data['uniqid'] = Arr::get($data, "config.uniqid");
+			}
 			unset($data['config']);
 			$str = json_encode($data, JSON_HEX_TAG
 			                          | JSON_HEX_APOS
