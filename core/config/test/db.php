@@ -4,7 +4,7 @@ return [
 	'default' => [
 		'connection' => [
 			'host'   => '127.0.0.1',
-			'user'   => 'nomoto',
+			'user'   => 'webapp',
 			'dbname' => 'mk1test',
 		],
 	],
