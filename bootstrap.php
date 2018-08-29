@@ -105,6 +105,11 @@ if( file_exists(APPPATH . 'bootstrap.php') ){
 }
 Autoloader::register();
 
+$core_composer_autoloader = FWPATH . 'vendor/autoload.php';
+if( is_file($core_composer_autoloader) ){
+	include $core_composer_autoloader;
+}
+
 $composer_autoloader = PROJECTPATH . 'vendor/autoload.php';
 if( is_file($composer_autoloader) ){
 	include $composer_autoloader;

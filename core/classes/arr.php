@@ -19,7 +19,7 @@
  */
 class Arr
 {
-
+	
 	/**
 	 * Set an array item (dot-notated) to the value.
 	 *
@@ -33,10 +33,10 @@ class Arr
 	{
 		if( is_null($key) ){
 			$array = $value;
-
+			
 			return;
 		}
-
+		
 		if( is_array($key) ){
 			foreach($key as $k => $v){
 				static::set($array, $k, $v);
@@ -44,21 +44,21 @@ class Arr
 		}
 		else{
 			$keys = explode('.', $key);
-
-			while( count($keys) > 1 ){
+			
+			while(count($keys) > 1){
 				$key = array_shift($keys);
-
+				
 				if( ! isset($array[$key]) or ! is_array($array[$key]) ){
 					$array[$key] = [];
 				}
-
+				
 				$array =& $array[$key];
 			}
-
+			
 			$array[array_shift($keys)] = $value;
 		}
 	}
-
+	
 	/**
 	 * Array_key_exists with a dot-notated key from an array.
 	 *
@@ -73,13 +73,13 @@ class Arr
 			if( ! is_array($array) or ! array_key_exists($key_part, $array) ){
 				return false;
 			}
-
+			
 			$array = $array[$key_part];
 		}
-
+		
 		return true;
 	}
-
+	
 	/**
 	 * Unsets dot-notated key from an array
 	 *
@@ -93,36 +93,36 @@ class Arr
 		if( is_null($key) ){
 			return false;
 		}
-
+		
 		if( is_array($key) ){
 			$return = [];
 			foreach($key as $k){
 				$return[$k] = static::delete($array, $k);
 			}
-
+			
 			return $return;
 		}
-
+		
 		$key_parts = explode('.', $key);
-
+		
 		if( ! is_array($array) or ! array_key_exists($key_parts[0], $array) ){
 			return false;
 		}
-
+		
 		$this_key = array_shift($key_parts);
-
+		
 		if( ! empty($key_parts) ){
 			$key = implode('.', $key_parts);
-
+			
 			return static::delete($array[$this_key], $key);
 		}
 		else{
 			unset($array[$this_key]);
 		}
-
+		
 		return true;
 	}
-
+	
 	/**
 	 * Converts a multi-dimensional associative array into an array of key => values with the provided field names
 	 *
@@ -138,17 +138,17 @@ class Arr
 		if( ! is_array($assoc) and ! $assoc instanceof \Iterator ){
 			throw new \InvalidArgumentException('The first parameter must be an array.');
 		}
-
+		
 		$output = [];
 		foreach($assoc as $row){
 			if( isset($row[$key_field]) and isset($row[$val_field]) ){
 				$output[$row[$key_field]] = $row[$val_field];
 			}
 		}
-
+		
 		return $output;
 	}
-
+	
 	/**
 	 * Converts the given 1 dimensional non-associative array to an associative
 	 * array.
@@ -168,15 +168,15 @@ class Arr
 			throw new \BadMethodCallException('Number of values in to_assoc must be even.');
 		}
 		$keys = $vals = [];
-
+		
 		for($i = 0; $i < $count - 1; $i += 2){
 			$keys[] = array_shift($arr);
 			$vals[] = array_shift($arr);
 		}
-
+		
 		return array_combine($keys, $vals);
 	}
-
+	
 	/**
 	 * Checks if the given array is an assoc array.
 	 *
@@ -189,17 +189,17 @@ class Arr
 		if( ! is_array($arr) ){
 			throw new \InvalidArgumentException('The parameter must be an array.');
 		}
-
+		
 		$counter = 0;
 		foreach($arr as $key => $unused){
 			if( ! is_int($key) or $key !== $counter++ ){
 				return true;
 			}
 		}
-
+		
 		return false;
 	}
-
+	
 	/**
 	 * Flattens a multi-dimensional associative array down into a 1 dimensional
 	 * associative array.
@@ -215,12 +215,12 @@ class Arr
 	{
 		static $return = [];
 		static $curr_key = [];
-
+		
 		if( $reset ){
 			$return   = [];
 			$curr_key = [];
 		}
-
+		
 		foreach($array as $key => $val){
 			$curr_key[] = $key;
 			if( is_array($val) and ($indexed or array_values($val) !== $val) ){
@@ -231,10 +231,10 @@ class Arr
 			}
 			array_pop($curr_key);
 		}
-
+		
 		return $return;
 	}
-
+	
 	/**
 	 * Flattens a multi-dimensional associative array down into a 1 dimensional
 	 * associative array.
@@ -249,7 +249,7 @@ class Arr
 	{
 		return static::flatten($array, $glue, $reset, false);
 	}
-
+	
 	/**
 	 * Reverse a flattened array in its original form.
 	 *
@@ -261,12 +261,12 @@ class Arr
 	public static function reverse_flatten($array, $glue = ':')
 	{
 		$return = [];
-
+		
 		foreach($array as $key => $value){
 			if( stripos($key, $glue) !== false ){
 				$keys = explode($glue, $key);
 				$temp =& $return;
-				while( count($keys) > 1 ){
+				while(count($keys) > 1){
 					$key = array_shift($keys);
 					$key = is_numeric($key) ? (int)$key : $key;
 					if( ! isset($temp[$key]) or ! is_array($temp[$key]) ){
@@ -274,7 +274,7 @@ class Arr
 					}
 					$temp =& $temp[$key];
 				}
-
+				
 				$key        = array_shift($keys);
 				$key        = is_numeric($key) ? (int)$key : $key;
 				$temp[$key] = $value;
@@ -284,10 +284,10 @@ class Arr
 				$return[$key] = $value;
 			}
 		}
-
+		
 		return $return;
 	}
-
+	
 	/**
 	 * Filters an array on prefixed associative keys.
 	 *
@@ -308,10 +308,10 @@ class Arr
 				$return[$key] = $val;
 			}
 		}
-
+		
 		return $return;
 	}
-
+	
 	/**
 	 * Recursive version of PHP's array_filter()
 	 *
@@ -327,10 +327,10 @@ class Arr
 				$value = $callback === null ? static::filter_recursive($value) : static::filter_recursive($value, $callback);
 			}
 		}
-
+		
 		return $callback === null ? array_filter($array) : array_filter($array, $callback);
 	}
-
+	
 	/**
 	 * Removes items from an array that match a key prefix.
 	 *
@@ -346,10 +346,10 @@ class Arr
 				unset($array[$key]);
 			}
 		}
-
+		
 		return $array;
 	}
-
+	
 	/**
 	 * Filters an array on suffixed associative keys.
 	 *
@@ -370,10 +370,10 @@ class Arr
 				$return[$key] = $val;
 			}
 		}
-
+		
 		return $return;
 	}
-
+	
 	/**
 	 * Removes items from an array that match a key suffix.
 	 *
@@ -389,10 +389,10 @@ class Arr
 				unset($array[$key]);
 			}
 		}
-
+		
 		return $array;
 	}
-
+	
 	/**
 	 * Filters an array by an array of keys
 	 *
@@ -413,10 +413,10 @@ class Arr
 				}
 			}
 		}
-
+		
 		return $remove ? $array : $return;
 	}
-
+	
 	/**
 	 * Insert value(s) into an array after a specific value (first found in array)
 	 *
@@ -430,16 +430,16 @@ class Arr
 	public static function insert_after_value(array &$original, $value, $search, $is_assoc = false)
 	{
 		$key = array_search($search, $original);
-
+		
 		if( $key === false ){
 			\ErrorHandler::notice('Unknown value after which to insert the new value into the array.');
-
+			
 			return false;
 		}
-
+		
 		return static::insert_after_key($original, $value, $key, $is_assoc);
 	}
-
+	
 	/**
 	 * Insert value(s) into an array after a specific key
 	 * WARNING: original array is edited by reference, only boolean success is returned
@@ -454,16 +454,16 @@ class Arr
 	public static function insert_after_key(array &$original, $value, $key, $is_assoc = false)
 	{
 		$pos = array_search($key, array_keys($original));
-
+		
 		if( $pos === false ){
 			\ErrorHandler::notice('Unknown key after which to insert the new value into the array.');
-
+			
 			return false;
 		}
-
+		
 		return $is_assoc ? static::insert_assoc($original, $value, $pos + 1) : static::insert($original, $value, $pos + 1);
 	}
-
+	
 	/**
 	 * Insert value(s) into an array, mostly an array_splice alias
 	 * WARNING: original array is edited by reference, only boolean success is returned
@@ -479,12 +479,12 @@ class Arr
 		if( count($original) < abs($pos) ){
 			return false;
 		}
-
+		
 		$original = array_slice($original, 0, $pos, true) + $values + array_slice($original, $pos, null, true);
-
+		
 		return true;
 	}
-
+	
 	/**
 	 * Insert value(s) into an array, mostly an array_splice alias
 	 * WARNING: original array is edited by reference, only boolean success is returned
@@ -499,15 +499,15 @@ class Arr
 	{
 		if( count($original) < abs($pos) ){
 			\ErrorHandler::notice('Position larger than number of elements in array in which to insert.');
-
+			
 			return false;
 		}
-
+		
 		array_splice($original, $pos, 0, $value);
-
+		
 		return true;
 	}
-
+	
 	/**
 	 * Insert value(s) into an array before a specific value (first found in array)
 	 *
@@ -521,16 +521,16 @@ class Arr
 	public static function insert_before_value(array &$original, $value, $search, $is_assoc = false)
 	{
 		$key = array_search($search, $original);
-
+		
 		if( $key === false ){
 			\ErrorHandler::notice('Unknown value before which to insert the new value into the array.');
-
+			
 			return false;
 		}
-
+		
 		return static::insert_before_key($original, $value, $key, $is_assoc);
 	}
-
+	
 	/**
 	 * Insert value(s) into an array before a specific key
 	 * WARNING: original array is edited by reference, only boolean success is returned
@@ -545,16 +545,16 @@ class Arr
 	public static function insert_before_key(array &$original, $value, $key, $is_assoc = false)
 	{
 		$pos = array_search($key, array_keys($original));
-
+		
 		if( $pos === false ){
 			\ErrorHandler::notice('Unknown key before which to insert the new value into the array.');
-
+			
 			return false;
 		}
-
+		
 		return $is_assoc ? static::insert_assoc($original, $value, $pos) : static::insert($original, $value, $pos);
 	}
-
+	
 	/**
 	 * Sorts a multi-dimensional array by it's values.
 	 *
@@ -572,36 +572,36 @@ class Arr
 		if( ! is_array($array) ){
 			throw new \InvalidArgumentException('Arr::sort() - $array must be an array.');
 		}
-
+		
 		if( empty($array) ){
 			return $array;
 		}
-
+		
 		foreach($array as $k => $v){
 			$b[$k] = static::get($v, $key);
 		}
-
+		
 		switch($order){
 			case 'asc':
 				asort($b, $sort_flags);
 				break;
-
+			
 			case 'desc':
 				arsort($b, $sort_flags);
 				break;
-
+			
 			default:
 				throw new \InvalidArgumentException('Arr::sort() - $order must be asc or desc.');
 				break;
 		}
-
+		
 		foreach($b as $key => $val){
 			$c[] = $array[$key];
 		}
-
+		
 		return $c;
 	}
-
+	
 	/**
 	 * Gets a dot-notated key from an array, with a default value if it does
 	 * not exist.
@@ -617,33 +617,33 @@ class Arr
 		if( ! is_array($array) and ! $array instanceof \ArrayAccess ){
 			throw new \InvalidArgumentException('First parameter must be an array or ArrayAccess object.');
 		}
-
+		
 		if( is_null($key) ){
 			return $array;
 		}
-
+		
 		if( is_array($key) ){
 			$return = [];
 			foreach($key as $k){
 				$return[$k] = static::get($array, $k, $default);
 			}
-
+			
 			return $return;
 		}
-
+		
 		foreach(explode('.', $key) as $key_part){
 			if( ($array instanceof \ArrayAccess and isset($array[$key_part])) === false ){
 				if( ! is_array($array) or ! array_key_exists($key_part, $array) ){
 					return Mk::value($default);
 				}
 			}
-
+			
 			$array = $array[$key_part];
 		}
-
+		
 		return $array;
 	}
-
+	
 	/**
 	 * Sorts an array on multitiple values, with deep sorting support.
 	 *
@@ -655,12 +655,12 @@ class Arr
 	{
 		$temp = [];
 		$keys = array_keys($conditions);
-
+		
 		foreach($keys as $key){
 			$temp[$key] = static::pluck($array, $key, true);
 			is_array($conditions[$key]) or $conditions[$key] = [$conditions[$key]];
 		}
-
+		
 		$args = [];
 		foreach($keys as $key){
 			$args[] = $ignore_case ? array_map('strtolower', $temp[$key]) : $temp[$key];
@@ -668,14 +668,14 @@ class Arr
 				$args[] = $flag;
 			}
 		}
-
+		
 		$args[] = &$array;
-
+		
 		call_user_func_array('array_multisort', $args);
-
+		
 		return $array;
 	}
-
+	
 	/**
 	 * Pluck an array of values from an array.
 	 *
@@ -689,7 +689,7 @@ class Arr
 	{
 		$return   = [];
 		$get_deep = strpos($key, '.') !== false;
-
+		
 		if( ! $index ){
 			foreach($array as $i => $a){
 				$return[] = (is_object($a) and ! ($a instanceof \ArrayAccess)) ? $a->{$key} :
@@ -703,10 +703,10 @@ class Arr
 					($get_deep ? static::get($a, $key) : $a[$key]);
 			}
 		}
-
+		
 		return $return;
 	}
-
+	
 	/**
 	 * Find the average of an array
 	 *
@@ -720,10 +720,10 @@ class Arr
 		if( ! ($count = count($array)) > 0 ){
 			return 0;
 		}
-
+		
 		return (array_sum($array) / $count);
 	}
-
+	
 	/**
 	 * Replaces key names in an array by names in $replace
 	 *
@@ -738,13 +738,13 @@ class Arr
 		if( is_string($replace) ){
 			$replace = [$replace => $new_key];
 		}
-
+		
 		if( ! is_array($source) or ! is_array($replace) ){
 			throw new \InvalidArgumentException('Arr::replace_key() - $source must an array. $replace must be an array or string.');
 		}
-
+		
 		$result = [];
-
+		
 		foreach($source as $key => $value){
 			if( array_key_exists($key, $replace) ){
 				$result[$replace[$key]] = $value;
@@ -753,10 +753,10 @@ class Arr
 				$result[$key] = $value;
 			}
 		}
-
+		
 		return $result;
 	}
-
+	
 	/**
 	 * Merge 2 arrays recursively, differs in 2 important ways from array_merge_recursive()
 	 * - When there's 2 different values and not both arrays, the latter value overwrites the earlier
@@ -773,16 +773,16 @@ class Arr
 	{
 		$array  = func_get_arg(0);
 		$arrays = array_slice(func_get_args(), 1);
-
+		
 		if( ! is_array($array) ){
 			throw new \InvalidArgumentException('Arr::merge() - all arguments must be arrays.');
 		}
-
+		
 		foreach($arrays as $arr){
 			if( ! is_array($arr) ){
 				throw new \InvalidArgumentException('Arr::merge() - all arguments must be arrays.');
 			}
-
+			
 			foreach($arr as $k => $v){
 				// numeric keys are appended
 				if( is_int($k) ){
@@ -796,10 +796,79 @@ class Arr
 				}
 			}
 		}
-
+		
 		return $array;
 	}
-
+	
+	public static function cmerge()
+	{
+		$arrays     = func_get_args();
+		$merge_func = array_pop($arrays);
+		if( is_callable($merge_func) ){
+			$array = array_pop($arrays);
+		}
+		else{
+			$array      = $merge_func;
+			$merge_func = null;
+		}
+		
+		if( ! is_array($array) ){
+			throw new \InvalidArgumentException('Arr::merge() - all arguments must be arrays.');
+		}
+		
+		foreach($arrays as $arr){
+			if( ! is_array($arr) ){
+				throw new \InvalidArgumentException('Arr::merge() - all arguments must be arrays.');
+			}
+			
+			foreach($arr as $k => $v){
+				if( $merge_func ){
+					$r = $merge_func($array, $arr, $k, $v);
+					if( is_array($r) ){
+						if( array_key_exists('mode', $r) ){
+							$mode = $r['mode'];
+						}
+						if( array_key_exists('key', $r) ){
+							$k = $r['key'];
+						}
+						if( array_key_exists('value', $r) ){
+							$v = $r['value'];
+						}
+					}
+				}
+				
+				if( empty($mode) ){
+					// numeric keys are appended
+					if( is_int($k) ){
+						$mode = array_key_exists($k, $array) ? 'APPEND' : 'OVERWRITE';
+					}
+					elseif( is_array($v) and array_key_exists($k, $array) and is_array($array[$k]) ){
+						$mode = 'DEEPMERGE';
+					}
+					else{
+						$mode = 'OVERWRITE';
+					}
+				}
+				
+				switch($mode){
+					case 'APPEND':
+						array_push($array, $v);
+						break;
+					case 'DEEPMERGE':
+						$array[$k] = static::merge($array[$k], $v);
+						break;
+					case 'OVERWRITE':
+					default:
+						$array[$k] = $v;
+				}
+				
+				unset($mode);
+			}
+		}
+		
+		return $array;
+	}
+	
 	/**
 	 * Prepends a value with an asociative key to an array.
 	 * Will overwrite if the value exists.
@@ -812,7 +881,7 @@ class Arr
 	{
 		$arr = (is_array($key) ? $key : [$key => $value]) + $arr;
 	}
-
+	
 	/**
 	 * Recursive in_array
 	 *
@@ -834,10 +903,10 @@ class Arr
 				return true;
 			}
 		}
-
+		
 		return false;
 	}
-
+	
 	/**
 	 * Checks if the given array is a multidimensional array.
 	 *
@@ -849,7 +918,7 @@ class Arr
 	public static function is_multi($arr, $all_keys = false)
 	{
 		$values = array_filter($arr, 'is_array');
-
+		
 		return $all_keys ? count($arr) === count($values) : count($values) > 0;
 	}
 }

@@ -4,14 +4,16 @@
 	<php>
 		<server name="MK_ENV" value="test"/>
 		<server name="UNITTESTMODE" value="1"/>
+		<server name="UNITTESTMODE_WITHOUT_MIGRATION" value="1"/>
 	</php>
 	<testsuites>
 		<testsuite name="core">
 			<file>core/tests/mk.php</file>
 			<file>core/tests/actionform.php</file>
-			<file>core/tests/db.php</file>
-			<file>core/tests/model.php</file>
-			<file>core/tests/crypt.php</file>
+			<file>core/tests/arr.php</file>
+			<!--<file>core/tests/db.php</file>-->
+			<!--<file>core/tests/model.php</file>-->
+			<!--<file>core/tests/crypt.php</file>-->
 		</testsuite>
 	</testsuites>
 </phpunit>

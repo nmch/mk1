@@ -1,4 +1,4 @@
-<?
+<?php
 
 class test_Mk extends Testcase
 {
