@@ -578,7 +578,7 @@ class Actionform implements ArrayAccess
 	 *
 	 * @return array
 	 */
-	public function get_validation_result_messages($name = null)
+	public function get_validation_result_messages($name = null): array
 	{
 		$messages = [];
 		
@@ -594,7 +594,9 @@ class Actionform implements ArrayAccess
 				$message = Arr::get($validation_result, 'message');
 				
 				if( $message ){
-					$item_name  = Arr::get($validation_result, 'name', Arr::get($validation_result, 'key'));
+					$item_name  = Arr::get($validation_result, 'name')
+					              ?? Arr::get($validation_result, 'rules.name')
+					                 ?? Arr::get($validation_result, 'key');
 					$message    = "{$item_name} : {$message}";
 					$messages[] = $message;
 				}
