@@ -48,14 +48,17 @@ trait Logic_View_Pager
 			call_user_func([$this, $method_name]);
 		}
 		
-		$r = $this->retrieve();
+		$view = $this->retrieve();
 		
 		$method_name = 'after_retrieve';
 		if( method_exists($this, $method_name) ){
-			call_user_func([$this, $method_name]);
+			$r = call_user_func([$this, $method_name]);
+			if( $r ){
+				$view = $r;
+			}
 		}
 		
-		return $r;
+		return $view;
 	}
 	
 	/**
