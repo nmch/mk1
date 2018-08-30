@@ -174,8 +174,9 @@ class Task_Coretask extends Task
 		// Git 初期化
 		passthru("git init");
 		// フレームワークをサブモジュールとして追加
-		passthru("git submodule add git@rm.hkkd.info:mk1.git");
+		passthru("git submodule add https://gitlab+deploy-token-1:ExM_1YKUfFgTSszLsbxf@gitlab.hkdv.net/nomoto/mk1.git");
 		passthru("git submodule update --init");
+		passthru("cd mk1; git remote set-url --push origin ssh://git@gitlab.hkdv.net:2200/nomoto/mk1.git");
 		/*
 		// mkコマンドのリンク
 		if(symlink('./mk1/mk.php', 'mk') === false){
