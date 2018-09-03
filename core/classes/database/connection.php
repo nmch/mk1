@@ -27,7 +27,49 @@ class Database_Connection
 		}
 		
 		//Log::coredebug("[db connection] try connect to $connection_config");
-		$this->connection = pg_connect($connection_config);
+		$connect_retry          = intval(Arr::get($config, 'connect_retry'), 0);
+		$connect_retry_interval = intval(Arr::get($config, 'connect_retry_interval'), 0);
+		$retry_count            = 0;
+		/** @var Exception $last_error */
+		$last_error = null;
+		do{
+			if( $retry_count ){
+				Log::warning("DB接続再試行[{$retry_count}]", $last_error);
+			}
+			try {
+				$this->connection = pg_connect($connection_config);
+				$last_error       = null;
+				break;
+			} catch(Exception $e){
+				$last_error = $e;
+				
+				if( Arr::get($config, 'create_database') ){
+					$message = $e->getMessage();
+					if( preg_match('/Unable to connect to PostgreSQL server: FATAL:  database \"(.+)\" does not exist/', $message, $match) ){
+						$dbname = $match[1];
+						
+						/**
+						 * DB自動再作成
+						 * connection_configのうちdbname=XXXの部分をtemplate1に書き換えて接続する
+						 */
+						$tmp_connection_config   = str_replace($dbname, 'template1', $connection_config);
+						$connection_to_create_db = pg_connect($tmp_connection_config);
+						pg_query($connection_to_create_db, "create database {$dbname}");
+						pg_close($connection_to_create_db);
+						unset($connection_to_create_db);
+						Log::warning("DB自動作成[{$dbname}]");
+					}
+				}
+				if( $connect_retry_interval ){
+					sleep($connect_retry_interval);
+				}
+			}
+			$retry_count++;
+		} while($retry_count < $connect_retry);
+		if( $last_error ){
+			throw $last_error;
+		}
+		
 		pg_set_client_encoding($this->connection, 'UTF-8');
 		if( $this->connection === false ){
 			throw new MkException('failed establish to db');
