@@ -116,7 +116,18 @@ if( is_file($composer_autoloader) ){
 }
 
 // 実行環境
-$mk = Mk::instance();
+$retval = 0;
+try {
+	$mk = Mk::instance();
+} catch(Exception $e){
+	if( Mk::is_cli() ){
+		$retval = 1;
+	}
+	else{
+		http_response_code(500);
+	}
+	throw $e;
+}
 
 // ユニットテストモード
 if( Mk::is_unittesting() ){
@@ -143,7 +154,6 @@ if( Mk::is_unittesting() ){
 
 // リクエストURIがある場合は URI → ルーター → コントローラーを実行
 // ない場合はモジュール名が決まっているので、Task_NAME を実行
-$retval = 0;
 if( ! empty($_SERVER['argv']) ){
 	$argv = $_SERVER['argv'];
 	// CLIで実行された場合
