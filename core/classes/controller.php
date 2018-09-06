@@ -10,6 +10,8 @@ class Controller
 	/** @var  Request */
 	protected $request;
 	protected $response_code = 200;
+	/** @var bool Controller::after()二重実行防止用実行済みフラグ */
+	private $after_method_executed = false;
 	
 	function __construct($options = [])
 	{
@@ -24,7 +26,15 @@ class Controller
 	
 	function __destruct()
 	{
-		$this->after();
+		$this->execute_after_once();
+	}
+	
+	function execute_after_once()
+	{
+		if( ! $this->after_method_executed ){
+			$this->after();
+			$this->after_method_executed = true;
+		}
 	}
 	
 	function after(){ }

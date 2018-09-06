@@ -119,74 +119,6 @@ $retval = 0;
 try {
 	// 実行環境
 	$mk = Mk::instance();
-	
-	// ユニットテストモード
-	if( Mk::is_unittesting() ){
-		/*
-		echo "FWNAME=".FWNAME."\n";
-		echo "FWPATH=".FWPATH."\n";
-		echo "COREPATH=".COREPATH."\n";
-		echo "SCRIPTPATH=".SCRIPTPATH."\n";
-		echo "SCRIPTDIR=".SCRIPTDIR."\n";
-		echo "PROJECTPATH=".PROJECTPATH."\n";
-		echo "APPPATH=".APPPATH."\n";
-		echo "PKGPATH=".PKGPATH."\n";
-		*/
-		if( ! isset($_SERVER['UNITTESTMODE_WITHOUT_MIGRATION']) ){
-			// DB初期化
-			DB::delete_all_tables();
-			// マイグレーション実行
-			Task_Coretask::refine('migration');
-		}
-		
-		return;
-	}
-	
-	
-	// リクエストURIがある場合は URI → ルーター → コントローラーを実行
-	// ない場合はモジュール名が決まっているので、Task_NAME を実行
-	if( ! empty($_SERVER['argv']) ){
-		$argv = $_SERVER['argv'];
-		// CLIで実行された場合
-		if( empty($_SERVER['argc']) || $_SERVER['argc'] < 2 ){
-			//echo "usage: {$argv[0]} TASK_NAME [options...]\n";
-			echo "usage: {$argv[0]} COMMAND [options...]\n";
-			exit;
-		}
-		if( ! method_exists('Task_Coretask', $argv[1]) ){
-			throw new MkException('unknown command');
-		}
-		$retval = forward_static_call_array(['Task_Coretask', $argv[1]], array_slice($argv, 2));
-	}
-	else{
-		$request_uri_from_server = parse_url(Arr::get($_SERVER, 'REDIRECT_URL') ?: Arr::get($_SERVER, 'REQUEST_URI'), PHP_URL_PATH);
-		if( ! $request_uri_from_server ){
-			$uri = '/';
-		}
-		else{
-			$uri = $request_uri_from_server;
-		}
-		$request_method = Arr::get($_SERVER, 'REQUEST_METHOD');
-		Log::info("[REQUEST] $request_method $uri");
-		
-		ErrorHandler::add_error_handler(function ($e){
-			$af = Actionform::instance();
-			$af->set('error', $e);
-			$uri         = explode('/', Config::get('routes._500_', 'default/500'));
-			$request_500 = new Request($uri);
-			$request_500->execute();
-		}
-		);
-		
-		try {
-			$request = new Request($uri);
-			$request->execute();
-		} catch(HttpNotFoundException $e){
-			$uri         = explode('/', Config::get('routes._404_', 'default/404'));
-			$request_404 = new Request($uri);
-			$request_404->execute();
-		}
-	}
 } catch(Exception $e){
 	if( Mk::is_cli() ){
 		$retval = 1;
@@ -195,6 +127,74 @@ try {
 		http_response_code(500);
 	}
 	throw $e;
+}
+
+// ユニットテストモード
+if( Mk::is_unittesting() ){
+	/*
+	echo "FWNAME=".FWNAME."\n";
+	echo "FWPATH=".FWPATH."\n";
+	echo "COREPATH=".COREPATH."\n";
+	echo "SCRIPTPATH=".SCRIPTPATH."\n";
+	echo "SCRIPTDIR=".SCRIPTDIR."\n";
+	echo "PROJECTPATH=".PROJECTPATH."\n";
+	echo "APPPATH=".APPPATH."\n";
+	echo "PKGPATH=".PKGPATH."\n";
+	*/
+	if( ! isset($_SERVER['UNITTESTMODE_WITHOUT_MIGRATION']) ){
+		// DB初期化
+		DB::delete_all_tables();
+		// マイグレーション実行
+		Task_Coretask::refine('migration');
+	}
+	
+	return;
+}
+
+
+// リクエストURIがある場合は URI → ルーター → コントローラーを実行
+// ない場合はモジュール名が決まっているので、Task_NAME を実行
+if( ! empty($_SERVER['argv']) ){
+	$argv = $_SERVER['argv'];
+	// CLIで実行された場合
+	if( empty($_SERVER['argc']) || $_SERVER['argc'] < 2 ){
+		//echo "usage: {$argv[0]} TASK_NAME [options...]\n";
+		echo "usage: {$argv[0]} COMMAND [options...]\n";
+		exit;
+	}
+	if( ! method_exists('Task_Coretask', $argv[1]) ){
+		throw new MkException('unknown command');
+	}
+	$retval = forward_static_call_array(['Task_Coretask', $argv[1]], array_slice($argv, 2));
+}
+else{
+	$request_uri_from_server = parse_url(Arr::get($_SERVER, 'REDIRECT_URL') ?: Arr::get($_SERVER, 'REQUEST_URI'), PHP_URL_PATH);
+	if( ! $request_uri_from_server ){
+		$uri = '/';
+	}
+	else{
+		$uri = $request_uri_from_server;
+	}
+	$request_method = Arr::get($_SERVER, 'REQUEST_METHOD');
+	Log::info("[REQUEST] $request_method $uri");
+	
+	ErrorHandler::add_error_handler(function ($e){
+		$af = Actionform::instance();
+		$af->set('error', $e);
+		$uri         = explode('/', Config::get('routes._500_', 'default/500'));
+		$request_500 = new Request($uri);
+		$request_500->execute();
+	}
+	);
+	
+	try {
+		$request = new Request($uri);
+		$request->execute();
+	} catch(HttpNotFoundException $e){
+		$uri         = explode('/', Config::get('routes._404_', 'default/404'));
+		$request_404 = new Request($uri);
+		$request_404->execute();
+	}
 }
 
 exit($retval);

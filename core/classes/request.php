@@ -94,6 +94,12 @@ class Request
 		if( Mk::is_unittesting() ){
 			$response->do_not_display(true);
 		}
+		
+		// コンテンツ送出前にController::after()を呼び出す
+		// 通常はControllerのdestruct()でafter()が呼び出されるが、after()で例外が発生する場合_500_の処理前にResponse::send()が実行されていると
+		// ヘッダが送出済みのため、_500_の処理が返すResponseのsend()が実行されない
+		$controller->execute_after_once();
+		
 		$response->send();
 	}
 }
