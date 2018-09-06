@@ -18,6 +18,7 @@ class Database_Connection
 		$connect_retry          = intval(Arr::get($config, 'connect_retry'), 0);
 		$connect_retry_interval = intval(Arr::get($config, 'connect_retry_interval'), 0);
 		$retry_count            = 0;
+		
 		/** @var Exception $last_error */
 		$last_error = null;
 		do{
@@ -41,10 +42,12 @@ class Database_Connection
 			throw $last_error;
 		}
 		
-		pg_set_client_encoding($this->connection, 'UTF-8');
 		if( $this->connection === false ){
-			throw new MkException('failed establish to db');
+			$connection_config_to_display = preg_replace("/password=[^ ]+/", "password=*SECRET*", $connection_config);
+			throw new MkException("failed establish to db (connection config = [{$connection_config_to_display}])");
 		}
+		
+		pg_set_client_encoding($this->connection, 'UTF-8');
 		
 		return $this;
 	}
