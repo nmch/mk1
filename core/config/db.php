@@ -9,6 +9,5 @@ return [
 		],
 		'connect_retry'          => 10,
 		'connect_retry_interval' => 2,
-		'create_database'        => true,
 	],
 ];

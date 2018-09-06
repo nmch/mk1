@@ -10,21 +10,9 @@ class Database_Connection
 	/** @var array 最後のエラー(最後のクエリが成功した場合は空配列) */
 	private $last_error_details = [];
 	
-	function __construct($config)
+	function __construct(array $config)
 	{
-		if( empty($config['connection']) ){
-			$config['connection'] = "";
-		}
-		
-		$connection_config = "";
-		if( is_array($config['connection']) ){
-			foreach($config['connection'] as $key => $value){
-				$connection_config .= "$key=$value ";
-			}
-		}
-		else{
-			$connection_config = $config['connection'];
-		}
+		$connection_config = static::get_connection_config($config);
 		
 		//Log::coredebug("[db connection] try connect to $connection_config");
 		$connect_retry          = intval(Arr::get($config, 'connect_retry'), 0);
@@ -43,23 +31,6 @@ class Database_Connection
 			} catch(Exception $e){
 				$last_error = $e;
 				
-				if( Arr::get($config, 'create_database') ){
-					$message = $e->getMessage();
-					if( preg_match('/Unable to connect to PostgreSQL server: FATAL:  database \"(.+)\" does not exist/', $message, $match) ){
-						$dbname = $match[1];
-						
-						/**
-						 * DB自動再作成
-						 * connection_configのうちdbname=XXXの部分をtemplate1に書き換えて接続する
-						 */
-						$tmp_connection_config   = str_replace($dbname, 'template1', $connection_config);
-						$connection_to_create_db = pg_connect($tmp_connection_config);
-						pg_query($connection_to_create_db, "create database {$dbname}");
-						pg_close($connection_to_create_db);
-						unset($connection_to_create_db);
-						Log::warning("DB自動作成[{$dbname}]");
-					}
-				}
 				if( $connect_retry_interval ){
 					sleep($connect_retry_interval);
 				}
@@ -78,9 +49,38 @@ class Database_Connection
 		return $this;
 	}
 	
+	static function get_connection_config(array $config): string
+	{
+		if( empty($config['connection']) ){
+			$config['connection'] = "";
+		}
+		
+		$connection_config = "";
+		if( is_array($config['connection']) ){
+			foreach($config['connection'] as $key => $value){
+				$connection_config .= "$key=$value ";
+			}
+		}
+		else{
+			$connection_config = $config['connection'];
+		}
+		
+		return $connection_config;
+	}
+	
 	function get_connection()
 	{
 		return $this->connection;
+	}
+	
+	static function get_config($name = null): array
+	{
+		if( ! $name ){
+			$name = Config::get('db.active', 'default');
+		}
+		$config = \Config::get("db.{$name}", []);
+		
+		return $config;
 	}
 	
 	/**
@@ -90,12 +90,8 @@ class Database_Connection
 	 */
 	static function instance($name = null)
 	{
-		if( ! $name ){
-			$name = Config::get('db.active');
-		}
-		//Log::coredebug("[db connection] try get a connection named $name");
 		if( empty(static::$instances[$name]) ){
-			$config                   = \Config::get("db.{$name}");
+			$config                   = static::get_config($name);
 			static::$instances[$name] = new static($config);
 		}
 		
