@@ -133,7 +133,13 @@ trait Logic_View_Pager
 			else{
 				$r = $pager->execute();
 			}
-			$this->list = $this->as_object_array ? $r->as_object_array($this->as_object_array) : $r;
+			if( $this->as_object_array ){
+				$as_object_array_key = is_string($this->as_object_array) ? $this->as_object_array : null;
+				$this->list          = $r->as_object_array($as_object_array_key);
+			}
+			else{
+				$this->list = $r;
+			}
 		}
 		
 		return null;
