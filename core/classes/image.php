@@ -1,5 +1,10 @@
-<?
+<?php
 
+/**
+ * 画像
+ *
+ * @mixin Imagick
+ */
 class Image
 {
 	const ERROR_LOAD_IMAGE = 1;
