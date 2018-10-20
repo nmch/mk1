@@ -109,6 +109,7 @@ trait Logic_Masterdetail_Controller
 			if( $this->af->is_ajax_request() ){
 				return new Response_Json([
 					'redirect_to' => $redirect_to,
+					'messages'    => $this->af->get_messages(),
 				]);
 			}
 			else{
