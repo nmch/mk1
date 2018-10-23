@@ -63,6 +63,18 @@ class Task_Coretask extends Task
 		}
 	}
 	
+	public static function config($key)
+	{
+		$value = Config::get($key);
+		var_dump($value);
+		if( is_scalar($value) ){
+			echo $value;
+		}
+		if( is_array($value) ){
+			echo Mk::json_encode($value);
+		}
+	}
+	
 	public static function refine()
 	{
 		ErrorHandler::add_error_handler(['Task_Coretask', 'refine_error']);
