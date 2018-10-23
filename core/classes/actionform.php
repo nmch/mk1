@@ -9,6 +9,7 @@ class Actionform implements ArrayAccess
 	private $values             = [];
 	private $values_default     = [];
 	private $validated_values   = [];
+	private $messages           = [];
 	private $request_method;
 	private $useragent;
 	private $referer;
@@ -747,7 +748,7 @@ class Actionform implements ArrayAccess
 		return $this;
 	}
 	
-	function set_message($type, $message)
+	function set_message($type, $message): Actionform
 	{
 		$messages = Session::get_flash('messages');
 		if( ! $messages || ! is_array($messages) ){
@@ -755,9 +756,17 @@ class Actionform implements ArrayAccess
 		}
 		
 		$messages[$type][] = $message;
+		$this->messages    = $messages;
 		Log::coredebug("set message($type) : $message");
 		
 		Session::set_flash('messages', $messages);
+		
+		return $this;
+	}
+	
+	function get_messages(): array
+	{
+		return $this->messages;
 	}
 	
 	/**

@@ -50,6 +50,22 @@ class Mail
 		return $this;
 	}
 	
+	function set_header($key, $value)
+	{
+		if( empty($this->config['header']) || ! is_array($this->config['header']) ){
+			$this->config['header'] = [];
+		}
+		
+		$this->config['header'][] = "{$key}: {$value}";
+		
+		return $this;
+	}
+	
+	function get_header(): array
+	{
+		return Arr::get($this->config, 'header', []);
+	}
+	
 	function send()
 	{
 		if( empty($this->config['to']) ){
@@ -102,6 +118,8 @@ class Mail
 		else{
 			$additional_header[] = "Content-Type: text/plain; charset=\"ISO-2022-JP\";";
 		}
+		
+		$additional_header = array_merge($additional_header, $this->get_header());
 		
 		$from_address = null;
 		$from         = null;

@@ -48,7 +48,8 @@ class Database_Pager
 				$query_for_total = clone $this->db_query;
 			}
 			$query_for_total->clear_order_by()->clear_select()->clear_into()
-			                ->select('count(*) as count')->set_fetch_as(null);
+			                ->select('count(*) as count')->set_fetch_as(null)
+			;
 			
 			// 合計数といっしょに計算する内容の追加
 			$add_col_to_total = Arr::get($this->query_options, 'add_col_to_total');
@@ -89,7 +90,9 @@ class Database_Pager
 			'page'          => $page,
 			'rows'          => $rows,
 			'is_first_page' => ($page <= 1),
+			'prev_page'     => ($page <= 1) ? null : ($page - 1),
 			'is_last_page'  => ($page >= $total_pages),
+			'next_page'     => ($page >= $total_pages) ? null : ($page + 1),
 		];
 		
 		// 合計数といっしょに計算した内容の追加

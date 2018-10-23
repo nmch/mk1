@@ -14,7 +14,7 @@ class Database_Connection
 	{
 		$connection_config = static::get_connection_config($config);
 		
-		//Log::coredebug("[db connection] try connect to $connection_config");
+		//Log::coredebug("[db connection] try connect to [{$connection_config}]");
 		$connect_retry          = intval(Arr::get($config, 'connect_retry'), 0);
 		$connect_retry_interval = intval(Arr::get($config, 'connect_retry_interval'), 0);
 		$retry_count            = 0;
@@ -90,7 +90,7 @@ class Database_Connection
 		$connection_config = "";
 		if( is_array($config['connection']) ){
 			foreach($config['connection'] as $key => $value){
-				$connection_config .= "$key=$value ";
+				$connection_config .= "{$key}='{$value}' ";
 			}
 		}
 		else{

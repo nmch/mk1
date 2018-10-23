@@ -106,7 +106,15 @@ trait Logic_Masterdetail_Controller
 			
 			$redirect_to = Arr::get($options, 'redirect_to', $list_path);
 			
-			return new Response_Redirect($redirect_to);
+			if( $this->af->is_ajax_request() ){
+				return new Response_Json([
+					'redirect_to' => $redirect_to,
+					'messages'    => $this->af->get_messages(),
+				]);
+			}
+			else{
+				return new Response_Redirect($redirect_to);
+			}
 		} catch(AppException $e){
 			DB::rollback_savepoint($savepoint);
 			$this->af->set_message('error', $e->getMessage());
