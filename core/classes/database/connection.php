@@ -52,33 +52,15 @@ class Database_Connection
 		return $this;
 	}
 	
-	static function get_template1_connection(array $config = [], ?string $name = null): Database_Connection
+	static function get_template1_connection(?string $name = null): Database_Connection
 	{
-		$conn = new Database_Connection(
-			[
-				'connection' => static::get_template1_connection_config($name),
-			] + $config
-		);
+		$config = \Database_Connection::get_config($name);
+		
+		Arr::set($config, "connection.dbname", 'template1');
+
+		$conn = new Database_Connection($config);
 		
 		return $conn;
-	}
-	
-	static function get_template1_connection_config(?string $name = null): string
-	{
-		$config                     = \Database_Connection::get_config($name);
-		$original_connection_config = \Database_Connection::get_connection_config($config);
-		$target_database_name       = null;
-		
-		// DB接続設定のデータベース名をtemplate1に書き換える
-		if( preg_match("/dbname=([^ ]+)/", $original_connection_config, $match) ){
-			$target_database_name = $match[1];
-			$connection_config    = str_replace("dbname={$target_database_name}", "dbname=template1", $original_connection_config);
-		}
-		else{
-			throw new MkException("DB接続設定からデータベース名が識別できませんでした");
-		}
-		
-		return $connection_config;
 	}
 	
 	static function get_connection_config(array $config): string

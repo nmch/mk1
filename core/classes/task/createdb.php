@@ -7,9 +7,15 @@ class Task_Createdb extends Task
 {
 	function run($name = null)
 	{
-		$target_database_name = null;
+		$db_config = \Database_Connection::get_config($name);
+		$hooks     = Arr::get($db_config, "hooks") ?: [];
 		
-		$conn = Database_Connection::get_template1_connection([], $name);
+		$target_database_name = Arr::get($db_config, "connection.dbname");
+		if( ! $target_database_name ){
+			throw new MkException("データベース名が取得できませんでした");
+		}
+		
+		$conn = Database_Connection::get_template1_connection($name);
 		
 		// 対象のデータベースが存在しているか確認
 		$r = DB::select()
@@ -22,6 +28,10 @@ class Task_Createdb extends Task
 		if( ! $r->count() ){
 			Log::info("[db create] データベース {$target_database_name} を作成します");
 			DB::query("create database {$target_database_name}")->execute($conn);
+			
+			if( isset($hooks['created']) ){
+				forward_static_call_array($hooks['created'], [$conn, $db_config]);
+			}
 		}
 	}
 }
