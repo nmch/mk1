@@ -66,7 +66,7 @@ class Task_Coretask extends Task
 	public static function config($key)
 	{
 		$value = Config::get($key);
-		var_dump($value);
+		
 		if( is_scalar($value) ){
 			echo $value;
 		}
