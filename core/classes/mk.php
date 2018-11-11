@@ -111,8 +111,7 @@ class Mk
 		                            | JSON_HEX_APOS
 		                            | JSON_HEX_QUOT
 		                            | JSON_HEX_AMP
-		                            | JSON_PARTIAL_OUTPUT_ON_ERROR
-		                            | JSON_PRETTY_PRINT);
+		                            | JSON_PARTIAL_OUTPUT_ON_ERROR);
 		if( $json === false ){
 			throw new UnexpectedValueException();
 		}

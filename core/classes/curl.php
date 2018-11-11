@@ -290,8 +290,15 @@ class Curl
 			if( $this->method === static::METHOD_POST || $this->method === static::METHOD_PUT ){
 				if( $request_data ){
 					if( is_array($request_data) ){
-						$curl_options[CURLOPT_POSTFIELDS] = Arr::get($this->options, static::OP_POST_AS_JSON)
-							? json_encode($request_data) : http_build_query($request_data);
+						if( Arr::get($this->options, static::OP_POST_AS_JSON) ){
+							$curl_options[CURLOPT_POSTFIELDS] = Mk::json_encode($request_data);
+							$this->add_request_headers([
+								'Content-Type' => 'application/json',
+							]);
+						}
+						else{
+							$curl_options[CURLOPT_POSTFIELDS] = http_build_query($request_data);
+						}
 					}
 					else{
 						$curl_options[CURLOPT_POSTFIELDS] = $request_data;
