@@ -9,6 +9,7 @@ class Curl
 	const OP_RETURN_AS_JSON_SUCCESS = 'return_as_json_success';
 	const OP_RETURN_AS_JSON_FAIL    = 'return_as_json_fail';
 	const OP_POST_AS_JSON           = 'post_as_json';
+	const OP_RETURN_AS_XML          = 'return_as_xml';
 	const OP_CONVERT_ENCODING       = 'convert_encoding';
 	const OP_EXCEPTION_WHEN_NOT_200 = 'exception_when_not_200';
 	const OP_CAMOUFLAGE_UA          = 'camouflage_ua';
@@ -59,6 +60,7 @@ class Curl
 	{
 		$this->options = $options + [
 				static::OP_RETURN_AS_JSON         => true,
+				static::OP_RETURN_AS_XML          => false,
 				static::OP_POST_AS_JSON           => false,
 				static::OP_CONVERT_ENCODING       => false,
 				static::OP_EXCEPTION_WHEN_NOT_200 => false,
@@ -370,6 +372,9 @@ class Curl
 			else{
 				$result = null;
 			}
+		}
+		elseif( Arr::get($this->options, static::OP_RETURN_AS_XML) ){
+			$result = new SimpleXMLElement($this->curl_result);
 		}
 		else{
 			$result = $this->curl_result;
