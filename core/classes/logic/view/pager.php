@@ -62,7 +62,7 @@ trait Logic_View_Pager
 	}
 	
 	/**
-	 * @return null|Response_File
+	 * @return null|Response_File|Response_Json
 	 * @throws Exception
 	 */
 	function retrieve()
@@ -133,12 +133,23 @@ trait Logic_View_Pager
 			else{
 				$r = $pager->execute();
 			}
-			if( $this->as_object_array ){
-				$as_object_array_key = is_string($this->as_object_array) ? $this->as_object_array : null;
-				$this->list          = $r->as_object_array($as_object_array_key);
+			if( $this->af->is_ajax_request() ){
+				$return_data = $this->af->as_array() + [
+						'list' => $r->as_array(true),
+					];
+				
+				$view = new Response_Json($return_data);
+				
+				return $view;
 			}
 			else{
-				$this->list = $r;
+				if( $this->as_object_array ){
+					$as_object_array_key = is_string($this->as_object_array) ? $this->as_object_array : null;
+					$this->list          = $r->as_object_array($as_object_array_key);
+				}
+				else{
+					$this->list = $r;
+				}
 			}
 		}
 		
