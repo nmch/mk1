@@ -26,6 +26,7 @@ trait Logic_View_Pager
 	public $id_name;
 	//	public $is_first_page;
 	//	public $is_last_page;
+	public $permit_json_response = false;
 	
 	/** @var Database_Query|Model_Query */
 	protected $query;
@@ -133,7 +134,7 @@ trait Logic_View_Pager
 			else{
 				$r = $pager->execute();
 			}
-			if( $this->af->is_ajax_request() ){
+			if( $this->permit_json_response && $this->af->is_ajax_request() ){
 				$return_data = $this->af->as_array() + [
 						'list' => $r->as_array(true),
 					];
