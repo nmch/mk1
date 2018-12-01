@@ -39,7 +39,7 @@ class Route
 				$controller_name_candidate = 'Controller_' . $controller_name_candidate;
 				
 				$shifted_tmp_uri_exploded         = array_shift($tmp_uri_exploded);
-				$controller_method_name_candidate = ! count($shifted_tmp_uri_exploded) ? 'index' : strtolower($shifted_tmp_uri_exploded);
+				$controller_method_name_candidate = ( ! strlen($shifted_tmp_uri_exploded)) ? 'index' : strtolower($shifted_tmp_uri_exploded);
 				//Log::coredebug("[route] controller_name_candidate=$controller_name_candidate");
 				//Log::coredebug("[route] controller_method_name_candidate=$controller_method_name_candidate");
 				
