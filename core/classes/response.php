@@ -16,6 +16,10 @@ class Response
 		$this->body    = $body;
 		$this->status  = $status;
 		$this->headers = $headers;
+		
+		foreach(Config::get('response.default_headers', []) as $key => $value){
+			$this->headers[$key] = $value;
+		}
 	}
 	
 	/**
@@ -101,6 +105,9 @@ class Response
 			}
 			http_response_code($this->status);
 			foreach($this->headers as $key => $header){
+				if( $header === null ){
+					continue;
+				}
 				if( is_bool($header) ){
 					$header = $header ? 'true' : 'false';
 				}
@@ -122,6 +129,7 @@ class Response
 	/**
 	 * @return Response
 	 * @throws HttpNotFoundException
+	 * @throws MkException
 	 */
 	public function send()
 	{
