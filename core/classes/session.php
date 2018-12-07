@@ -41,7 +41,7 @@ class Session
 		}
 		
 		session_name($cookie_name);
-		session_set_cookie_params($config['expiration_time'], $config['cookie_path'], $config['cookie_domain']);
+		session_set_cookie_params($config['expiration_time'], $config['cookie_path'], $config['cookie_domain'], $config['cookie_secure'], $config['cookie_httponly']);
 		$r = false;
 		try {
 			$r = session_start();
