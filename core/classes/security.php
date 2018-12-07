@@ -34,9 +34,13 @@ class Security
 		
 		Session::delete($csrf_token_key);
 		
+		if( ! strlen($submitted_token) || ! strlen($saved_token) ){
+			Log::coredebug("[Security] CSRFトークンが不正です saved_token=[{$saved_token}] / submitted_token=[{$submitted_token}]");
+			throw new MkException("invalid CSRF Token");
+		}
 		if( $submitted_token !== $saved_token ){
 			Log::coredebug("[Security] CSRFトークンが一致しません saved_token=[{$saved_token}] / submitted_token=[{$submitted_token}]");
-			throw new MkException("CSRF Token not match");
+			throw new MkException("CSRF Token mismatch");
 		}
 	}
 }
