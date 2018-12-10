@@ -50,6 +50,16 @@ class Mk
 		//Log::coredebug("locale=$locale");
 		
 		/**
+		 * パッケージごとのvendorオートローダーを実行
+		 */
+		foreach(static::package_directories() as $dir){
+			$vendor_autoload_filepath = "{$dir}/vendor/autoload.php";
+			if( file_exists($vendor_autoload_filepath) ){
+				include($vendor_autoload_filepath);
+			}
+		}
+		
+		/**
 		 * パッケージごとのbootstrapを実行
 		 */
 		foreach(static::package_directories() as $dir){

@@ -40,7 +40,7 @@ class Log
 	static         $date_format;
 	static         $makelogstr_function;
 	static private $drivers = [];
-
+	
 	function __construct()
 	{
 		$drivers = Config::get('log.drivers', []);
@@ -55,9 +55,9 @@ class Log
 				if( $config_value === null ){
 					continue;
 				}
-
+				
 				$global_driver_config = Config::get('log', []);
-
+				
 				if( is_array($config_value) ){
 					$driver_config = $config_value + $global_driver_config;
 				}
@@ -67,7 +67,7 @@ class Log
 						                 'threshold' => $config_value,
 					                 ] + $global_driver_config;
 				}
-
+				
 				$driver_name = Arr::get($driver_config, 'driver') ?: Arr::get($driver_config, 'name');
 				if( ! strlen($driver_name) ){
 					throw new MkException('invalid driver name');
@@ -75,7 +75,7 @@ class Log
 				$driver_name                    = 'Log_' . ucfirst($driver_name);
 				$driver_config['uniqid']        = uniqid();
 				$driver_config['driver_object'] = new $driver_name($driver_config);
-
+				
 				static::$drivers[] = $driver_config;
 			}
 		}
@@ -83,7 +83,7 @@ class Log
 		//static::$makelogstr_function = ['Log','make_log_string'];
 		static::set_make_log_string_function(['Log', 'make_log_string']);
 	}
-
+	
 	/**
 	 * 以降のログ記録を抑制する
 	 *
@@ -97,22 +97,46 @@ class Log
 			if( $target_name && $target_name !== $name ){
 				continue;
 			}
-
+			
 			$driver = Arr::get($driver_config, 'driver');
 			if( $target_driver && $target_driver !== $driver ){
 				continue;
 			}
-
+			
 			Log::info("Log [name={$name} / driver={$driver}] suppressed");
 			static::$drivers[$index]['suppress'] = true;
 		}
 	}
-
+	
+	/**
+	 * 以降のログ記録の抑制を解除する
+	 *
+	 * @param null $target_name
+	 * @param null $target_driver
+	 */
+	public static function unsuppress($target_name = null, $target_driver = null)
+	{
+		foreach(static::$drivers as $index => $driver_config){
+			$name = Arr::get($driver_config, 'name');
+			if( $target_name && $target_name !== $name ){
+				continue;
+			}
+			
+			$driver = Arr::get($driver_config, 'driver');
+			if( $target_driver && $target_driver !== $driver ){
+				continue;
+			}
+			
+			Log::info("Log [name={$name} / driver={$driver}] unsuppressed");
+			static::$drivers[$index]['suppress'] = false;
+		}
+	}
+	
 	static function set_make_log_string_function($function_name)
 	{
 		static::$makelogstr_function = $function_name;
 	}
-
+	
 	/**
 	 * ログに記録する文字列を生成する
 	 *
@@ -128,12 +152,12 @@ class Log
 				$data['message'] = var_export($data['message'], true);
 			}
 		}
-
+		
 		$log_str = $log_format = Arr::get($data, 'config.log_format');
 		if( preg_match_all('/\{([a-z0-9_.]+|@[^}]+)}/', $log_format, $vars) ){
 			foreach($vars[1] as $var){
 				$var_value = '';
-
+				
 				if( strlen($var) >= 1 && $var[0] === '@' ){
 					// 先頭に@があった場合はPHPの関数として解釈する
 					$php_function = 'return ' . ltrim($var, '@') . ';';
@@ -146,19 +170,19 @@ class Log
 				else{
 					$var_value = Arr::get($data, $var);
 				}
-
+				
 				$log_str = str_replace('{' . $var . '}', $var_value, $log_str);
 			}
 		}
-
+		
 		return $log_str;
 	}
-
+	
 	static function log($level, $message)
 	{
 		try {
 			$log = static::instance();
-
+			
 			$level            = strtoupper($level);
 			$level_const_name = 'Log::' . $level;
 			if( ! defined($level_const_name) ){
@@ -168,12 +192,12 @@ class Log
 			if( $level_num < static::$threshold ){
 				return false;
 			}
-
+			
 			$messages = [$message];
 			if( func_num_args() > 2 ){
 				$messages = array_merge($messages, array_slice(func_get_args(), 2));
 			}
-
+			
 			foreach($messages as $message){
 				$timestamp_unixtime = time();
 				// キーで使える文字はmake_log_string()内で[a-z0-9_.]に制限されている
@@ -185,7 +209,7 @@ class Log
 					'level_num'          => $level_num,
 					'message'            => $message,
 				];
-
+				
 				foreach(static::$drivers as $driver_config){
 					if( Arr::get($driver_config, 'suppress') ){
 						continue;
@@ -195,13 +219,13 @@ class Log
 								'config' => $driver_config,
 							];
 						$log_data['str'] = call_user_func_array(static::$makelogstr_function, [$log_data]);
-
+						
 						/** @var Logic_Interface_Log_Driver $driver_config */
 						$driver_config = $driver_config['driver_object'];
 						$driver_config->write($log_data);
 					}
 				}
-
+				
 				unset($log_data);
 				unset($log_str);
 			}
@@ -210,7 +234,7 @@ class Log
 			echo $e;
 		}
 	}
-
+	
 	public static function __callStatic($name, $arguments)
 	{
 		return call_user_func_array(['static', 'log'], array_merge([$name], $arguments));
