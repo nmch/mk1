@@ -21,7 +21,7 @@ class Route
 		if( is_array($uri) ){
 			list($controller_name, $controller_method_name) = $uri;
 			$controller_name        = 'Controller_' . ucfirst($controller_name);
-			$controller_method_name = static::find_method($controller_name, $controller_method_name);
+			$controller_method_name = static::find_method($controller_name, $controller_method_name, $request_method);
 		}
 		else{
 			$uri_exploded = explode('/', $uri);
