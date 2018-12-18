@@ -28,6 +28,6 @@ trait Logic_Masterdetail_View_Index
 		
 		$this->app_data['form']        = $this->af->as_array();
 		$this->app_data['paging_data'] = $this->af->paging_data;
-		$this->app_data['list']        = $this->list->as_array();
+		$this->app_data['list']        = is_object($this->list) ? $this->list->as_array() : $this->list;
 	}
 }
