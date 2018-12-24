@@ -8,6 +8,7 @@ class Actionform implements ArrayAccess
 	private $config             = [];
 	private $values             = [];
 	private $values_default     = [];
+	private $values_hidden      = [];
 	private $validated_values   = [];
 	private $messages           = [];
 	private $request_method;
@@ -156,10 +157,11 @@ class Actionform implements ArrayAccess
 	 * @param string|array $name
 	 * @param mixed        $value
 	 * @param bool         $set_default
+	 * @param bool         $hide
 	 *
 	 * @return Actionform
 	 */
-	function set($name, $value = null, $set_default = false)
+	function set($name, $value = null, $set_default = false, $hide = false)
 	{
 		if( is_array($name) || $name instanceof ArrayAccess ){
 			foreach($name as $key => $value){
@@ -169,11 +171,16 @@ class Actionform implements ArrayAccess
 		else{
 			//echo "<PRE>[af] set $name (default:$set_default)"; var_dump($value); print_r(debug_backtrace(NULL,3));
 			
-			if( $set_default ){
-				$this->values_default[$name] = $value;
+			if( $hide ){
+				$this->values_hidden[$name] = $value;
 			}
 			else{
-				$this->values[$name] = $value;
+				if( $set_default ){
+					$this->values_default[$name] = $value;
+				}
+				else{
+					$this->values[$name] = $value;
+				}
 			}
 		}
 		
@@ -487,7 +494,12 @@ class Actionform implements ArrayAccess
 				return $this->values_default[$name];
 			}
 			else{
-				return $default;
+				if( array_key_exists($name, $this->values_hidden) ){
+					return $this->values_hidden[$name];
+				}
+				else{
+					return $default;
+				}
 			}
 		}
 	}
