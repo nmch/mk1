@@ -21,7 +21,9 @@ class View
 		$this->af                 = Actionform::instance();
 		$this->do_not_clear_flash = $do_not_clear_flash;
 		
-		$this->af->_view_class_name = strtolower(get_called_class());
+		// hide=trueに設定すると、as_array()では出てこないが名前を指定してget()すると取得できる
+		// as_array()時にフォーム入力値以外を出さないようにするための措置
+		$this->af->set('_view_class_name', strtolower(get_called_class()), false, true);
 		
 		if( ! $template_filename ){
 			$template_filename = implode('/', array_slice(explode('_', $this->af->_view_class_name), 1));
