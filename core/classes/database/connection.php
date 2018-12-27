@@ -44,20 +44,28 @@ class Database_Connection
 	/**
 	 * @param string|null $name
 	 *
+	 * @param bool        $force_new
+	 *
 	 * @return Database_Connection
+	 * @throws MkException
 	 */
-	static function instance($name = null)
+	static function instance($name = null, $force_new = false): Database_Connection
 	{
 		if( ! $name ){
 			$name = Config::get('db.active');
 		}
 		//Log::coredebug("[db connection] try get a connection named $name");
-		if( empty(static::$instances[$name]) ){
-			$config                   = \Config::get("db.{$name}");
-			static::$instances[$name] = new static($config);
+		$config = \Config::get("db.{$name}");
+		if( $force_new ){
+			new static($config);
 		}
-		
-		return static::$instances[$name];
+		else{
+			if( empty(static::$instances[$name]) ){
+				static::$instances[$name] = new static($config);
+			}
+			
+			return static::$instances[$name];
+		}
 	}
 	
 	function dbname()
