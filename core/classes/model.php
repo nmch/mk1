@@ -464,7 +464,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		return array_merge($this->_original, $this->_data);
 	}
 	
-	function save()
+	function save(?Database_Connection $dbconn = null)
 	{
 		$primary_key = static::primary_key();
 		if( ! $primary_key ){
@@ -501,7 +501,7 @@ class Model implements Iterator, Countable, ArrayAccess
 					$sql_update = $query_update->get_sql();
 					$query_update->clear_query_type()->set_sql("with model_save_query as ($sql_update) $sql_select");
 					//echo "SQL = "; print_r($query_update->get_sql(true));
-					$r = $query_update->execute();
+					$r = $query_update->execute($dbconn);
 				}
 			}
 			else{
@@ -513,7 +513,7 @@ class Model implements Iterator, Countable, ArrayAccess
 				$sql_insert = $query_insert->get_sql();
 				$query_insert->clear_query_type()->set_sql("with model_save_query as ($sql_insert) $sql_select");
 				//echo "SQL = "; print_r($query_insert->get_sql(true));
-				$r = $query_insert->execute();
+				$r = $query_insert->execute($dbconn);
 			}
 		} catch(Exception $e){
 			$on_save_error_handler_name = 'on_save_error';

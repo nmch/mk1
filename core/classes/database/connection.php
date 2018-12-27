@@ -26,7 +26,7 @@ class Database_Connection
 				Log::warning("DB接続再試行[{$retry_count}]", $last_error);
 			}
 			try {
-				$this->connection = pg_connect($connection_config);
+				$this->connection = pg_connect($connection_config, PGSQL_CONNECT_FORCE_NEW);
 				$last_error       = null;
 				break;
 			} catch(Exception $e){
@@ -57,7 +57,7 @@ class Database_Connection
 		$config = \Database_Connection::get_config($name);
 		
 		Arr::set($config, "connection.dbname", 'template1');
-
+		
 		$conn = new Database_Connection($config);
 		
 		return $conn;
@@ -100,16 +100,28 @@ class Database_Connection
 	/**
 	 * @param string|null $name
 	 *
+	 * @param bool        $force_new
+	 *
 	 * @return Database_Connection
+	 * @throws MkException
 	 */
-	static function instance($name = null)
+	static function instance($name = null, $force_new = false): Database_Connection
 	{
-		if( empty(static::$instances[$name]) ){
-			$config                   = static::get_config($name);
-			static::$instances[$name] = new static($config);
+		if( ! $name ){
+			$name = Config::get('db.active');
 		}
-		
-		return static::$instances[$name];
+		//Log::coredebug("[db connection] try get a connection named $name");
+		$config = \Config::get("db.{$name}");
+		if( $force_new ){
+			return new static($config);
+		}
+		else{
+			if( empty(static::$instances[$name]) ){
+				static::$instances[$name] = new static($config);
+			}
+			
+			return static::$instances[$name];
+		}
 	}
 	
 	function dbname()
