@@ -27,7 +27,7 @@ class Database_Connection
 		}
 		
 		//Log::coredebug("[db connection] try connect to $connection_config");
-		$this->connection = pg_connect($connection_config);
+		$this->connection = pg_connect($connection_config, PGSQL_CONNECT_FORCE_NEW);
 		pg_set_client_encoding($this->connection, 'UTF-8');
 		if( $this->connection === false ){
 			throw new MkException('failed establish to db');
@@ -57,7 +57,7 @@ class Database_Connection
 		//Log::coredebug("[db connection] try get a connection named $name");
 		$config = \Config::get("db.{$name}");
 		if( $force_new ){
-			new static($config);
+			return new static($config);
 		}
 		else{
 			if( empty(static::$instances[$name]) ){
