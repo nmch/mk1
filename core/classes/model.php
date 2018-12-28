@@ -39,6 +39,7 @@ class Model implements Iterator, Countable, ArrayAccess
 	protected        $_original_before_save = [];
 	protected        $_iter_keylist         = [];
 	protected        $_iter_curkey          = 0;
+	protected        $dbconn;
 	/** @var array save()時にとられるdiff */
 	protected $_save_diff = [];
 	
@@ -50,7 +51,16 @@ class Model implements Iterator, Countable, ArrayAccess
 			$this->_is_new = false;
 		}
 		
+		$this->set_database_connection($options['database_connection'] ?? null);
+		
 		//Log::coredebug("constructed a new object of ".get_called_class()." table name is ".$this->table()." / pkey is ".static::primary_key(),$options);
+	}
+	
+	function set_database_connection(?Database_Connection $dbconn): Model
+	{
+		$this->dbconn = $dbconn;
+		
+		return $this;
 	}
 	
 	function execute_after_load_functions()
@@ -464,7 +474,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		return array_merge($this->_original, $this->_data);
 	}
 	
-	function save(?Database_Connection $dbconn = null)
+	function save()
 	{
 		$primary_key = static::primary_key();
 		if( ! $primary_key ){
@@ -501,7 +511,7 @@ class Model implements Iterator, Countable, ArrayAccess
 					$sql_update = $query_update->get_sql();
 					$query_update->clear_query_type()->set_sql("with model_save_query as ($sql_update) $sql_select");
 					//echo "SQL = "; print_r($query_update->get_sql(true));
-					$r = $query_update->execute($dbconn);
+					$r = $query_update->execute($this->dbconn);
 				}
 			}
 			else{
@@ -513,7 +523,7 @@ class Model implements Iterator, Countable, ArrayAccess
 				$sql_insert = $query_insert->get_sql();
 				$query_insert->clear_query_type()->set_sql("with model_save_query as ($sql_insert) $sql_select");
 				//echo "SQL = "; print_r($query_insert->get_sql(true));
-				$r = $query_insert->execute($dbconn);
+				$r = $query_insert->execute($this->dbconn);
 			}
 		} catch(Exception $e){
 			$on_save_error_handler_name = 'on_save_error';
@@ -721,7 +731,7 @@ class Model implements Iterator, Countable, ArrayAccess
 				$q .= " {$key}=src.{$key}";
 			}
 			$q .= " from {$table} as src where {$table}.{$pkey}=src.{$pkey} and {$table}.{$pkey}={$src_id}";
-			DB::query($q)->execute();
+			DB::query($q)->execute($this->dbconn);
 			$this->reload();
 		}
 		
@@ -811,7 +821,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 		
 		$this->before_delete();
-		$r = DB::delete()->from($this->table())->where($primary_key, $this->get($primary_key))->execute();
+		$r = DB::delete()->from($this->table())->where($primary_key, $this->get($primary_key))->execute($this->dbconn);
 		unset($this->$primary_key);
 		$this->after_delete();
 		
