@@ -128,7 +128,7 @@ trait Logic_Masterdetail_Controller
 	
 	abstract protected function get_model_name();
 	
-	private function prepare_view($view_class_name, $id)
+	protected function prepare_view($view_class_name, $id)
 	{
 		if( ! class_exists($view_class_name) ){
 			throw new Exception("view class({$view_class_name}) not found");
