@@ -79,6 +79,13 @@ class View
 		$this->before();
 	}
 	
+	public function set_actionform(Actionform $af)
+	{
+		$this->af = $af;
+		
+		return $this;
+	}
+	
 	public function set_data(array $data)
 	{
 		$this->data = $data;
