@@ -153,29 +153,29 @@ class Model implements Iterator, Countable, ArrayAccess
 	
 	static function primary_key()
 	{
-		if( empty(static::$_primary_key) ){
+		$primary_key = (static::$_primary_keys[get_called_class()] ?? null);
+		if( ! $primary_key ){
 			//スキーマからプライマリキーを取得
-			$schema = Database_Schema::get(static::table(), []);
+			$table_name = static::table();
+			$schema     = Database_Schema::get($table_name, []);
 			if( Arr::get($schema, 'has_pkey') ){
 				$primary_key = Arr::get($schema, 'primary_key', []);
 			}
-			else{
-				throw new MkException('empty primary key on ' . static::table());
-			}
-		}
-		else{
-			$primary_key = static::$_primary_key;
 		}
 		
 		if( is_array($primary_key) ){
-			if( count($primary_key) == 0 ){
+			if( count($primary_key) === 0 ){
 				throw new MkException('empty primary key');
 			}
-			if( count($primary_key) != 1 ){
+			if( count($primary_key) !== 1 ){
 				throw new MkException('too many primary keys');
 			}
 			
 			$primary_key = reset($primary_key);
+		}
+		
+		if( ! $primary_key ){
+			throw new MkException('empty primary key on ' . static::table());
 		}
 		
 		static::$_primary_keys[get_called_class()] = $primary_key;
