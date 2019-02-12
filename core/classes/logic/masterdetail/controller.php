@@ -53,8 +53,16 @@ trait Logic_Masterdetail_Controller
 			$deleted = false;
 			$action  = '';
 			if( $this->af->delete && $primary_key_value ){
+				if( method_exists($this, 'get_model_query') ){
+					$query = call_user_func_array([$this, 'get_model_query'], [$primary_key_value]);
+				}
+				else{
+					/** @var Model_Query $query */
+					$query = $model_name::find()->where($primary_key_name, $primary_key_value);
+				}
 				/** @var Model $obj */
-				$obj = $model_name::find($primary_key_value);
+				$obj = $query->get_one(true);
+
 				$obj->delete();
 				$this->af->set_message('success', "削除しました");
 				$deleted = true;
@@ -99,7 +107,7 @@ trait Logic_Masterdetail_Controller
 			}
 			
 			if( (Arr::get($options, 'redirect_to_detail') || $this->redirect_to_detail) && ! $deleted ){
-				$list_path .= '/detail/' . $obj->$primary_key_name;
+				$list_path .= '/detail/' . $obj->{$primary_key_name};
 			}
 			
 			DB::commit_savepoint($savepoint);
@@ -142,8 +150,14 @@ trait Logic_Masterdetail_Controller
 		}
 		
 		if( $id ){
-			/** @var Model_Query $query */
-			$query = $model_name::find()->where($model_name::primary_key(), $id);
+			if( method_exists($this, 'get_model_query') ){
+				$query = call_user_func_array([$this, 'get_model_query'], [$id]);
+			}
+			else{
+				/** @var Model_Query $query */
+				$query = $model_name::find()->where($model_name::primary_key(), $id);
+			}
+			
 			if( method_exists($this, 'get_ignore_conditions') ){
 				$query->ignore_conditions($this->get_ignore_conditions());
 			}
