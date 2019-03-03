@@ -32,6 +32,7 @@ class Session_Driver_Db implements SessionHandlerInterface
 		$encoded_data = base64_encode($data);
 		$hash         = md5($encoded_data);
 		
+		Log::suppress();
 		DB::insert($this->config['table'])
 		  ->values([
 				  'id'         => $id,
@@ -43,6 +44,7 @@ class Session_Driver_Db implements SessionHandlerInterface
 		  ->on_conflict(['id'])
 		  ->execute()
 		;
+		Log::unsuppress();
 		
 		return true;
 	}
@@ -100,15 +102,15 @@ SQL;
 		$schema_modified = false;
 		if( ! Arr::get($schema, 'columns.created_at') ){
 			$q = <<<SQL
-alter table sessions add created_at TIMESTAMP DEFAULT now();
-update sessions set created_at=updated_at;
+ALTER TABLE sessions ADD created_at TIMESTAMP DEFAULT now();
+UPDATE sessions SET created_at=updated_at;
 SQL;
 			DB::query($q)->execute();
 			$schema_modified = true;
 		}
 		if( ! Arr::get($schema, 'columns.hash') ){
 			$q = <<<SQL
-alter table sessions add hash text;
+ALTER TABLE sessions ADD hash TEXT;
 SQL;
 			DB::query($q)->execute();
 			$schema_modified = true;
