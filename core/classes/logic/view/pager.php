@@ -135,8 +135,15 @@ trait Logic_View_Pager
 				$r = $pager->execute();
 			}
 			if( $this->permit_json_response && $this->af->is_ajax_request() ){
+				$this->list = $r->as_array(true);
+				
+				$method_name = "after_listed";
+				if( method_exists($this, $method_name) ){
+					call_user_func([$this, $method_name]);
+				}
+				
 				$return_data = $this->af->as_array() + [
-						'list' => $r->as_array(true),
+						'list' => $this->list,
 					];
 				
 				$view = new Response_Json($return_data);
@@ -150,6 +157,11 @@ trait Logic_View_Pager
 				}
 				else{
 					$this->list = $r;
+				}
+				
+				$method_name = "after_listed";
+				if( method_exists($this, $method_name) ){
+					call_user_func([$this, $method_name]);
 				}
 			}
 		}
