@@ -62,7 +62,7 @@ trait Logic_Masterdetail_Controller
 				}
 				/** @var Model $obj */
 				$obj = $query->get_one(true);
-
+				
 				$obj->delete();
 				$this->af->set_message('success', "削除しました");
 				$deleted = true;
@@ -136,7 +136,7 @@ trait Logic_Masterdetail_Controller
 	
 	abstract protected function get_model_name();
 	
-	protected function prepare_view($view_class_name, $id)
+	function prepare_view($view_class_name, $id)
 	{
 		if( ! class_exists($view_class_name) ){
 			throw new Exception("view class({$view_class_name}) not found");
@@ -144,6 +144,23 @@ trait Logic_Masterdetail_Controller
 		
 		$view = new $view_class_name();
 		
+		$model_name = $this->get_model_name();
+		if( ! class_exists($model_name) ){
+			throw new Exception("model class({$model_name}) not found");
+		}
+		
+		if( $id ){
+			$view->item = $this->get_data_by_id($id);
+		}
+		else{
+			$view->item = new $model_name();
+		}
+		
+		return $view;
+	}
+	
+	function get_data_by_id($id): Model
+	{
 		$model_name = $this->get_model_name();
 		if( ! class_exists($model_name) ){
 			throw new Exception("model class({$model_name}) not found");
@@ -161,13 +178,13 @@ trait Logic_Masterdetail_Controller
 			if( method_exists($this, 'get_ignore_conditions') ){
 				$query->ignore_conditions($this->get_ignore_conditions());
 			}
-			$view->item = $query->get_one(true);
+			$item = $query->get_one(true);
+			
+			return $item;
 		}
 		else{
-			$view->item = new $model_name();
+			throw new RecordNotFoundException();
 		}
-		
-		return $view;
 	}
 	
 	function get_view($id)
@@ -186,5 +203,20 @@ trait Logic_Masterdetail_Controller
 		$view_class_name = 'View_' . $this->get_base_class_name() . '_Detail';
 		
 		return $this->prepare_view($view_class_name, $id);
+	}
+	
+	function delete_detail($id)
+	{
+		if( method_exists($this, 'before_delete_detail') ){
+			$this->before_delete_detail($id);
+		}
+		
+		$model_name = $this->get_model_name();
+		if( ! class_exists($model_name) ){
+			throw new Exception("model class({$model_name}) not found");
+		}
+		
+		$item = $this->get_data_by_id($id);
+		$item->delete();
 	}
 }
