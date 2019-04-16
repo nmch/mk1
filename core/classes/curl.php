@@ -32,7 +32,8 @@ class Curl
 	/** @var string メソッド */
 	private $method = '';
 	/** @var array リクエスト時のデータ */
-	private $request_data = [];
+	private $request_data  = [];
+	private $request_files = [];
 	/** @var string リクエストデータ */
 	private $request_raw_data = null;
 	/** @var array */
@@ -201,10 +202,11 @@ class Curl
 	 * @return mixed|string
 	 * @throws MkException
 	 */
-	public function post($url, array $data = [])
+	public function post($url, array $data = [], array $files = [])
 	{
-		$this->method       = static::METHOD_POST;
-		$this->request_data = $data;
+		$this->method        = static::METHOD_POST;
+		$this->request_data  = $data;
+		$this->request_files = $files;
 		
 		return $this->retrieve($url);
 	}
@@ -290,13 +292,20 @@ class Curl
 		else{
 			$request_data = array_merge(Arr::get($this->options, static::OP_REQUEST_DATA, []), $this->request_data);
 			if( $this->method === static::METHOD_POST || $this->method === static::METHOD_PUT ){
-				if( $request_data ){
+				if( $request_data || $this->request_files ){
 					if( is_array($request_data) ){
 						if( Arr::get($this->options, static::OP_POST_AS_JSON) ){
 							$curl_options[CURLOPT_POSTFIELDS] = Mk::json_encode($request_data);
 							$this->add_request_headers([
 								'Content-Type' => 'application/json',
 							]);
+						}
+						elseif( $this->request_files ){
+							foreach($this->request_files as $key => $file){
+								$curlfile           = new CURLFile($file['tmp_name'], $file['type'], $file['name']);
+								$request_data[$key] = $curlfile;
+							}
+							$curl_options[CURLOPT_POSTFIELDS] = $request_data;
 						}
 						else{
 							$curl_options[CURLOPT_POSTFIELDS] = http_build_query($request_data);
@@ -444,6 +453,7 @@ class Curl
 		}
 		
 		if( $this->curl_result === false ){
+			Log::coredebug("curl実行失敗", $this);
 			throw new MkException("curl execution failed");
 		}
 	}
