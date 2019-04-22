@@ -38,7 +38,15 @@ class Actionform implements ArrayAccess
 		$this->config = Config::get('form', []);
 		
 		if( ! $clean_init ){
-			$this->values = array_merge($_GET ?: [], $_POST ?: [], $_REQUEST ?: []);
+			$content_type = strtolower($_SERVER['CONTENT_TYPE'] ?? null);
+			if( strpos($content_type, 'application/json') === 0 ){
+				$json         = file_get_contents('php://input');
+				$this->values = json_decode($json, true);
+				unset($json);
+			}
+			else{
+				$this->values = array_merge($_GET ?: [], $_POST ?: [], $_REQUEST ?: []);
+			}
 			//echo "<PRE>values = "; print_r($this->values); echo "</PRE>";
 			//$this->af_filter = new \Model_ActionformFilter;
 			//$this->request_method = Arr::get($_SERVER,'REQUEST_METHOD','');
@@ -81,7 +89,7 @@ class Actionform implements ArrayAccess
 			}
 			
 			if( $this->get_config('import_db_schemas') ){
-				$autoconfig = Cache::get('af_autoconfig', 'core_db', function (){
+				$autoconfig = Cache::get('af_autoconfig', 'core_db', function(){
 					$autoconfig = [];
 					foreach(Database_Schema::get() as $table_name => $table){
 						foreach(Arr::get($table, 'columns') as $col_name => $col){
@@ -511,8 +519,8 @@ class Actionform implements ArrayAccess
 	 * @param string $filter
 	 * @param array  $option
 	 *
-	 * @throws MkException
 	 * @return string
+	 * @throws MkException
 	 */
 	public static function unit_filter($value, $filter, $option = [])
 	{
@@ -704,7 +712,7 @@ class Actionform implements ArrayAccess
 		}
 		
 		if( $this->useragent ){
-			return Cache::get($this->useragent, 'ismobiledevice_by_ua', function ($useragent){
+			return Cache::get($this->useragent, 'ismobiledevice_by_ua', function($useragent){
 				$browser = get_browser($useragent);
 				if( is_object($browser) ){
 					return $browser->ismobiledevice;
