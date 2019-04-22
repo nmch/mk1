@@ -38,7 +38,7 @@ class Actionform implements ArrayAccess
 		$this->config = Config::get('form', []);
 		
 		if( ! $clean_init ){
-			$content_type = strtolower($_SERVER['CONTENT_TYPE'] ?? null);
+			$content_type = strtolower($_SERVER['CONTENT_TYPE'] ?? '');
 			if( strpos($content_type, 'application/json') === 0 ){
 				$json         = file_get_contents('php://input');
 				$this->values = json_decode($json, true);
