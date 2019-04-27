@@ -18,7 +18,7 @@ class Response
 		$this->headers = $headers;
 		
 		foreach(Config::get('response.default_headers', []) as $key => $value){
-			$this->headers[$key] = $value;
+			$this->set_header($key, $value);
 		}
 	}
 	

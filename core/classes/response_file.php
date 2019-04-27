@@ -64,7 +64,7 @@ class Response_File extends Response
 		if( $this->before() ){
 			$encoded_filename = rawurlencode($this->filename);
 			$this->set_header('Content-Type', $this->mime_type);
-			$this->set_header('Content-Disposition: attachment; filename*=UTF-8\'\'', $encoded_filename);
+			$this->set_header('Content-Disposition', 'attachment; filename*=UTF-8\'\'' . $encoded_filename);
 			$this->set_header('Content-Transfer-Encoding', 'binary');
 			$this->set_header('Content-Length', strlen($this->filebody));
 			
