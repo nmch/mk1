@@ -97,6 +97,11 @@ class Response
 	 */
 	protected function before()
 	{
+		return true;
+	}
+	
+	function send_header()
+	{
 		if( ! Mk::is_cli() ){
 			if( headers_sent() ){
 				Log::warning("HTTPヘッダがすでに送出されているためResponse処理を中断します");
@@ -115,8 +120,6 @@ class Response
 				header($key . ':' . $header);
 			}
 		}
-		
-		return true;
 	}
 	
 	/**
@@ -150,12 +153,17 @@ class Response
 				if( $body instanceof Response ){
 					return $body->send();
 				}
+				
+				if( $content_type = $this->body->content_type() ){
+					$this->set_header("Content-Type", $content_type);
+				}
 			}
 			else{
 				$body = $this->body;
 			}
 			
 			if( ! $this->do_not_display ){
+				$this->send_header();
 				echo $body;
 			}
 			

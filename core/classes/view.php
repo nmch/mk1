@@ -15,6 +15,7 @@ class View
 	protected $data;
 	/** @var bool render()時にフラッシュメッセージをクリアしない */
 	private $do_not_clear_flash = false;
+	private $content_type       = null;
 	
 	function __construct($template_filename = null, $data = [], $do_not_clear_flash = false)
 	{
@@ -161,6 +162,15 @@ class View
 		$this->template_string   = $template_string;
 		
 		return $this;
+	}
+	
+	function content_type($content_type = null)
+	{
+		if( $content_type ){
+			$this->content_type = $content_type;
+		}
+		
+		return $this->content_type;
 	}
 	
 	/**

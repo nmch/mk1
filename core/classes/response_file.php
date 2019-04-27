@@ -62,14 +62,14 @@ class Response_File extends Response
 	function send()
 	{
 		if( $this->before() ){
-			header('Content-Type: ' . $this->mime_type);
 			$encoded_filename = rawurlencode($this->filename);
-			header('Content-Disposition: attachment; filename*=UTF-8\'\'' . $encoded_filename);
-			//$enc = '=?utf-8?B?' . base64_encode($this->filename) . '?=';
-			//header('Content-Disposition: attachment; filename="' . $enc . '"'); // これだとIE/Edgeでファイル名が正しく認識されない
-			//header('Content-Disposition: attachment; filename=' . $this->filename);
-			header('Content-Transfer-Encoding: binary');
-			header('Content-Length: ' . strlen($this->filebody));
+			$this->set_header('Content-Type', $this->mime_type);
+			$this->set_header('Content-Disposition: attachment; filename*=UTF-8\'\'', $encoded_filename);
+			$this->set_header('Content-Transfer-Encoding', 'binary');
+			$this->set_header('Content-Length', strlen($this->filebody));
+			
+			$this->send_header();
+			
 			echo $this->filebody;
 			
 			if( ! $this->do_not_unlink ){
