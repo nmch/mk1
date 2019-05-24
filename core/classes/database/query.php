@@ -64,9 +64,9 @@ class Database_Query
 	 *
 	 * @param null|Database_Connection $db
 	 *
-	 * @throws DatabaseQueryError
-	 * @throws MkException
 	 * @return Database_Resultset
+	 * @throws MkException
+	 * @throws DatabaseQueryError
 	 */
 	public function execute($db = null)
 	{
@@ -486,6 +486,9 @@ class Database_Query
 					$sql .= implode(',', $do_values);
 				}
 			}
+			elseif( $do === 'nothing' ){
+				$sql .= " DO NOTHING ";
+			}
 		}
 		
 		if( $this->_query_returning ){
@@ -534,7 +537,7 @@ class Database_Query
 			$sql .= " HAVING " . $this->_query_having;
 		}
 		if( $this->_query_orderby ){
-			$sql .= " ORDER BY " . implode(',', array_map(function ($ary){
+			$sql .= " ORDER BY " . implode(',', array_map(function($ary){
 						return implode(' ', $ary);
 					}, $this->_query_orderby
 					)
@@ -1052,8 +1055,8 @@ class Database_Query
 	/**
 	 * @param string $join_str
 	 *
-	 * @see Model_Query::apply_joins()
 	 * @return Database_Query
+	 * @see Model_Query::apply_joins()
 	 */
 	function join($join_str, $prepend = false)
 	{
