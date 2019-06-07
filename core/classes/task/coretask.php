@@ -75,6 +75,11 @@ class Task_Coretask extends Task
 		}
 	}
 	
+	public static function task()
+	{
+		Task_Schedule::execute();
+	}
+	
 	public static function refine()
 	{
 		ErrorHandler::add_error_handler(['Task_Coretask', 'refine_error']);

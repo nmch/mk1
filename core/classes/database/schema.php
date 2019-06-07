@@ -5,15 +5,18 @@ class Database_Schema
 	protected static $_attributes = [];
 	protected static $schema;
 	
-	static function get($name = null, $default = null)
+	static function get($name = null, $default = null, $no_cache = false)
 	{
-		if( ! static::$schema ){
+		if( ! static::$schema && ! $no_cache ){
 			// キャッシュからの読み込みを試す
 			static::$schema = Cache::get('schema', 'core_db');
-			if( ! static::$schema ){
-				static::$schema = static::retrieve();
-				Cache::set('schema', 'core_db', static::$schema);
-			}
+		}
+		if( $no_cache ){
+			static::$schema = null;
+		}
+		if( ! static::$schema ){
+			static::$schema = static::retrieve();
+			Cache::set('schema', 'core_db', static::$schema);
 		}
 		
 		$retval = $name ? Arr::get(static::$schema, $name, $default) : static::$schema;
