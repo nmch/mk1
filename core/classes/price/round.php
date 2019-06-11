@@ -31,38 +31,34 @@ class Price_Round
 	function round(string $original_value): string
 	{
 		bcscale(0);
-
+		
 		// $rounding_type 0:無効 1:切捨て 2:四捨五入 3:切上げ
+		$value_is_negative = (bccomp($original_value, 0) === -1);
+		$positive_value    = $value_is_negative ? bcmul($original_value, '-1', 1) : $original_value;
+		/** @var string $value 小数点以下が切り捨てられた絶対値 */
+		$integer_positive_value = bcadd($positive_value, '0', 0);
 		/** @var string $mod 1未満の数 */
-		$mod               = bcmod($original_value, 1, $this->scale);
-		$value_is_negative = (bccomp($original_value, 0, $this->scale) === -1);
-		/** @var string $value 切り捨てられた絶対値 */
-		$value = bcsub($original_value, bcmod($original_value, 1, $this->scale), $this->scale);
-		if( $value_is_negative ){
-			$value = bcmul($value, '-1', $this->scale);
-		}
+		$mod = bcmod($positive_value, 1, 1);
 		switch($this->rounding_type){
 			case 0:
 			case 1:
 				break;
 			case 2:
 				if( bccomp($mod, '0.5', $this->scale) !== -1 ){
-					$value = bcadd($value, 1, $this->scale);
+					$integer_positive_value = bcadd($integer_positive_value, 1, 0);
 				}
 				break;
 			case 3:
 				if( bccomp($mod, '0', $this->scale) !== 0 ){
-					$value = bcadd($value, 1, $this->scale);
+					$integer_positive_value = bcadd($integer_positive_value, 1, 0);
 				}
 				break;
 			default:
 				throw new UnexpectedValueException();
 		}
 		
-		if( $value_is_negative ){
-			$value = bcmul($value, '-1', $this->scale);
-		}
+		$value = $value_is_negative ? bcmul($integer_positive_value, '-1', 0) : $integer_positive_value;
 		
-		return strval(intval($value));
+		return $value;
 	}
 }
