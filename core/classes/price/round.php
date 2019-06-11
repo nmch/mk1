@@ -10,17 +10,15 @@
 class Price_Round
 {
 	protected $rounding_type;
-	protected $scale;
 	
 	/**
 	 * Price_Round constructor.
 	 *
 	 * @param int $type 端数処理区分(0:無効 1:切捨て 2:四捨五入 3:切上げ)
 	 */
-	function __construct($type, $scale = 0)
+	function __construct($type)
 	{
 		$this->rounding_type = $type;
-		$this->scale         = $scale;
 	}
 	
 	/**
@@ -44,12 +42,12 @@ class Price_Round
 			case 1:
 				break;
 			case 2:
-				if( bccomp($mod, '0.5', $this->scale) !== -1 ){
+				if( bccomp($mod, '0.5', 1) !== -1 ){
 					$integer_positive_value = bcadd($integer_positive_value, 1, 0);
 				}
 				break;
 			case 3:
-				if( bccomp($mod, '0', $this->scale) !== 0 ){
+				if( bccomp($mod, '0', 1) !== 0 ){
 					$integer_positive_value = bcadd($integer_positive_value, 1, 0);
 				}
 				break;
