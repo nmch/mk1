@@ -712,6 +712,11 @@ class Actionform implements ArrayAccess
 		}
 		
 		if( $this->useragent ){
+			// BHT2Browser
+			if( strpos($this->useragent, 'BBR/') === 0 ){
+				return true;
+			}
+			
 			return Cache::get($this->useragent, 'ismobiledevice_by_ua', function($useragent){
 				$browser = get_browser($useragent);
 				if( is_object($browser) ){
