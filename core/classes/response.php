@@ -163,6 +163,7 @@ class Response
 			}
 			
 			if( ! $this->do_not_display ){
+				$this->set_header("Content-Length", strlen($body));
 				$this->send_header();
 				echo $body;
 			}
