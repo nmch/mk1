@@ -5,13 +5,15 @@ class File
 	const ENCODING_SJIS = 'SJIS-win';
 	const ENCODING_UTF8 = 'UTF-8';
 	
+	const MIME_CSV = 'text/csv';
+	
 	protected $filepath;
 	protected $filename;
 	protected $mime;
 	
 	function __construct($filepath, $filename = null, $mime = null)
 	{
-		if( ! file_exists($filepath) ){
+		if( ! file_exists($filepath) || ! is_file($filepath) || ! is_readable($filepath) ){
 			throw new MkException("file not found");
 		}
 		$this->filepath = $filepath;
@@ -32,6 +34,16 @@ class File
 	function get_filepath()
 	{
 		return $this->filepath;
+	}
+	
+	function get_filesize()
+	{
+		return filesize($this->get_filepath());
+	}
+	
+	function get_contents()
+	{
+		return file_get_contents($this->get_filepath());
 	}
 	
 	/**
@@ -108,18 +120,7 @@ class File
 		fclose($fp);
 	}
 	
-	/**
-	 * DBのデータをCSVにエクスポートする
-	 *
-	 * @param Database_Resultset|array $data
-	 * @param array                    $headers
-	 * @param string                   $csv_filename
-	 * @param array                    $funcs
-	 *
-	 * @return Response_File|null
-	 * @throws Exception
-	 */
-	static function respond_obj_as_csv($data, $headers, $csv_filename = null, $funcs = [], $array_delimiter = ',')
+	static function get_csv_from_obj($data, $headers, $csv_filename = null, $funcs = [], $array_delimiter = ','): File
 	{
 		$columns = [];
 		if( $data instanceof Database_Resultset ){
@@ -205,6 +206,24 @@ class File
 		if( ! $csv_filename ){
 			$csv_filename = 'data.csv';
 		}
+		
+		return $converted_file;
+	}
+	
+	/**
+	 * DBのデータをCSVにエクスポートする
+	 *
+	 * @param Database_Resultset|array $data
+	 * @param array                    $headers
+	 * @param string                   $csv_filename
+	 * @param array                    $funcs
+	 *
+	 * @return Response_File|null
+	 * @throws Exception
+	 */
+	static function respond_obj_as_csv($data, $headers, $csv_filename = null, $funcs = [], $array_delimiter = ',')
+	{
+		$converted_file = static::get_csv_from_obj($data, $headers, $csv_filename, $funcs, $array_delimiter);
 		
 		return new Response_File($converted_file->get_filepath(), static::make_download_filename($csv_filename));
 	}
