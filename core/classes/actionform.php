@@ -42,6 +42,7 @@ class Actionform implements ArrayAccess
 			if( (static::method() === 'POST') && (strpos($content_type, 'application/json') === 0) ){
 				$json         = file_get_contents('php://input');
 				$this->values = json_decode($json, true) ?? [];
+				$this->values += ($_REQUEST ?: []);
 				unset($json);
 			}
 			else{
