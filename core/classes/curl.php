@@ -494,6 +494,11 @@ class Curl
 			$this->curl_options[CURLOPT_USERAGENT] = is_string($camouflage_ua) ? $camouflage_ua : Arr::get($this->options, 'default_ua');
 		}
 		
+		if( $http_proxy = getenv('HTTP_PROXY') ){
+			$this->curl_options[CURLOPT_HTTPPROXYTUNNEL] = true;
+			$this->curl_options[CURLOPT_PROXY]           = $http_proxy;
+		}
+		
 		curl_setopt_array($this->curl, $this->curl_options);
 		
 		Log::coredebug("CURLを初期化しました", $this->curl_version);
