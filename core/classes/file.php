@@ -4,6 +4,8 @@ class File
 {
 	const ENCODING_SJIS = 'SJIS-win';
 	const ENCODING_UTF8 = 'UTF-8';
+	const EOL_LF        = "\n";
+	const EOL_CRLF      = "\r\n";
 	
 	protected $filepath;
 	protected $filename;
@@ -45,7 +47,7 @@ class File
 	 * @return Generator
 	 * @throws AppException
 	 */
-	function read_as_csv($convert_encoding = null, $ignore_head_lines = 0, $csv_header = null, $pass_raw_column = false)
+	function read_as_csv($convert_encoding = null, $ignore_head_lines = 0, $csv_header = null, $pass_raw_column = false, $pass_raw_line = false)
 	{
 		/**
 		 * エンコーディング自動検出
@@ -85,19 +87,24 @@ class File
 		while($line = fgetcsv($fp)){
 			$line_num++;
 			
-			$item = [];
-			foreach($csv_header as $header_key => $header){
-				// headerにドットが入っているとArr::get()したときに1次元配列として扱えないため、アンダースコアに変換する
-				$header = str_replace('.', '_', $header);
-				
-				$column = array_key_exists($header_key, $line) ? strval($line[$header_key]) : null;
-				
-				if( ! $pass_raw_column ){
-					$column = str_replace(["\n", "\r"], '', $column);
-					$column = trim($column);
+			if( $pass_raw_line ){
+				$item = $line;
+			}
+			else{
+				$item = [];
+				foreach($csv_header as $header_key => $header){
+					// headerにドットが入っているとArr::get()したときに1次元配列として扱えないため、アンダースコアに変換する
+					$header = str_replace('.', '_', $header);
+					
+					$column = array_key_exists($header_key, $line) ? strval($line[$header_key]) : null;
+					
+					if( ! $pass_raw_column ){
+						$column = str_replace(["\n", "\r"], '', $column);
+						$column = trim($column);
+					}
+					
+					$item[$header] = $column;
 				}
-				
-				$item[$header] = $column;
 			}
 			
 			yield $line_num => $item;
@@ -211,13 +218,31 @@ class File
 	
 	function convert_encoding($to = File::ENCODING_SJIS, $from = File::ENCODING_UTF8): File
 	{
+		$convert_eol_from = null;
+		$convert_eol_to   = null;
+		if( $to === File::ENCODING_SJIS && $from === File::ENCODING_UTF8 ){
+			// UTF-8からSJISへの変換時には改行コードもLFからCRLFに置換する
+			$convert_eol_from = \File::EOL_LF;
+			$convert_eol_to   = \File::EOL_CRLF;
+		}
+		if( $to === File::ENCODING_UTF8 && $from === File::ENCODING_SJIS ){
+			// SJISからUTF-8への変換時には改行コードもCRLFからLFに置換する
+			$convert_eol_from = \File::EOL_CRLF;
+			$convert_eol_to   = \File::EOL_LF;
+		}
+		
 		$fp = fopen($this->filepath, "rt");
 		
 		$tmp_filepath = tempnam(null, "CSV");
 		$fw           = fopen($tmp_filepath, "w+t");
 		
 		while($line = fgets($fp)){
-			fputs($fw, mb_convert_encoding($line, $to, $from));
+			if( $convert_eol_from && $convert_eol_to ){
+				$line = str_replace($convert_eol_from, $convert_eol_to, $line);
+			}
+			$line = mb_convert_encoding($line, $to, $from);
+			fputs($fw, $line);
+			unset($line);
 		}
 		
 		fclose($fw);
@@ -237,8 +262,19 @@ class File
 	 */
 	static function make_download_filename($filename)
 	{
-		$filename = explode('.', $filename, 2);
-		$filename = Config::get('app.system_prefix') . '-' . Arr::get($filename, 0) . date('-Ymd-His') . '.' . Arr::get($filename, 1);
+		if( is_array($filename) ){
+			$filename = $filename['filename'] ?? '';
+		}
+		else{
+			$exploded_filename = explode('.', $filename, 2);
+			$filename          = '';
+			if( $system_prefix = Config::get('app.system_prefix') ){
+				$filename .= "{$system_prefix}-";
+			}
+			$filename .= ($exploded_filename[0] ?? '');
+			$filename .= date('-Ymd-His.');
+			$filename .= ($exploded_filename[1] ?? '');
+		}
 		
 		return $filename;
 	}
