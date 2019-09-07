@@ -48,6 +48,11 @@ class File
 		return file_get_contents($this->get_filepath());
 	}
 	
+	function hash($algo)
+	{
+		return hash_file($algo, $this->get_filepath());
+	}
+	
 	/**
 	 * CSVとして読み込む
 	 *
