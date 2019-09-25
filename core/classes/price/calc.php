@@ -80,14 +80,14 @@ class Price_Calc
 			'total_with_tax'    => '0',
 			'total_tax'         => '0',
 		];
-		foreach($this->partitioned_items['per_tax_rate'] as $tax_rate_index => $per_tax_rate){
+		foreach($this->partitioned_items['per_tax_rate'] ?? [] as $tax_rate_index => $per_tax_rate){
 			$per_tax_rate_total = [];
 			
-			foreach($per_tax_rate['per_tax_class'] as $tax_class_index => $per_tax_class){
+			foreach($per_tax_rate['per_tax_class'] ?? [] as $tax_class_index => $per_tax_class){
 				$per_tax_class_total = [];
 				
 				/** @var Price_Item $item */
-				foreach($per_tax_class['list'] as $item){
+				foreach($per_tax_class['list'] ?? [] as $item){
 					if( ! $per_tax_rate_total ){
 						$per_tax_rate_total = [
 							'tax_rate'          => $item->tax_rate,
