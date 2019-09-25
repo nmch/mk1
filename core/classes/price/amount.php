@@ -46,4 +46,14 @@ class Price_Amount
 		
 		return $this->rounded_amount;
 	}
+	
+	function get_qty()
+	{
+		return $this->qty;
+	}
+	
+	function get_unit_price()
+	{
+		return $this->unit_price;
+	}
 }
