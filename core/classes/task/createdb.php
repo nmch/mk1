@@ -27,7 +27,7 @@ class Task_Createdb extends Task
 		// 対象のデータベースが存在していなければ作成する
 		if( ! $r->count() ){
 			Log::info("[db create] データベース {$target_database_name} を作成します");
-			DB::query("create database {$target_database_name}")->execute($conn);
+			DB::query("create database \"{$target_database_name}\"")->execute($conn);
 			
 			if( isset($hooks['created']) ){
 				forward_static_call_array($hooks['created'], [$conn, $db_config]);
