@@ -112,7 +112,8 @@ SQL;
 				else{
 					printf("\n%10s : %4d : %s -> ", $group, $seq, $name);
 					
-					$query = file_get_contents($migration_file['dirname'] . '/' . $migration_file['basename']);
+					$filepath = ($migration_file['dirname'] . '/' . $migration_file['basename']);
+					$query    = file_get_contents($filepath);
 					
 					DB::start_transaction();
 					try {
@@ -139,6 +140,13 @@ SQL;
 							DB::clear_schema_cache();
 							
 							call_user_func([$task_class, $task_method_name]);
+						}
+						elseif( Arr::get($migration_file, 'extension') === 'php' ){
+							/**
+							 * PHPコード実行
+							 */
+							$func = include($filepath);
+							call_user_func($func);
 						}
 						else{
 							/**
