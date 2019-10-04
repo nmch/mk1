@@ -8,6 +8,7 @@ class ComposerStaticInitcfa7acf3ae3e91431094f696541cf49b
 {
     public static $files = array (
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
+        '3a37ebac017bc098e9a86b35401e7a68' => __DIR__ . '/..' . '/mongodb/mongodb/src/functions.php',
         'f084d01b0a599f67676cffef638aa95b' => __DIR__ . '/..' . '/smarty/smarty/libs/bootstrap.php',
     );
 
@@ -19,6 +20,10 @@ class ComposerStaticInitcfa7acf3ae3e91431094f696541cf49b
         'W' => 
         array (
             'Webmozart\\Assert\\' => 17,
+        ),
+        'M' => 
+        array (
+            'MongoDB\\' => 8,
         ),
         'D' => 
         array (
@@ -37,6 +42,10 @@ class ComposerStaticInitcfa7acf3ae3e91431094f696541cf49b
         'Webmozart\\Assert\\' => 
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
+        ),
+        'MongoDB\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mongodb/mongodb/src',
         ),
         'Doctrine\\Instantiator\\' => 
         array (
