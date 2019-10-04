@@ -33,4 +33,11 @@ return [
 		'table'          => 'sessions',
 		'gc_probability' => 5,
 	],
+	
+	// MongoDB
+	'mongodb'                => [
+		'cookie_name'    => 'mkgid',
+		'collection'     => 'sessions',
+		'gc_probability' => 5,
+	],
 ];
