@@ -12,10 +12,14 @@ class Session_Driver_Mongodb implements SessionHandlerInterface
 	
 	function gc($maxlifetime)
 	{
-		//if( $maxlifetime > 0 ){
-		//	$maxlifetime = intval($maxlifetime);
-		//	DB::delete()->from($this->config['table'])->where('age(updated_at)', '>', "{$maxlifetime} sec")->execute();
-		//}
+		$threashold      = (new DateTime())->modify("-{$maxlifetime} sec");
+		$threashold_msec = intval($threashold->format("U.u") * 1000);
+		
+		$collection = static::get_collection();
+		$query      = [
+			'updated_at' => ['$lt' => new \MongoDB\BSON\UTCDateTime($threashold_msec)],
+		];
+		$collection->deleteMany($query);
 		
 		return true;
 	}
