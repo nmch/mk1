@@ -4,6 +4,7 @@
         "smarty/smarty": "^3.1"
     },
     "require": {
-        "mongodb/mongodb": "^1.5"
+        "mongodb/mongodb": "^1.5",
+        "aws/aws-sdk-php": "^3.112"
     }
 }
