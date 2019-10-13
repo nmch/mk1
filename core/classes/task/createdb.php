@@ -7,8 +7,23 @@ class Task_Createdb extends Task
 {
 	function run($name = null)
 	{
-		$db_config = \Database_Connection::get_config($name);
-		$hooks     = Arr::get($db_config, "hooks") ?: [];
+		if( $name ){
+			$db_config = \Database_Connection::get_config($name);
+			$this->create($name, $db_config);
+		}
+		else{
+			$db_configs = Config::get('db');
+			foreach($db_configs ?: [] as $name => $db_config){
+				if( is_array($db_config) && ($db_config['connection'] ?? null) ){
+					$this->create($name, $db_config);
+				}
+			}
+		}
+	}
+	
+	function create($name, $db_config)
+	{
+		$hooks = Arr::get($db_config, "hooks") ?: [];
 		
 		$target_database_name = Arr::get($db_config, "connection.dbname");
 		if( ! $target_database_name ){
@@ -33,5 +48,6 @@ class Task_Createdb extends Task
 				forward_static_call_array($hooks['created'], [$conn, $db_config]);
 			}
 		}
+		
 	}
 }

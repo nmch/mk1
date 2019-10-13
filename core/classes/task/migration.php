@@ -152,7 +152,7 @@ SQL;
 							/**
 							 * SQL実行
 							 */
-							$r = DB::query($query)->execute();
+							$r = DB::query($query)->execute($migration_file['db'] ?? null);
 							//Log::coredebug($query,$r);
 						}
 						
@@ -209,7 +209,7 @@ SQL;
 				$pathinfo = pathinfo($migration_file);
 				$basename = $pathinfo['filename'];
 				Log::coredebug("migration: basename={$basename}");
-				if( preg_match('#^([0-9]+)(-([^_]+))?_(.*)$#', $basename, $match) ){
+				if( preg_match('#^([0-9]+)(-([^_]+))?_([^.]*)\.?(.*)?$#', $basename, $match) ){
 					//Log::coredebug("migration: migration filename match", $match);
 					$seq   = intval(Arr::get($match, 1));
 					$group = Arr::get($match, 3);
@@ -220,6 +220,7 @@ SQL;
 					$pathinfo['seq']   = $seq;
 					$pathinfo['group'] = $group;
 					$pathinfo['name']  = Arr::get($match, 4);
+					$pathinfo['db']    = Arr::get($match, 5);
 					
 					if( ! empty($data[$seq][$group]) ){
 						throw new MkException("グループ[{$group}]のシーケンス[{$seq}]の定義が重複しています");
