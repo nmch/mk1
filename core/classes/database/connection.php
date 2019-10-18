@@ -157,38 +157,35 @@ class Database_Connection
 		
 		// クエリ送信
 		if( $parameters ){
-			pg_send_query_params($this->connection, $sql, $parameters);
+			$r = pg_query_params($this->connection, $sql, $parameters);
 		}
 		else{
-			pg_send_query($this->connection, $sql);
+			$r = pg_query($this->connection, $sql);
 		}
 		
-		// 結果を全て取得して、エラーがあれば例外スロー、なければ最後の結果を返す
-		while($r = pg_get_result($this->connection)){
-			if( $r !== false ){
-				$query_result = $r;
-				$error_msg    = trim(pg_result_error($query_result));
-				if( $error_msg !== '' ){
-					$error_details = [
-						'message'                       => $error_msg
-						, PGSQL_DIAG_SEVERITY           => pg_result_error_field($query_result, PGSQL_DIAG_SEVERITY)
-						, PGSQL_DIAG_SQLSTATE           => pg_result_error_field($query_result, PGSQL_DIAG_SQLSTATE)
-						, PGSQL_DIAG_MESSAGE_PRIMARY    => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_PRIMARY)
-						, PGSQL_DIAG_MESSAGE_DETAIL     => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_DETAIL)
-						, PGSQL_DIAG_MESSAGE_HINT       => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_HINT)
-						, PGSQL_DIAG_STATEMENT_POSITION => pg_result_error_field($query_result, PGSQL_DIAG_STATEMENT_POSITION)
-						, PGSQL_DIAG_CONTEXT            => pg_result_error_field($query_result, PGSQL_DIAG_CONTEXT)
-						, PGSQL_DIAG_SOURCE_FILE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FILE)
-						, PGSQL_DIAG_INTERNAL_POSITION  => pg_result_error_field($query_result, PGSQL_DIAG_INTERNAL_POSITION)
-						, PGSQL_DIAG_INTERNAL_QUERY     => pg_result_error_field($query_result, PGSQL_DIAG_INTERNAL_QUERY)
-						, PGSQL_DIAG_SOURCE_LINE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_LINE)
-						, PGSQL_DIAG_SOURCE_FUNCTION    => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FUNCTION),
-					];
-					// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
-					Log::debug2("Query Error", $error_details);
-					$this->last_error_details = $error_details;
-					throw new DatabaseQueryError($error_msg);
-				}
+		if( $r !== false ){
+			$query_result = $r;
+			$error_msg    = trim(pg_result_error($query_result));
+			if( $error_msg !== '' ){
+				$error_details = [
+					'message'                       => $error_msg
+					, PGSQL_DIAG_SEVERITY           => pg_result_error_field($query_result, PGSQL_DIAG_SEVERITY)
+					, PGSQL_DIAG_SQLSTATE           => pg_result_error_field($query_result, PGSQL_DIAG_SQLSTATE)
+					, PGSQL_DIAG_MESSAGE_PRIMARY    => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_PRIMARY)
+					, PGSQL_DIAG_MESSAGE_DETAIL     => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_DETAIL)
+					, PGSQL_DIAG_MESSAGE_HINT       => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_HINT)
+					, PGSQL_DIAG_STATEMENT_POSITION => pg_result_error_field($query_result, PGSQL_DIAG_STATEMENT_POSITION)
+					, PGSQL_DIAG_CONTEXT            => pg_result_error_field($query_result, PGSQL_DIAG_CONTEXT)
+					, PGSQL_DIAG_SOURCE_FILE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FILE)
+					, PGSQL_DIAG_INTERNAL_POSITION  => pg_result_error_field($query_result, PGSQL_DIAG_INTERNAL_POSITION)
+					, PGSQL_DIAG_INTERNAL_QUERY     => pg_result_error_field($query_result, PGSQL_DIAG_INTERNAL_QUERY)
+					, PGSQL_DIAG_SOURCE_LINE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_LINE)
+					, PGSQL_DIAG_SOURCE_FUNCTION    => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FUNCTION),
+				];
+				// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
+				Log::debug2("Query Error", $error_details);
+				$this->last_error_details = $error_details;
+				throw new DatabaseQueryError($error_msg);
 			}
 		}
 		$this->last_error_details = [];

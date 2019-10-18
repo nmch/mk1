@@ -175,6 +175,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 		
 		if( ! $primary_key ){
+			$schema     = Database_Schema::get($table_name, []);
 			throw new MkException('empty primary key on ' . static::table());
 		}
 		

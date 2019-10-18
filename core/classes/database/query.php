@@ -34,6 +34,8 @@ class Database_Query
 	/** @var Database_Query */
 	protected $_query_insert_query = null;
 	
+	protected $db;
+	
 	
 	public function __construct($sql = null, $parameters = [])
 	{
@@ -59,6 +61,13 @@ class Database_Query
 	}
 	*/
 	
+	function set_db($db)
+	{
+		$this->db = $db;
+		
+		return $this;
+	}
+	
 	/**
 	 * クエリを実行する
 	 *
@@ -70,8 +79,9 @@ class Database_Query
 	 */
 	public function execute($db = null)
 	{
+		$db = $db ?: $this->db;
 		if( ! is_object($db) ){
-			$db = Database_Connection::instance($db);
+			$db = Database_Connection::instance($this->db);
 		}
 		if( $this->_query_type ){
 			$this->compile();
