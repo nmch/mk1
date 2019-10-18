@@ -52,6 +52,13 @@ class Database_Connection
 		return $this;
 	}
 	
+	function get_current_database_name()
+	{
+		$database_name = DB::query("select current_database()")->execute($this)->get('current_database');
+		
+		return $database_name;
+	}
+	
 	static function get_template1_connection(?string $name = null): Database_Connection
 	{
 		$config = \Database_Connection::get_config($name);

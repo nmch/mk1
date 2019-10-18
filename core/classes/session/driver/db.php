@@ -12,9 +12,15 @@ class Session_Driver_Db implements SessionHandlerInterface
 	
 	function gc($maxlifetime)
 	{
+		$database = Arr::get($this->config, "database");
+		
 		if( $maxlifetime > 0 ){
 			$maxlifetime = intval($maxlifetime);
-			DB::delete()->from($this->config['table'])->where('age(updated_at)', '>', "{$maxlifetime} sec")->execute();
+			DB::delete()
+			  ->from($this->config['table'])
+			  ->where('age(updated_at)', '>', "{$maxlifetime} sec")
+			  ->execute($database)
+			;
 		}
 		
 		return true;
@@ -22,13 +28,20 @@ class Session_Driver_Db implements SessionHandlerInterface
 	
 	function destroy($id)
 	{
-		DB::delete()->from($this->config['table'])->where('id', $id)->execute();
+		$database = Arr::get($this->config, "database");
+		
+		DB::delete()
+		  ->from($this->config['table'])
+		  ->where('id', $id)
+		  ->execute($database)
+		;
 		
 		return true;
 	}
 	
 	function write($id, $data)
 	{
+		$database     = Arr::get($this->config, "database");
 		$encoded_data = base64_encode($data);
 		$hash         = md5($encoded_data);
 		
@@ -42,7 +55,7 @@ class Session_Driver_Db implements SessionHandlerInterface
 			  ]
 		  )
 		  ->on_conflict(['id'])
-		  ->execute()
+		  ->execute($database)
 		;
 		Log::unsuppress();
 		
@@ -53,7 +66,8 @@ class Session_Driver_Db implements SessionHandlerInterface
 	{
 		$data = null;
 		
-		$r = DB::select()->from($this->config['table'])->where('id', $id)->execute();
+		$database = Arr::get($this->config, "database");
+		$r        = DB::select()->from($this->config['table'])->where('id', $id)->execute($database);
 		if( $r->count() ){
 			$record       = $r->get();
 			$hash         = Arr::get($record, 'hash');
@@ -82,7 +96,8 @@ class Session_Driver_Db implements SessionHandlerInterface
 	function open($savePath, $sessionName)
 	{
 		$table_name = Arr::get($this->config, "table");
-		$schema     = Database_Schema::get($table_name);
+		$database   = Arr::get($this->config, "database");
+		$schema     = Database_Schema::get($table_name, null, null, $database);
 		
 		if( ! $schema ){
 			$q = <<<SQL
@@ -94,7 +109,7 @@ CREATE TABLE sessions (
 	updated_at TIMESTAMP DEFAULT now()
 );
 SQL;
-			DB::query($q)->execute();
+			DB::query($q)->execute($database);
 			\Database_Schema::clear_cache();
 			$schema = Database_Schema::get($table_name);
 		}
@@ -105,14 +120,14 @@ SQL;
 ALTER TABLE sessions ADD created_at TIMESTAMP DEFAULT now();
 UPDATE sessions SET created_at=updated_at;
 SQL;
-			DB::query($q)->execute();
+			DB::query($q)->execute($database);
 			$schema_modified = true;
 		}
 		if( ! Arr::get($schema, 'columns.hash') ){
 			$q = <<<SQL
 ALTER TABLE sessions ADD hash TEXT;
 SQL;
-			DB::query($q)->execute();
+			DB::query($q)->execute($database);
 			$schema_modified = true;
 		}
 		if( $schema_modified ){

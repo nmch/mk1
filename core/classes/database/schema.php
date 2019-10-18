@@ -5,21 +5,31 @@ class Database_Schema
 	protected static $_attributes = [];
 	protected static $schema;
 	
-	static function get($name = null, $default = null, $no_cache = false)
+	static function get($name = null, $default = null, $no_cache = false, $database = null)
 	{
-		if( ! static::$schema && ! $no_cache ){
+		$connection    = Database_Connection::instance($database);
+		$database_name = $connection->get_current_database_name();
+		
+		$cache_key = "schema_{$database_name}";
+		
+		if( empty(static::$schema[$database_name]) && ! $no_cache ){
 			// キャッシュからの読み込みを試す
-			static::$schema = Cache::get('schema', 'core_db');
+			static::$schema[$database_name] = Cache::get($cache_key, 'core_db');
 		}
 		if( $no_cache ){
-			static::$schema = null;
+			static::$schema[$database_name] = null;
 		}
-		if( ! static::$schema ){
-			static::$schema = static::retrieve();
-			Cache::set('schema', 'core_db', static::$schema);
+		if( empty(static::$schema[$database_name]) ){
+			static::$schema[$database_name] = static::retrieve($database);
+			Cache::set($cache_key, 'core_db', static::$schema[$database_name]);
 		}
 		
-		$retval = $name ? Arr::get(static::$schema, $name, $default) : static::$schema;
+		if( $name ){
+			$retval = Arr::get(static::$schema[$database_name], "public.{$name}", $default);
+		}
+		else{
+			$retval = static::$schema[$database_name]['public'];
+		}
 		
 		return $retval;
 	}
@@ -29,10 +39,12 @@ class Database_Schema
 	 * @throws DatabaseQueryError
 	 * @throws MkException
 	 */
-	static function retrieve()
+	static function retrieve($database = null)
 	{
+		$connection = Database_Connection::instance($database);
+		
 		$primary_keys = [];
-		$constrains   = DB::select("conrelid,conkey")->from('pg_constraint')->where('contype', 'p')->execute();
+		$constrains   = DB::select("conrelid,conkey")->from('pg_constraint')->where('contype', 'p')->execute($connection);
 		foreach($constrains as $const){
 			$primary_keys[$const['conrelid']] = $const['conkey'];
 		}
@@ -40,6 +52,7 @@ class Database_Schema
 		$q                   = <<<SQL
 SELECT
 	c.oid AS table_oid,
+	nspname AS schema,
 	relname AS table,
 	attname AS name,
 	attnum AS num,
@@ -60,24 +73,26 @@ AND n.nspname='public'
 AND attnum >= 0 AND attisdropped IS NOT TRUE
 ORDER BY relname,attnum
 SQL;
-		$attributes          = DB::query($q)->execute();
+		$attributes          = DB::query($q)->execute($connection);
 		static::$_attributes = $attributes;
 		
 		$tables = [];
 		foreach($attributes as $attr){
-			if( empty($tables[$attr['table']]) ){
-				$tables[$attr['table']] = [
+			$schema = $attr['schema'];
+			
+			if( empty($tables[$schema][$attr['table']]) ){
+				$tables[$schema][$attr['table']] = [
 					'name'        => $attr['table'],
 					'description' => $attr['desc'],
 					'columns'     => [],
 					'primary_key' => [],
 				];
 			}
-			$tables[$attr['table']]['columns'][$attr['name']] = $attr;
+			$tables[$schema][$attr['table']]['columns'][$attr['name']] = $attr;
 			if( isset($primary_keys[$attr['table_oid']]) && in_array($attr['num'], $primary_keys[$attr['table_oid']]) ){
-				$tables[$attr['table']]['columns'][$attr['name']]['primary_key'] = true;
-				$tables[$attr['table']]['primary_key'][]                         = $attr['name'];
-				$tables[$attr['table']]['has_pkey']                              = true;
+				$tables[$schema][$attr['table']]['columns'][$attr['name']]['primary_key'] = true;
+				$tables[$schema][$attr['table']]['primary_key'][]                         = $attr['name'];
+				$tables[$schema][$attr['table']]['has_pkey']                              = true;
 			}
 		}
 		
