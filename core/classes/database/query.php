@@ -81,7 +81,7 @@ class Database_Query
 	{
 		$db = $db ?: $this->db;
 		if( ! is_object($db) ){
-			$db = Database_Connection::instance($this->db);
+			$db = Database_Connection::instance($db);
 		}
 		if( $this->_query_type ){
 			$this->compile();
