@@ -20,7 +20,9 @@ abstract class Session_Driver implements SessionHandlerInterface
 		$hash         = static::hash($encoded_data);
 		
 		$original_data = null;
-		switch($this->config['serialize_handler']){
+		
+		$serialize_handler = Config::get('session.serialize_handler');
+		switch($serialize_handler){
 			case 'php_serialize':
 				try {
 					$original_data = unserialize($data);
