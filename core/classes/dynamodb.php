@@ -26,6 +26,13 @@ class Dynamodb
 		;
 	}
 	
+	function get_marshaler(): \Aws\DynamoDb\Marshaler
+	{
+		$marshaler = new \Aws\DynamoDb\Marshaler(['nullify_invalid' => true]);
+		
+		return $marshaler;
+	}
+	
 	function list_tables()
 	{
 		$params = [
