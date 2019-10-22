@@ -1,15 +1,7 @@
 <?php
 
-class Session_Driver_Mongodb implements SessionHandlerInterface
+class Session_Driver_Mongodb extends Session_Driver
 {
-	private $config;
-	private $data;
-	
-	function __construct($config = [])
-	{
-		$this->config = $config;
-	}
-	
 	function gc($maxlifetime)
 	{
 		$threashold      = (new DateTime())->modify("-{$maxlifetime} sec");
@@ -50,12 +42,7 @@ class Session_Driver_Mongodb implements SessionHandlerInterface
 	
 	function write($id, $data)
 	{
-		$encoded_data = base64_encode($data);
-		try {
-			$decoded_data = unserialize($data);
-		} catch(Exception $e){
-			$decoded_data = null;
-		}
+		list($encoded_data, $hash, $original_data) = $this->encode_data($data);
 		
 		$collection = static::get_collection();
 		try {
@@ -63,7 +50,8 @@ class Session_Driver_Mongodb implements SessionHandlerInterface
 				'$set'         => [
 					'id'       => $id,
 					'php_data' => $encoded_data,
-					'data'     => $decoded_data,
+					'data'     => $original_data,
+					'hash'     => $hash,
 				],
 				'$currentDate' => [
 					'updated_at' => true,
@@ -83,9 +71,7 @@ class Session_Driver_Mongodb implements SessionHandlerInterface
 		$collection = static::get_collection();
 		$r          = $collection->findOne(['id' => $id]);
 		
-		$data = $r ? base64_decode($r->php_data ?? null) : null;
-		
-		//Log::coredebug("session read", $id, $data);
+		$data = $this->decode_data($r->php_data ?? null, $r->hash ?? null);
 		
 		return strval($data);
 	}
@@ -97,8 +83,9 @@ class Session_Driver_Mongodb implements SessionHandlerInterface
 	
 	function open($savePath, $sessionName)
 	{
-		$collection = static::get_collection();
-		$r          = $collection->listIndexes();
+		$collection = $this->get_collection();
+		
+		$r = $collection->listIndexes();
 		
 		$index_name = "id_unique";
 		

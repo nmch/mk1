@@ -26,12 +26,22 @@ class Session
 			if( ! class_exists($driver_class_name) ){
 				throw new Exception('driver not found');
 			}
-			if( ! is_subclass_of($driver_class_name, 'SessionHandlerInterface') ){
+			if( method_exists($driver_class_name, "instance") ){
+				$driver = forward_static_call([$driver_class_name, "instance"], $driver_config);
+			}
+			else{
+				$driver = new $driver_class_name($driver_config);
+			}
+			if( ! is_subclass_of($driver, 'SessionHandlerInterface') ){
 				throw new Exception('driver should extend SessionHandlerInterface');
 			}
-			$driver = new $driver_class_name($driver_config);
 			
-			session_set_save_handler($driver, false);
+			if( method_exists($driver, 'register') ){
+				$driver->register();
+			}
+			else{
+				session_set_save_handler($driver, false);
+			}
 		}
 		
 		
@@ -45,6 +55,8 @@ class Session
 		if( isset($driver_config['path']) ){
 			session_save_path($driver_config['path']);
 		}
+		ini_set('session.serialize_handler', $config['serialize_handler'] ?? 'php_serialize');
+		
 		$r = false;
 		try {
 			$r = session_start();

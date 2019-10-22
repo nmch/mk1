@@ -1,15 +1,7 @@
 <?php
 
-class Session_Driver_Db implements SessionHandlerInterface
+class Session_Driver_Db extends Session_Driver
 {
-	private $config;
-	private $data;
-	
-	function __construct($config = [])
-	{
-		$this->config = $config;
-	}
-	
 	function gc($maxlifetime)
 	{
 		$database = Arr::get($this->config, "database");
@@ -41,9 +33,8 @@ class Session_Driver_Db implements SessionHandlerInterface
 	
 	function write($id, $data)
 	{
-		$database     = Arr::get($this->config, "database");
-		$encoded_data = base64_encode($data);
-		$hash         = md5($encoded_data);
+		$database = Arr::get($this->config, "database");
+		list($encoded_data, $hash) = $this->encode_data($data);
 		
 		Log::suppress();
 		DB::insert($this->config['table'])
@@ -69,19 +60,9 @@ class Session_Driver_Db implements SessionHandlerInterface
 		$database = Arr::get($this->config, "database");
 		$r        = DB::select()->from($this->config['table'])->where('id', $id)->execute($database);
 		if( $r->count() ){
-			$record       = $r->get();
-			$hash         = Arr::get($record, 'hash');
-			$encoded_data = Arr::get($record, 'data');
+			$record = $r->get();
 			
-			if( $hash ){
-				$decoded_data = base64_decode($encoded_data);
-				if( $encoded_data !== false ){
-					$encoded_data_hash = md5($encoded_data);
-					if( $encoded_data_hash === $hash ){
-						$data = $decoded_data;
-					}
-				}
-			}
+			$data = $this->decode_data(Arr::get($record, 'data'), Arr::get($record, 'hash'));
 		}
 		
 		//Log::coredebug("session read",$id,$data);
