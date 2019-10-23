@@ -153,46 +153,34 @@ class Database_Connection
 	
 	function query($sql, $parameters = [])
 	{
-		Log::coredebug("[dbconn] SQL {$this->connection} = $sql / " . var_export($parameters, true));
+		Log::coredebug("[dbconn] SQL {$this->connection} = {$sql} / " . var_export($parameters, true));
 		
-		// クエリ送信
+		/**
+		 * クエリ送信
+		 * pg_result_error()を使うためにはpg_send_query()を使用するようにとドキュメントには書いてあるが
+		 * pg_send_query()を使うと接続が非同期モードに変換される。非同期モードになった接続はAWS Aurora Serverlessで使うと
+		 * プログラム終了時にコネクションが切られない問題が発生したため同期モードのまま使えるpg_query()を使うように変更した (2019.10)
+		 *
+		 * @see https://www.php.net/manual/ja/function.pg-result-error.php
+		 */
 		if( $parameters ){
-			$r = pg_query_params($this->connection, $sql, $parameters);
+			$query_result = pg_query_params($this->connection, $sql, $parameters);
 		}
 		else{
-			$r = pg_query($this->connection, $sql);
+			$query_result = pg_query($this->connection, $sql);
 		}
 		
-		if( $r !== false ){
-			$query_result = $r;
-			$error_msg    = trim(pg_result_error($query_result));
-			if( $error_msg !== '' ){
-				$error_details = [
-					'message'                       => $error_msg
-					, PGSQL_DIAG_SEVERITY           => pg_result_error_field($query_result, PGSQL_DIAG_SEVERITY)
-					, PGSQL_DIAG_SQLSTATE           => pg_result_error_field($query_result, PGSQL_DIAG_SQLSTATE)
-					, PGSQL_DIAG_MESSAGE_PRIMARY    => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_PRIMARY)
-					, PGSQL_DIAG_MESSAGE_DETAIL     => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_DETAIL)
-					, PGSQL_DIAG_MESSAGE_HINT       => pg_result_error_field($query_result, PGSQL_DIAG_MESSAGE_HINT)
-					, PGSQL_DIAG_STATEMENT_POSITION => pg_result_error_field($query_result, PGSQL_DIAG_STATEMENT_POSITION)
-					, PGSQL_DIAG_CONTEXT            => pg_result_error_field($query_result, PGSQL_DIAG_CONTEXT)
-					, PGSQL_DIAG_SOURCE_FILE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FILE)
-					, PGSQL_DIAG_INTERNAL_POSITION  => pg_result_error_field($query_result, PGSQL_DIAG_INTERNAL_POSITION)
-					, PGSQL_DIAG_INTERNAL_QUERY     => pg_result_error_field($query_result, PGSQL_DIAG_INTERNAL_QUERY)
-					, PGSQL_DIAG_SOURCE_LINE        => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_LINE)
-					, PGSQL_DIAG_SOURCE_FUNCTION    => pg_result_error_field($query_result, PGSQL_DIAG_SOURCE_FUNCTION),
-				];
-				// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
-				Log::debug2("Query Error", $error_details);
-				$this->last_error_details = $error_details;
-				throw new DatabaseQueryError($error_msg);
-			}
+		if( $query_result === false ){
+			$error_msg     = trim(pg_last_error($this->connection));
+			$error_details = [
+				'message' => $error_msg,
+			];
+			// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
+			Log::debug2("Query Error", $error_details);
+			$this->last_error_details = $error_details;
+			throw new DatabaseQueryError($error_msg);
 		}
 		$this->last_error_details = [];
-		
-		if( empty($query_result) ){
-			throw new DatabaseQueryError("Result is empty");
-		}
 		
 		return new Database_Resultset($query_result);
 	}
