@@ -19,8 +19,9 @@ abstract class Session_Driver implements SessionHandlerInterface
 		$encoded_data = base64_encode($data); // session.serialize_handlerが'php'の場合、バイナリが渡されることがあるのでbase64でエンコードしたものを保存する
 		$hash         = static::hash($encoded_data);
 		
-		$original_data = null;
-		switch($this->config['serialize_handler']){
+		$original_data     = null;
+		$serialize_handler = Config::get('session.serialize_handler');
+		switch($serialize_handler){
 			case 'php_serialize':
 				try {
 					$original_data = unserialize($data);
