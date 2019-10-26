@@ -13,7 +13,6 @@ return [
 	'flash_auto_expire'      => true,
 	'flash_expire_after_get' => true,
 	'serialize_handler'      => 'php_serialize',
-	'data_format'            => 'base64', // base64 or json
 	
 	// PHPデフォルトセッションハンドラ
 	'_default'               => [
