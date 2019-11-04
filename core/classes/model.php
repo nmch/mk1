@@ -151,6 +151,11 @@ class Model implements Iterator, Countable, ArrayAccess
 		return $query;
 	}
 	
+	function get_primary_key()
+	{
+		return static::primary_key();
+	}
+	
 	static function primary_key()
 	{
 		$primary_key = (static::$_primary_keys[get_called_class()] ?? null);
@@ -541,11 +546,11 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 		
 		// 更新・挿入されたアイテムはoriginalとして保存し、_dataからは消す
+		$this->_save_diff = [];
 		if( $r ){
 			$this->_original_before_save = $this->_original;
 			
-			$new_data         = $r->get();
-			$this->_save_diff = [];
+			$new_data = $r->get();
 			
 			//echo "new_data = "; print_r($new_data);
 			//Log::debug2("[model] new_data = ",$new_data,$this->_original);
