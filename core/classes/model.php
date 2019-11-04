@@ -175,7 +175,7 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 		
 		if( ! $primary_key ){
-			$schema     = Database_Schema::get($table_name, []);
+			$schema = Database_Schema::get($table_name, []);
 			throw new MkException('empty primary key on ' . static::table());
 		}
 		
@@ -552,8 +552,9 @@ class Model implements Iterator, Countable, ArrayAccess
 			if( $new_data ){
 				foreach($new_data as $key => $value){
 					//Log::debug2("save key",$key,$this->get($key),$value);
-					if( $this->{$key} !== $value ){
-						$this->_save_diff[0][$key] = $this->$key;
+					$value_before_save = ($this->_original_before_save[$key] ?? null);
+					if( $value_before_save !== $value ){
+						$this->_save_diff[0][$key] = $value_before_save;
 						$this->_save_diff[1][$key] = $value;
 						//Log::debug2("save diff",$this->_save_diff);
 					}
@@ -742,10 +743,10 @@ class Model implements Iterator, Countable, ArrayAccess
 	/**
 	 * データを再ロードする
 	 *
-	 * @see Model::after_load()
-	 * @throws MkException
-	 * @throws RecordNotFoundException
 	 * @return Model
+	 * @throws RecordNotFoundException
+	 * @throws MkException
+	 * @see Model::after_load()
 	 */
 	function reload(array $ignore_conditions = null)
 	{
