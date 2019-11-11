@@ -1,8 +1,8 @@
 <?php
-return function ($value) {
-	if( $value ){
-		if( ! preg_match('/^[^@]+@.+\..+/', $value) ){
-			throw new ValidateErrorException('形式が違います');
+return function($value){
+	if( strlen($value) ){
+		if( ! filter_var($value, FILTER_VALIDATE_EMAIL) ){
+			throw new ValidateErrorException('正しいメールアドレスの形式ではありません');
 		}
 	}
 };

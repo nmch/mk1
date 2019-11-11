@@ -11,5 +11,5 @@ return function ($value) {
 			return $value;
 		}
 	}
-	throw new ValidateErrorException('形式が違います');
+	throw new ValidateErrorException('正しい日付の形式ではありません');
 };

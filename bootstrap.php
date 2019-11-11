@@ -32,7 +32,7 @@ class ValidateErrorException extends MkException
 		static::$af = $af;
 	}
 	
-	public function get_af()
+	public function get_af(): Actionform
 	{
 		return static::$af ?: Actionform::instance();
 	}
@@ -42,7 +42,7 @@ class ImageErrorException extends MkException
 {
 }
 
-set_error_handler(function ($errno, $errstr, $errfile, $errline){
+set_error_handler(function($errno, $errstr, $errfile, $errline){
 	//echo "errno=$errno / ".error_reporting()."<HR>";
 	if( error_reporting() & $errno ){    // ←ここを無効にするとSmartyが新規にコンパイルした中間コードを保存する際にエラーが起きる
 		throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
@@ -50,12 +50,12 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline){
 	}
 }
 );
-set_exception_handler(function ($e){
+set_exception_handler(function($e){
 	ErrorHandler::exception_handler($e);
 	exit;
 }
 );
-register_shutdown_function(function (){
+register_shutdown_function(function(){
 	ErrorHandler::shutdown_handler();
 }
 );
@@ -178,7 +178,7 @@ else{
 	$request_method = Arr::get($_SERVER, 'REQUEST_METHOD');
 	Log::info("[REQUEST] $request_method $uri");
 	
-	ErrorHandler::add_error_handler(function ($e){
+	ErrorHandler::add_error_handler(function($e){
 		$af = Actionform::instance();
 		$af->set('error', $e);
 		$uri         = explode('/', Config::get('routes._500_', 'default/500'));
