@@ -211,7 +211,7 @@ trait Logic_View_Pager
 				
 				// 空文字列の要素は削除する
 				foreach($values as $values_key => $str){
-					if( ! strlen($str) ){
+					if( is_scalar($str) && ! strlen($str) ){
 						unset($values[$values_key]);
 					}
 				}
