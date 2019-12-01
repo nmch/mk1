@@ -23,6 +23,10 @@ class HttpNotFoundException extends MkException
 {
 }
 
+class UnauthorizedException extends MkException
+{
+}
+
 class ValidateErrorException extends MkException
 {
 	protected static $af;
