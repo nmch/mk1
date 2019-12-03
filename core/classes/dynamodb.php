@@ -33,11 +33,77 @@ class Dynamodb
 		return $marshaler;
 	}
 	
-	function list_tables()
+	function find_all(array $params, $method = "scan", $yield_per_page = false)
 	{
-		$params = [
-			'Limit' => 1,
-		];
+		$next_token = null;
+		do{
+			if( $next_token ){
+				$params['ExclusiveStartKey'] = $next_token;
+			}
+			
+			if( $method === 'scan' ){
+				$r = $this->scan($params);
+			}
+			else{
+				$r = $this->query($params);
+			}
+			
+			if( $r['LastEvaluatedKey'] ?? null ){
+				$next_token = $r['LastEvaluatedKey'];
+			}
+			else{
+				$next_token = null;
+			}
+			
+			if( $yield_per_page ){
+				yield $r;
+			}
+			else{
+				foreach($r['Items'] ?? [] as $raw_item){
+					yield $raw_item;
+				}
+			}
+		} while($next_token);
+	}
+	
+	function query(array $params)
+	{
+		return $this->client->query($params);
+	}
+	
+	function scan(array $params)
+	{
+		return $this->client->scan($params);
+	}
+	
+	function describe_table(array $params)
+	{
+		$r = $this->client->describeTable($params);
+		
+		return $r['Table'];
+	}
+	
+	function delete_table(array $params)
+	{
+		$r = $this->client->deleteTable($params);
+		
+		return $r;
+	}
+	
+	function create_table(array $params)
+	{
+		$r = $this->client->createTable($params);
+		
+		return $r;
+	}
+	
+	function update_item($params)
+	{
+		return $this->client->updateItem($params);
+	}
+	
+	function list_tables(array $params = [])
+	{
 		while(true){
 			$r = $this->client->listTables($params);
 			
