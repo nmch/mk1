@@ -178,6 +178,11 @@ class Mk
 		return $unqualified_class;
 	}
 	
+	static function uuidv4(): string
+	{
+		return Ramsey\Uuid\Uuid::uuid4()->toString();
+	}
+	
 	static function url2a($content)
 	{
 		$regex       =
