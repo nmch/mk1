@@ -22,6 +22,8 @@ class Price_Item
 	/** @var Price_Round */
 	public $tax_round;
 	
+	public $additional_data;
+	
 	public $calc_log = [];
 	public $calced_price;
 	public $calced_tax_adjust;
@@ -32,11 +34,12 @@ class Price_Item
 	
 	function __construct(
 		Price_Amount $amount
-		, Price_Amount $tax_adjust
+		, ?Price_Amount $tax_adjust
 		, Price_Tax_Class $tax_class
 		, Price_Tax_Rate $tax_rate
 		, Price_Round $price_round
 		, Price_Round $tax_round
+		, $additional_data = null
 	)
 	{
 		$this->amount      = $amount;
@@ -45,6 +48,8 @@ class Price_Item
 		$this->tax_rate    = $tax_rate;
 		$this->price_round = $price_round;
 		$this->tax_round   = $tax_round;
+		
+		$this->additional_data = $additional_data;
 	}
 	
 	function calc(): Price_Item
@@ -54,7 +59,7 @@ class Price_Item
 		$this->calced_price = $this->amount->get_rounded_amount();
 		$this->calc_log[]   = "明細金額: {$this->calced_price}";
 		
-		$this->calced_tax_adjust = $this->tax_adjust->get_rounded_amount();
+		$this->calced_tax_adjust = $this->tax_adjust ? $this->tax_adjust->get_rounded_amount() : 0;
 		$this->calc_log[]        = "調整消費税額: {$this->calced_tax_adjust}";
 		
 		$scale = 3;

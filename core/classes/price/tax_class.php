@@ -9,6 +9,10 @@
  */
 class Price_Tax_Class
 {
+	const TAX_EXCLUDING = 1;
+	const TAX_INCLUDING = 2;
+	const NOTAX         = 3;
+	
 	protected $tax_class;
 	protected $permitted_tax_classes = [1, 2, 3];
 	

@@ -21,7 +21,6 @@ class Price_Amount
 	{
 		$this->unit_price = $unit_price;
 		$this->qty        = $qty;
-		$this->raw_amount = bcmul($unit_price, $qty, 0);
 		
 		$this->set_rounding_type($round);
 	}
@@ -42,6 +41,13 @@ class Price_Amount
 	
 	function get_rounded_amount(): string
 	{
+		if( ! $this->rounding_type ){
+			throw new Exception();
+		}
+		if( $this->raw_amount === null ){
+			$this->raw_amount = bcmul($this->unit_price, $this->qty, $this->rounding_type->get_scale() + 1);
+		}
+		
 		$this->rounded_amount = $this->rounding_type ? $this->rounding_type->round($this->raw_amount) : $this->raw_amount;
 		
 		return $this->rounded_amount;

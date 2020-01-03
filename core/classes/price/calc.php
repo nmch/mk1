@@ -29,6 +29,16 @@ class Price_Calc
 		return $this;
 	}
 	
+	function get_items(): array
+	{
+		return $this->items;
+	}
+	
+	function get_items_count(): int
+	{
+		return count($this->items);
+	}
+	
 	function calc(
 		Price_Tax_Calc_Type $tax_calc_type
 		, Price_Round $price_round
@@ -58,7 +68,6 @@ class Price_Calc
 		}
 		$this->existing_tax_rates   = array_flip($tax_rate_key_map);
 		$this->existing_tax_classes = array_flip($tax_class_key_map);
-		
 		
 		foreach($this->items as $item){
 			// 消費税率別・税込区分別に整理する
