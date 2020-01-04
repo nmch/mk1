@@ -101,4 +101,9 @@ class Price_Item
 		
 		return $this;
 	}
+	
+	function __get($name)
+	{
+		return is_array($this->additional_data) ? ($this->additional_data[$name] ?? null) : null;
+	}
 }
