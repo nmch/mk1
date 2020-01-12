@@ -18,12 +18,7 @@ class Text_Line_Definition extends Text_Line
 	{
 		$description = null;
 		if( count($args) === 1 ){
-			if( is_scalar($args[0]) ){
-				$description = $args[0];
-			}
-			else{
-				throw new UnexpectedValueException();
-			}
+			$description = strval($args[0]);
 		}
 		elseif( count($args) === 2 ){
 			if( is_array($args[0]) && is_string($args[1]) ){
