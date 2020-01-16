@@ -36,6 +36,7 @@ class Database_Query
 	
 	protected $db;
 	
+	const ORDER_BY_INSERT_TOP = true;
 	
 	public function __construct($sql = null, $parameters = [])
 	{
@@ -975,16 +976,21 @@ class Database_Query
 	 *
 	 * @return Database_Query
 	 */
-	function order_by($column, $direction = null)
+	function order_by($column, $direction = null, $insert_top = false)
 	{
 		//Log::coredebug("[database_query] order_by",$column,$direction);
 		if( $column ){
 			if( ! is_array($column) ){
-				$this->order_by([(string)$column => $direction]);
+				$this->order_by([(string)$column => $direction], null, $insert_top);
 			}
 			else{
 				foreach($column as $_column => $_direction){
-					$this->_query_orderby[] = [$_column, $_direction];
+					if( $insert_top ){
+						array_unshift($this->_query_orderby, [$_column, $_direction]);
+					}
+					else{
+						$this->_query_orderby[] = [$_column, $_direction];
+					}
 				}
 			}
 		}
