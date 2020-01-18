@@ -23,6 +23,16 @@ class File
 		$this->mime     = $mime ?: "application/octet-stream";
 	}
 	
+	static function create_from_uploaded_file(array $file)
+	{
+		$filename = $file['tmp_name'] ?? null;
+		if( ! is_uploaded_file($filename) ){
+			throw new Exception();
+		}
+		
+		return new \File($filename);
+	}
+	
 	function fopen($mode = 'rt')
 	{
 		return fopen($this->filepath, $mode);
