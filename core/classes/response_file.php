@@ -38,6 +38,16 @@ class Response_File extends Response
 		}
 	}
 	
+	function get_filename()
+	{
+		return $this->filename;
+	}
+	
+	function get_filebody()
+	{
+		return $this->filebody;
+	}
+	
 	function set_filebody($filebody)
 	{
 		$this->filebody = $filebody;
