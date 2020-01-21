@@ -154,9 +154,6 @@ class Curl
 		else{
 			$this->curl_options = Arr::merge($this->curl_options, $options);
 		}
-		if( curl_setopt_array($this->curl, $this->curl_options) !== true ){
-			throw new MkException("curlオプションが設定できませんでした");
-		}
 		
 		return $this;
 	}
@@ -247,7 +244,7 @@ class Curl
 	 */
 	private function retrieve($path)
 	{
-		$curl_options = [];
+		$curl_options = $this->curl_options ?: [];
 		
 		// メソッドごとのcURLの設定
 		switch($this->method){
@@ -353,7 +350,9 @@ class Curl
 		}
 		
 		Log::coredebug("cURL リクエストオプション", $curl_options);
-		curl_setopt_array($this->curl, $curl_options);
+		if( curl_setopt_array($this->curl, $curl_options) !== true ){
+			throw new MkException("cURL リクエストオプションが設定できませんでした");
+		}
 		
 		Log::coredebug("cURLの実行準備が整いました: method={$this->method} / url={$url}");
 		
