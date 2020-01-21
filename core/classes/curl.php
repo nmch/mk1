@@ -360,7 +360,7 @@ class Curl
 		
 		Log::coredebug("cURL HTTPレスポンスコード: {$this->get_response_code()}");
 		$http_code                = $this->get_response_code();
-		$response_code_is_not_200 = ($http_code !== 200);
+		$response_code_is_not_200 = ((intval($http_code) / 100) === 2);
 		
 		if( Arr::get($this->options, static::OP_EXCEPTION_WHEN_NOT_200) && $response_code_is_not_200 ){
 			throw new MkException('Bad Http Response', $http_code);
