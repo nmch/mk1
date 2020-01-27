@@ -79,14 +79,22 @@ class File
 		/**
 		 * エンコーディング自動検出
 		 */
+		$skip_bom = null;
 		if( ! $convert_encoding ){
-			$fp              = fopen($this->filepath, "rt");
-			$fitst_line      = fread($fp, 1024 * 1024);
-			$source_encoding = mb_detect_encoding($fitst_line, [
-				'ASCII',
-				'UTF-8',
-				'SJIS-win',
-			]);
+			$fp         = fopen($this->filepath, "rt");
+			$fitst_line = fread($fp, 10 * 1024);
+			// UTF-8 BOM
+			if( substr($fitst_line, 0, 3) === "\xEF\xBB\xBF" ){
+				$source_encoding = 'UTF-8';
+				$skip_bom        = 3;
+			}
+			else{
+				$source_encoding = mb_detect_encoding($fitst_line, [
+					'ASCII',
+					'UTF-8',
+					'SJIS-win',
+				]);
+			}
 			if( $source_encoding !== File::ENCODING_UTF8 ){
 				$convert_encoding = $source_encoding;
 			}
@@ -94,7 +102,10 @@ class File
 		
 		$src_file = $convert_encoding ? $this->convert_encoding(File::ENCODING_UTF8, $convert_encoding) : $this;
 		
-		$fp       = $src_file->fopen();
+		$fp = $src_file->fopen();
+		if( $skip_bom ){
+			fseek($fp, $skip_bom);
+		}
 		$line_num = 0;
 		
 		// $ignore_head_linesのぶんだけ先頭行を捨てる
