@@ -66,6 +66,11 @@ class Price_Round
 		$power_factor = bcpow(10, $this->scale + 1);
 		$value        = bcmul($original_value, $power_factor);
 		
+		if( $value_is_negative ){
+			// 繰り上がり処理の際に絶対値に加算で処理できるよう(JIS Z8401)、元が負の数だった場合には符号を反転させる
+			$value = bcmul($value, '-1');
+		}
+		
 		// この時点で $value 1の桁が端数になっている。
 		/** @var string $fraction 端数。10未満の整数。 */
 		$fraction = bcmod($value, '10');
