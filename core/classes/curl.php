@@ -489,6 +489,9 @@ class Curl
 				//			    CURLOPT_FILE => 'step1.txt',
 				CURLOPT_STDERR         => $this->error_output_file,
 				CURLOPT_WRITEHEADER    => $this->transfer_header_file,
+				
+				CURLOPT_TIMEOUT        => 300,
+				CURLOPT_CONNECTTIMEOUT => 300,
 			];
 		
 		if( $camouflage_ua = Arr::get($this->options, static::OP_CAMOUFLAGE_UA) ){
