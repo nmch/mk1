@@ -118,7 +118,7 @@ class Aws_Sdk
 		
 		$sdk = $this->get_sdk($config);
 		
-		$client = $sdk->createDynamoDb();
+		$client = $sdk->createS3();
 		
 		return $client;
 	}
