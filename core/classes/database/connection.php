@@ -7,6 +7,7 @@ class Database_Connection
 	/** @var resource $connection */
 	private $connection;
 	private $savepoint_counter = 0;
+	private $current_database_name;
 	/** @var array 最後のエラー(最後のクエリが成功した場合は空配列) */
 	private $last_error_details = [];
 	
@@ -54,9 +55,11 @@ class Database_Connection
 	
 	function get_current_database_name()
 	{
-		$database_name = DB::query("select current_database()")->execute($this)->get('current_database');
+		if( $this->current_database_name === null ){
+			$this->current_database_name = DB::query("select current_database()")->execute($this)->get('current_database');
+		}
 		
-		return $database_name;
+		return $this->current_database_name;
 	}
 	
 	static function get_template1_connection(?string $name = null): Database_Connection
