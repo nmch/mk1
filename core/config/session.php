@@ -47,22 +47,6 @@ return [
 		'cookie_name'    => 'mkyid',
 		'connection'     => null,
 		'table'          => 'sessions',
-		'table_config'   => [
-			// テーブル作成時のパラメーター
-			'KeySchema'            => [
-				[
-					'AttributeName' => 'id',
-					'KeyType'       => 'HASH'  //Partition key
-				],
-			],
-			'AttributeDefinitions' => [
-				[
-					'AttributeName' => 'id',
-					'AttributeType' => 'S',
-				],
-			],
-			'BillingMode'          => 'PAY_PER_REQUEST',
-		],
 		'handler_config' => [], // \Aws\DynamoDb\SessionHandler::fromClient()に渡されるパラメーター
 		'gc_probability' => 5,
 	],

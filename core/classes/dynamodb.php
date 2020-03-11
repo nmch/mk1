@@ -90,8 +90,15 @@ class Dynamodb
 		return $r;
 	}
 	
-	function create_table(array $params)
+	function create_table(array $params, $replace = false)
 	{
+		if( $replace ){
+			$table_name = $params['TableName'];
+			if( $this->table_exists($table_name) ){
+				$this->delete_table(['TableName' => $table_name]);
+			}
+		}
+		
 		$r = $this->client->createTable($params);
 		
 		return $r;
@@ -133,5 +140,18 @@ class Dynamodb
 		}
 		
 		return false;
+	}
+	
+	function create_table_if_not_exists(string $table_name, array $table_config)
+	{
+		$dynamodb_client = $this->client;
+		
+		if( ! $this->table_exists($table_name) ){
+			$table_config += [
+				'TableName' => $table_name,
+			];
+			
+			$dynamodb_client->createTable($table_config);
+		}
 	}
 }
