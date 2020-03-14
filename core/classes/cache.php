@@ -109,9 +109,13 @@ class Cache
 		
 		$cache_dir = static::cache_dir($key, $group);
 		if( ! file_exists($cache_dir) ){
-			$r = mkdir($cache_dir, 0777, true);
-			if( $r === false ){
-				throw new Exception('cannot make cache dir');
+			try {
+				$r = mkdir($cache_dir, 0777, true);
+				if( $r === false ){
+					throw new Exception();
+				}
+			} catch(Exception $e){
+				throw new Exception("cannot make cache dir [{$cache_dir}]", $e->getCode(), $e);
 			}
 		}
 		
