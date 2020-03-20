@@ -36,7 +36,7 @@ class Mk
 		$start_log               = "Mk1 Start ";
 		$start_log               .= "(env:" . self::$env . (self::is_production() ? ' [PRODUCTION]' : '') . ")";
 		$start_log               .= " ============================================";
-		Log::info($start_log);
+		Log::coredebug($start_log);
 		//Log::coredebug("[mk] env=" . self::$env . (self::is_production() ? ' [PRODUCTION]' : ''));
 		if( self::is_production() ){
 			error_reporting(0);

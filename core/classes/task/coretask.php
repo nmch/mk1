@@ -33,7 +33,7 @@ class Task_Coretask extends Task
 		try {
 			$job = Job::fetch();
 			if( $job instanceof Job && $job->job_id ){
-				Log::info("[job] Job {$job->job_id} fetched by " . gethostname() . '(PID:' . getmypid() . ')');
+				Log::coredebug("[job] Job {$job->job_id} fetched by " . gethostname() . '(PID:' . getmypid() . ')');
 				
 				if( ! $job->job_task_name || ! $job->job_method_name ){
 					throw new Exception('invalid task');
@@ -47,7 +47,7 @@ class Task_Coretask extends Task
 				
 				Task_Coretask::refine($cmd, [$job]);
 				$job->success();
-				Log::info("[job] Job {$job->job_id} was succeeded");
+				Log::coredebug("[job] Job {$job->job_id} was succeeded");
 			}
 			else{
 				return 1;
@@ -114,7 +114,7 @@ class Task_Coretask extends Task
 		$cmd      = PROJECTPATH . "job_runner.sh";
 		$downfile = PROJECTPATH . "down";
 		
-		Log::info("[job] ジョブ実行デーモン 多重度=$concurrency");
+		Log::coredebug("[job] ジョブ実行デーモン 多重度=$concurrency");
 		$procs = [];
 		$stats = [];
 		while(1){
@@ -132,7 +132,7 @@ class Task_Coretask extends Task
 						Log::error('[job] 新しいプロセスの起動に失敗しました');
 					}
 					else{
-						Log::info('[job] 新しいプロセスを起動しました');
+						Log::coredebug('[job] 新しいプロセスを起動しました');
 						usleep(500 * 1000);
 					}
 				}

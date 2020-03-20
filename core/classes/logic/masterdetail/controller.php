@@ -69,7 +69,7 @@ trait Logic_Masterdetail_Controller
 				$action  = 'delete';
 			}
 			else{
-				Log::info("プリセット [{$af_preset_name}] でバリデーションと自動保存を行います");
+				Log::coredebug("プリセット [{$af_preset_name}] でバリデーションと自動保存を行います");
 				Log::coredebug("保存前af", $this->af->as_array());
 				
 				$this->af->validate($af_preset_name);

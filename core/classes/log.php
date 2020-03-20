@@ -103,7 +103,7 @@ class Log
 				continue;
 			}
 			
-			Log::info("Log [name={$name} / driver={$driver}] suppressed");
+			Log::coredebug("Log [name={$name} / driver={$driver}] suppressed");
 			static::$drivers[$index]['suppress'] = true;
 		}
 	}
@@ -127,7 +127,7 @@ class Log
 				continue;
 			}
 			
-			Log::info("Log [name={$name} / driver={$driver}] unsuppressed");
+			Log::coredebug("Log [name={$name} / driver={$driver}] unsuppressed");
 			static::$drivers[$index]['suppress'] = false;
 		}
 	}

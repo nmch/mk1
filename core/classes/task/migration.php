@@ -7,14 +7,14 @@ class Task_Migration extends Task
 {
 	function run()
 	{
-		Log::info("[db migration] データベースマイグレーションを実行します");
+		Log::coredebug("[db migration] データベースマイグレーションを実行します");
 		DB::clear_schema_cache();
 		
 		$argv = func_get_args();
 		
 		// renumberオプション
 		if( in_array('renumber', $argv) ){
-			Log::info("[db migration] リナンバリングを実行します");
+			Log::coredebug("[db migration] リナンバリングを実行します");
 			
 			$seq = 10;
 			foreach($this->get_migration_files() as $groups){
@@ -29,7 +29,7 @@ class Task_Migration extends Task
 						$new_filename .= '.' . $file['extension'];
 					}
 					
-					Log::info("[db migration] [Renumber] {$group}/{$file['seq']} -> [$seq]");
+					Log::coredebug("[db migration] [Renumber] {$group}/{$file['seq']} -> [$seq]");
 					echo "[Renumber] {$group}/{$file['seq']} -> [$seq]\n";
 					
 					rename($file['dirname'] . '/' . $file['basename'], $file['dirname'] . '/' . $new_filename);
@@ -44,7 +44,7 @@ class Task_Migration extends Task
 		
 		// initオプション
 		if( in_array('init', $argv) ){
-			Log::info("[db migration] すべてのテーブルを削除します");
+			Log::coredebug("[db migration] すべてのテーブルを削除します");
 			DB::delete_all_tables();
 		}
 		
@@ -59,7 +59,7 @@ class Task_Migration extends Task
 			if( $schema && count($schema['columns']) === 1 ){
 				$migrations_migration_1_to_2         = true;
 				$migrations_migration_1_to_2_lastseq = DB::query("SELECT last_seq FROM migrations")->execute()->get('last_seq');
-				Log::info("[db migration] migrationsテーブルのバージョンアップ(1 -> 2)を行います。現在のシーケンスは[{$migrations_migration_1_to_2_lastseq}]です。");
+				Log::coredebug("[db migration] migrationsテーブルのバージョンアップ(1 -> 2)を行います。現在のシーケンスは[{$migrations_migration_1_to_2_lastseq}]です。");
 				DB::query("DROP TABLE migrations")->execute();
 				$schema = null;
 			}
@@ -74,7 +74,7 @@ CREATE TABLE migrations (
 INSERT INTO migrations (migration_group) VALUES ('NOGROUP');
 SQL;
 			DB::query($q)->execute();
-			Log::info("[db migration] migrationsテーブルを作成しました");
+			Log::coredebug("[db migration] migrationsテーブルを作成しました");
 		}
 		
 		/**
@@ -85,7 +85,7 @@ SQL;
 				'migration_last_seq' => $migrations_migration_1_to_2_lastseq,
 			])->where('migration_group', 'NOGROUP')->execute()
 			;
-			Log::info("[db migration] migrationsテーブルのバージョンアップ(1 -> 2)が完了しました。");
+			Log::coredebug("[db migration] migrationsテーブルのバージョンアップ(1 -> 2)が完了しました。");
 		}
 		
 		$last_seq_list = $this->get_latest_migrations();
@@ -106,7 +106,7 @@ SQL;
 				}
 				
 				if( $seq <= $last_seq ){
-					Log::info("[db migration] マイグレーションをスキップしました / group={$group} / seq={$seq}");
+					Log::coredebug("[db migration] マイグレーションをスキップしました / group={$group} / seq={$seq}");
 					echo ".";
 				}
 				else{
@@ -158,7 +158,7 @@ SQL;
 						
 						DB::update("migrations")->set(['migration_last_seq' => $seq])->where('migration_group', $group)->execute();
 						DB::commit_transaction();
-						Log::info("[db migration] マイグレーションの実行に成功しました / group={$group} / seq={$seq} / {$name}");
+						Log::coredebug("[db migration] マイグレーションの実行に成功しました / group={$group} / seq={$seq} / {$name}");
 						echo "OK";
 					} catch(Exception $e){
 						DB::rollback_transaction();
