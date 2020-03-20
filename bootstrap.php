@@ -180,7 +180,7 @@ else{
 		$uri = $request_uri_from_server;
 	}
 	$request_method = Arr::get($_SERVER, 'REQUEST_METHOD');
-	Log::info("[REQUEST] $request_method $uri");
+	Log::coredebug("[REQUEST] $request_method $uri");
 	
 	ErrorHandler::add_error_handler(function($e){
 		$af = Actionform::instance();
