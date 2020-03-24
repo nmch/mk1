@@ -7,30 +7,35 @@ class Cache
 		$cache_dir = static::cache_dir($key, $group);
 		$filepath  = $cache_dir . static::key($key, $group);
 		
-		if( file_exists($filepath) ){
-			//Log::coredebug("[cache] hit $key($group)");
-			$expire = Config::get('cache.default_expire');
-			if( $expire ){
-				$filemtime = filemtime($filepath);
-				$live_time = (time() - $filemtime);
-				if( $live_time < $expire ){
-					return unserialize(file_get_contents($filepath));
-				}
-				else{
-					unlink($filepath);
+		$data = null;
+		
+		try {
+			if( is_callable($retrieve_handler) ){
+				$data = call_user_func_array($retrieve_handler, [$key, $group]);
+				static::set($key, $group, $data);
+			}
+			else{
+				if( file_exists($filepath) ){
+					//Log::coredebug("[cache] hit $key($group)");
+					$expire = Config::get('cache.default_expire');
+					if( $expire ){
+						$filemtime = filemtime($filepath);
+						$live_time = (time() - $filemtime);
+						if( $live_time < $expire ){
+							$data = unserialize(file_get_contents($filepath));
+						}
+						else{
+							unlink($filepath);
+						}
+					}
 				}
 			}
+		} catch(Exception $e){
+			Log::error("キャッシュ取得中にエラーが発生しました", $e);
+			$data = null;
 		}
 		
-		if( $retrieve_handler ){
-			$data = call_user_func_array($retrieve_handler, [$key, $group]);
-			static::set($key, $group, $data);
-			
-			return $data;
-		}
-		else{
-			return null;
-		}
+		return $data;
 	}
 	
 	public static function clear($key = null, $group = null)
