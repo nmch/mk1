@@ -178,6 +178,20 @@ class Log
 		return $log_str;
 	}
 	
+	static function set_global_threshold($threshold)
+	{
+		$original_threshold = static::get_global_threshold();
+		
+		static::$threshold  = $threshold;
+		
+		return $original_threshold;
+	}
+	
+	static function get_global_threshold()
+	{
+		return static::$threshold;
+	}
+	
 	static function log($level, $message)
 	{
 		try {
