@@ -128,7 +128,12 @@ try {
 		$retval = 1;
 	}
 	else{
-		http_response_code(500);
+		if( $e instanceof UnauthorizedException ){
+			http_response_code(403);
+		}
+		else{
+			http_response_code(500);
+		}
 	}
 	throw $e;
 }
@@ -194,6 +199,10 @@ else{
 	try {
 		$request = new Request($uri);
 		$request->execute();
+	} catch(UnauthorizedException $e){
+		$uri         = explode('/', Config::get('routes._403_', 'default/403'));
+		$request_403 = new Request($uri);
+		$request_403->execute();
 	} catch(HttpNotFoundException $e){
 		$uri         = explode('/', Config::get('routes._404_', 'default/404'));
 		$request_404 = new Request($uri);
