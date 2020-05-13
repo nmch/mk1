@@ -1,7 +1,7 @@
 --TEST--
 phpunit --test-suffix .test.php ../../_files/
 --FILE--
-<?php
+<?php declare(strict_types=1);
 $_SERVER['argv'][1] = '--no-configuration';
 $_SERVER['argv'][2] = '--test-suffix';
 $_SERVER['argv'][3] = '.test.php';
@@ -11,6 +11,11 @@ require __DIR__ . '/../bootstrap.php';
 PHPUnit\TextUI\Command::main();
 --EXPECTF--
 PHPUnit %s by Sebastian Bergmann and contributors.
+
+
+Warning:       Test case class not matching filename is deprecated
+               in %s/BankAccountTest.test.php
+               Class name was 'BankAccountWithCustomExtensionTest', expected 'BankAccountTest'
 
 ...                                                                 3 / 3 (100%)
 

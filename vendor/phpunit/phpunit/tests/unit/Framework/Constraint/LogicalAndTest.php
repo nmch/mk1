@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * This file is part of PHPUnit.
  *
@@ -13,17 +13,20 @@ use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestFailure;
 
+/**
+ * @small
+ */
 final class LogicalAndTest extends ConstraintTestCase
 {
     public function testSetConstraintsRejectsInvalidConstraint(): void
     {
         $constraints = [
-            new \TruthyConstraint(),
-            new \FalsyConstraint(),
-            new \stdClass(),
+            new \TruthyConstraint,
+            new \FalsyConstraint,
+            new \stdClass,
         ];
 
-        $constraint = new LogicalAnd();
+        $constraint = new LogicalAnd;
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage(\sprintf(
@@ -46,7 +49,7 @@ final class LogicalAndTest extends ConstraintTestCase
             return \CountConstraint::fromCount($count);
         }, $counts);
 
-        $constraint = new LogicalAnd();
+        $constraint = new LogicalAnd;
 
         $constraint->setConstraints($constraints);
 
@@ -67,9 +70,7 @@ final class LogicalAndTest extends ConstraintTestCase
             return \NamedConstraint::fromName($name);
         }, $names);
 
-        $constraint = new LogicalAnd();
-
-        $constraint->setConstraints($constraints);
+        $constraint = LogicalAnd::fromConstraints(...$constraints);
 
         $expected = \implode(' and ', $names);
 
@@ -83,7 +84,7 @@ final class LogicalAndTest extends ConstraintTestCase
      */
     public function testEvaluateReturnsFalseIfAnyOfTheComposedConstraintsEvaluateToFalse(array $constraints): void
     {
-        $constraint = new LogicalAnd();
+        $constraint = new LogicalAnd;
 
         $constraint->setConstraints($constraints);
 
@@ -97,7 +98,7 @@ final class LogicalAndTest extends ConstraintTestCase
      */
     public function testEvaluateReturnsTrueIfAllOfTheComposedConstraintsEvaluateToTrue(array $constraints): void
     {
-        $constraint = new LogicalAnd();
+        $constraint = new LogicalAnd;
 
         $constraint->setConstraints($constraints);
 
@@ -113,7 +114,7 @@ final class LogicalAndTest extends ConstraintTestCase
     {
         $other = 'whatever';
 
-        $constraint = new LogicalAnd();
+        $constraint = new LogicalAnd;
 
         $constraint->setConstraints($constraints);
 
@@ -145,7 +146,7 @@ EOF;
         $other             = 'whatever';
         $customDescription = 'Not very happy about the results at this point in time, I have to admit!';
 
-        $constraint = new LogicalAnd();
+        $constraint = new LogicalAnd;
 
         $constraint->setConstraints($constraints);
 
@@ -178,7 +179,7 @@ EOF;
      */
     public function testEvaluateReturnsNothingIfAllOfTheComposedConstraintsEvaluateToTrue(array $constraints): void
     {
-        $constraint = new LogicalAnd();
+        $constraint = new LogicalAnd;
 
         $constraint->setConstraints($constraints);
 
@@ -189,12 +190,12 @@ EOF;
     {
         $values = [
             'single' => [
-                new \FalsyConstraint(),
+                new \FalsyConstraint,
             ],
             'multiple' => [
-                new \TruthyConstraint(),
-                new \FalsyConstraint(),
-                new \TruthyConstraint(),
+                new \TruthyConstraint,
+                new \FalsyConstraint,
+                new \TruthyConstraint,
             ],
         ];
 
@@ -209,12 +210,12 @@ EOF;
     {
         $values = [
             'single' => [
-                new \TruthyConstraint(),
+                new \TruthyConstraint,
             ],
             'multiple' => [
-                new \TruthyConstraint(),
-                new \TruthyConstraint(),
-                new \TruthyConstraint(),
+                new \TruthyConstraint,
+                new \TruthyConstraint,
+                new \TruthyConstraint,
             ],
         ];
 

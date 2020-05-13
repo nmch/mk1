@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * This file is part of PHPUnit.
  *
@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 class SecondTest extends TestCase
 {
-    const DUMMY = 'dummy';
+    public const DUMMY = 'dummy';
 
     public function testSecond(): void
     {

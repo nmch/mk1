@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * This file is part of PHPUnit.
  *
@@ -10,22 +10,23 @@
 namespace PHPUnit\Runner\Filter;
 
 use PHPUnit\Framework\TestSuite;
-use RecursiveFilterIterator;
-use RecursiveIterator;
 
-abstract class GroupFilterIterator extends RecursiveFilterIterator
+/**
+ * @internal This class is not covered by the backward compatibility promise for PHPUnit
+ */
+abstract class GroupFilterIterator extends \RecursiveFilterIterator
 {
     /**
      * @var string[]
      */
     protected $groupTests = [];
 
-    public function __construct(RecursiveIterator $iterator, array $groups, TestSuite $suite)
+    public function __construct(\RecursiveIterator $iterator, array $groups, TestSuite $suite)
     {
         parent::__construct($iterator);
 
         foreach ($suite->getGroupDetails() as $group => $tests) {
-            if (\in_array($group, $groups, true)) {
+            if (\in_array((string) $group, $groups, true)) {
                 $testHashes = \array_map(
                     'spl_object_hash',
                     $tests

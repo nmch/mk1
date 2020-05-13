@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * This file is part of PHPUnit.
  *
@@ -12,11 +12,14 @@ namespace PHPUnit\Framework\Constraint;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestFailure;
 
-class IsReadableTest extends ConstraintTestCase
+/**
+ * @small
+ */
+final class IsReadableTest extends ConstraintTestCase
 {
     public function testConstraintIsReadable(): void
     {
-        $constraint = new IsReadable();
+        $constraint = new IsReadable;
 
         $this->assertFalse($constraint->evaluate('foo', '', true));
         $this->assertEquals('is readable', $constraint->toString());

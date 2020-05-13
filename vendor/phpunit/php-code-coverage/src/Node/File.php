@@ -1,6 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 /*
- * This file is part of the php-code-coverage package.
+ * This file is part of phpunit/php-code-coverage.
  *
  * (c) Sebastian Bergmann <sebastian@phpunit.de>
  *
@@ -578,7 +578,7 @@ final class File extends AbstractNode
 
     private function crap(int $ccn, float $coverage): string
     {
-        if ($coverage === 0) {
+        if ($coverage === 0.0) {
             return (string) ($ccn ** 2 + $ccn);
         }
 

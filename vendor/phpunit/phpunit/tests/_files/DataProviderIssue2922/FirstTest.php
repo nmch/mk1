@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * This file is part of PHPUnit.
  *
@@ -26,6 +26,6 @@ class FirstTest extends TestCase
 
     public function provide(): void
     {
-        throw new \Exception();
+        throw new \Exception;
     }
 }

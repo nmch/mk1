@@ -1,10 +1,10 @@
 {
     "require-dev": {
-        "phpunit/phpunit": "^7",
+        "phpunit/phpunit": "^9",
         "smarty/smarty": "^3.1"
     },
     "require": {
-        "aws/aws-sdk-php": "^3.112",
-        "ramsey/uuid": "^3.9"
+        "aws/aws-sdk-php": "^3.137",
+        "ramsey/uuid": "^4.0"
     }
 }

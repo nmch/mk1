@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * This file is part of PHPUnit.
  *
@@ -8,11 +8,12 @@
  * file that was distributed with this source code.
  */
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Warning;
 
 class TestWarning extends TestCase
 {
     protected function runTest(): void
     {
-        throw new \PHPUnit\Framework\Warning();
+        throw new Warning;
     }
 }

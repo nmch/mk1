@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * This file is part of PHPUnit.
  *
@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
  */
 class BeforeAfterClassPidTest extends TestCase
 {
-    const PID_VARIABLE = 'current_pid';
+    public const PID_VARIABLE = 'current_pid';
 
     /**
      * @beforeClass

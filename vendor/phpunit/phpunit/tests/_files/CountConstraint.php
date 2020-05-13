@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * This file is part of PHPUnit.
  *
@@ -18,7 +18,7 @@ final class CountConstraint extends Constraint
 
     public static function fromCount(int $count): self
     {
-        $instance = new self();
+        $instance = new self;
 
         $instance->count = $count;
 

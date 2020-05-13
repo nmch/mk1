@@ -90,6 +90,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionCodeStar(array $args = [])
  * @method \Aws\CodeStarNotifications\CodeStarNotificationsClient createCodeStarNotifications(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionCodeStarNotifications(array $args = [])
+ * @method \Aws\CodeStarconnections\CodeStarconnectionsClient createCodeStarconnections(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionCodeStarconnections(array $args = [])
  * @method \Aws\CognitoIdentity\CognitoIdentityClient createCognitoIdentity(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionCognitoIdentity(array $args = [])
  * @method \Aws\CognitoIdentityProvider\CognitoIdentityProviderClient createCognitoIdentityProvider(array $args = [])
@@ -124,6 +126,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionDataSync(array $args = [])
  * @method \Aws\DatabaseMigrationService\DatabaseMigrationServiceClient createDatabaseMigrationService(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionDatabaseMigrationService(array $args = [])
+ * @method \Aws\Detective\DetectiveClient createDetective(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionDetective(array $args = [])
  * @method \Aws\DeviceFarm\DeviceFarmClient createDeviceFarm(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionDeviceFarm(array $args = [])
  * @method \Aws\DirectConnect\DirectConnectClient createDirectConnect(array $args = [])
@@ -216,6 +220,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionIoTJobsDataPlane(array $args = [])
  * @method \Aws\IoTSecureTunneling\IoTSecureTunnelingClient createIoTSecureTunneling(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionIoTSecureTunneling(array $args = [])
+ * @method \Aws\IoTSiteWise\IoTSiteWiseClient createIoTSiteWise(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionIoTSiteWise(array $args = [])
  * @method \Aws\IoTThingsGraph\IoTThingsGraphClient createIoTThingsGraph(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionIoTThingsGraph(array $args = [])
  * @method \Aws\Iot\IotClient createIot(array $args = [])
@@ -404,6 +410,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionSupport(array $args = [])
  * @method \Aws\Swf\SwfClient createSwf(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionSwf(array $args = [])
+ * @method \Aws\Synthetics\SyntheticsClient createSynthetics(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionSynthetics(array $args = [])
  * @method \Aws\Textract\TextractClient createTextract(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionTextract(array $args = [])
  * @method \Aws\TranscribeService\TranscribeServiceClient createTranscribeService(array $args = [])
@@ -439,7 +447,7 @@ namespace Aws;
  */
 class Sdk
 {
-    const VERSION = '3.128.4';
+    const VERSION = '3.137.8';
 
     /** @var array Arguments for creating clients */
     private $args;

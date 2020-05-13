@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * This file is part of PHPUnit.
  *
@@ -25,7 +25,7 @@ class Issue2137Test extends PHPUnit\Framework\TestCase
     {
         return [
             //[true, true]
-            new stdClass(), // not valid
+            new stdClass, // not valid
         ];
     }
 

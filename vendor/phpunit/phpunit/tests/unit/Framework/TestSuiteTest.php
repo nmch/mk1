@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * This file is part of PHPUnit.
  *
@@ -9,7 +9,10 @@
  */
 namespace PHPUnit\Framework;
 
-class TestSuiteTest extends TestCase
+/**
+ * @small
+ */
+final class TestSuiteTest extends TestCase
 {
     /**
      * @var TestResult
@@ -24,6 +27,18 @@ class TestSuiteTest extends TestCase
     protected function tearDown(): void
     {
         $this->result = null;
+    }
+
+    /**
+     * @testdox TestSuite can be created with name of existing non-TestCase class
+     */
+    public function testSuiteNameCanBeSameAsExistingNonTestClassName(): void
+    {
+        $suite = new TestSuite('stdClass');
+        $suite->addTestSuite(\OneTestCase::class);
+        $suite->run($this->result);
+
+        $this->assertCount(1, $this->result);
     }
 
     public function testAddTestSuite(): void
@@ -55,13 +70,6 @@ class TestSuiteTest extends TestCase
         $this->assertEquals(0, $this->result->failureCount());
         $this->assertEquals(1, $this->result->warningCount());
         $this->assertCount(1, $this->result);
-    }
-
-    public function testNoTestCaseClass(): void
-    {
-        $this->expectException(Exception::class);
-
-        new TestSuite(\NoTestCaseClass::class);
     }
 
     public function testNotPublicTestCase(): void
@@ -121,7 +129,7 @@ class TestSuiteTest extends TestCase
         $this->assertTrue(\BeforeClassWithOnlyDataProviderTest::$beforeClassWasCalled, '@beforeClass method was not run.');
     }
 
-    public function testBeforeAnnotation(): void
+    public function testBeforeAndAfterAnnotations(): void
     {
         $test = new TestSuite(\BeforeAndAfterTest::class);
 
@@ -130,6 +138,17 @@ class TestSuiteTest extends TestCase
 
         $this->assertEquals(2, \BeforeAndAfterTest::$beforeWasRun);
         $this->assertEquals(2, \BeforeAndAfterTest::$afterWasRun);
+    }
+
+    public function testPreConditionAndPostConditionAnnotations(): void
+    {
+        $test = new TestSuite(\PreConditionAndPostConditionTest::class);
+
+        \PreConditionAndPostConditionTest::resetProperties();
+        $test->run();
+
+        $this->assertSame(1, \PreConditionAndPostConditionTest::$preConditionWasVerified);
+        $this->assertSame(1, \PreConditionAndPostConditionTest::$postConditionWasVerified);
     }
 
     public function testTestWithAnnotation(): void
@@ -152,6 +171,17 @@ class TestSuiteTest extends TestCase
         $this->assertEquals(1, $this->result->skippedCount());
     }
 
+    public function testItErrorsOnlyOnceOnHookException(): void
+    {
+        $suite = new TestSuite(\TestCaseWithExceptionInHook::class);
+
+        $suite->run($this->result);
+
+        $this->assertEquals(2, $this->result->count());
+        $this->assertEquals(1, $this->result->errorCount());
+        $this->assertEquals(1, $this->result->skippedCount());
+    }
+
     public function testTestDataProviderDependency(): void
     {
         $suite = new TestSuite(\DataProviderDependencyTest::class);
@@ -162,7 +192,7 @@ class TestSuiteTest extends TestCase
         $lastSkippedResult = \array_pop($skipped);
         $message           = $lastSkippedResult->thrownException()->getMessage();
 
-        $this->assertContains('Test for DataProviderDependencyTest::testDependency skipped by data provider', $message);
+        $this->assertStringContainsString('Test for DataProviderDependencyTest::testDependency skipped by data provider', $message);
     }
 
     public function testIncompleteTestDataProvider(): void
@@ -202,24 +232,22 @@ class TestSuiteTest extends TestCase
     }
 
     /**
-     * @expectedException PHPUnit\Framework\Exception
-     * @expectedExceptionMessage No valid test provided.
+     * @testdox Handles exceptions in tearDownAfterClass()
      */
-    public function testCreateTestForConstructorlessTestClass(): void
+    public function testTearDownAfterClassInTestSuite(): void
     {
-        $reflection = $this->getMockBuilder(\ReflectionClass::class)
-            ->setConstructorArgs([$this])
-            ->getMock();
+        $suite = new TestSuite(\ExceptionInTearDownAfterClassTest::class);
+        $suite->run($this->result);
 
-        $reflection->expects($this->once())
-            ->method('getConstructor')
-            ->willReturn(null);
-        $reflection->expects($this->once())
-            ->method('isInstantiable')
-            ->willReturn(true);
-        $reflection->expects($this->once())
-            ->method('getName')
-            ->willReturn(__CLASS__);
-        TestSuite::createTest($reflection, 'TestForConstructorlessTestClass');
+        $this->assertSame(3, $this->result->count());
+        $this->assertCount(1, $this->result->failures());
+
+        $failure = $this->result->failures()[0];
+
+        $this->assertSame(
+            'Exception in ExceptionInTearDownAfterClassTest::tearDownAfterClass' . \PHP_EOL .
+            'throw Exception in tearDownAfterClass()',
+            $failure->thrownException()->getMessage()
+        );
     }
 }
