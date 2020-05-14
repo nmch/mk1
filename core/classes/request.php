@@ -6,8 +6,9 @@ class Request
 	public $af;
 	public $uri;
 	public $method;
+	/** @var \Response */
 	public $response;
-	/** @var View */
+	/** @var \View */
 	public $view;
 	
 	function __construct($uri, $method = null, $data = [])

@@ -69,6 +69,20 @@ class Response
 	}
 	
 	/**
+	 * @param null $status
+	 *
+	 * @return int レスポンスコードを設定・取得する
+	 */
+	public function status($status = null): int
+	{
+		if( $status !== null ){
+			$this->status = $status;
+		}
+		
+		return $this->status;
+	}
+	
+	/**
 	 * HTTPヘッダを設定する
 	 *
 	 * @param string $name
