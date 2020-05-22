@@ -34,6 +34,8 @@ class Database_Query
 	/** @var Database_Query */
 	protected $_query_insert_query = null;
 	
+	protected $suppress_debug_log = false;
+	
 	protected $db;
 	
 	const ORDER_BY_INSERT_TOP = true;
@@ -70,6 +72,17 @@ class Database_Query
 	}
 	
 	/**
+	 * クエリ実行時のデバッグログ出力を抑制する
+	 * 主に巨大なサイズのパラメーターをとるクエリの実行用
+	 */
+	function suppress_debug_log($flag = true): \Database_Query
+	{
+		$this->suppress_debug_log = $flag;
+		
+		return $this;
+	}
+	
+	/**
 	 * クエリを実行する
 	 *
 	 * @param null|Database_Connection $db
@@ -97,7 +110,7 @@ class Database_Query
 			if($this->result instanceof Database_Resultset)
 				$this->result->set_query($this);
 			*/
-			$result = $db->query($this->_sql, $this->_parameters)->set_fetch_as($this->fetch_as);
+			$result = $db->query($this->_sql, $this->_parameters, $this->suppress_debug_log)->set_fetch_as($this->fetch_as);
 			if( $result instanceof Database_Resultset ){
 				$result->set_query($this);
 				$this->affected_rows = $result->get_affected_rows();
@@ -253,7 +266,7 @@ class Database_Query
 					}
 					
 					// Split the condition
-					list($column, $op, $value) = $condition;
+					[$column, $op, $value] = $condition;
 					$op = trim($op);
 					//Log::coredebug($column,$op,$value);
 					
@@ -305,7 +318,7 @@ class Database_Query
 					
 					// col in (select sql)に対応する
 					if( $value instanceof Database_Query ){
-						list($_insql_sql, $_insql_parameters) = $value->get_sql(true);
+						[$_insql_sql, $_insql_parameters] = $value->get_sql(true);
 						// パラメータが$1から始まっているので、置き換える
 						//						Log::coredebug("_insql_sql={$_insql_sql} / _insql_parameters=",$_insql_parameters);
 						$_insql_search  = [];

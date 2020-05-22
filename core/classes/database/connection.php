@@ -154,9 +154,11 @@ class Database_Connection
 		return pg_copy_to($this->connection, $table_name, $delimiter, $null_as);
 	}
 	
-	function query($sql, $parameters = [])
+	function query($sql, $parameters = [], $suppress_debug_log = false)
 	{
-		Log::coredebug("[dbconn] SQL {$this->connection} = {$sql} / " . var_export($parameters, true));
+		if( ! $suppress_debug_log ){
+			Log::coredebug("[dbconn] SQL {$this->connection} = {$sql} / " . var_export($parameters, true));
+		}
 		
 		/**
 		 * クエリ送信
@@ -179,7 +181,7 @@ class Database_Connection
 				'message' => $error_msg,
 			];
 			// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
-			Log::debug2("Query Error", $error_details);
+			Log::coredebug("Query Error", $error_details);
 			$this->last_error_details = $error_details;
 			throw new DatabaseQueryError($error_msg);
 		}
