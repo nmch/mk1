@@ -865,6 +865,16 @@ class Model implements Iterator, Countable, ArrayAccess
 		}
 	}
 	
+	static function dataexchange_format()
+	{
+		if( property_exists(get_called_class(), 'dataexchange_format') ){
+			return static::$dataexchange_format;
+		}
+		else{
+			return null;
+		}
+	}
+	
 	/**
 	 * このModelのデータを取得する際のselectクエリを得る
 	 *
