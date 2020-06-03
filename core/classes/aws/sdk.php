@@ -107,6 +107,15 @@ class Aws_Sdk
 		return $client;
 	}
 	
+	function get_sns_client(): \Aws\Sns\SnsClient
+	{
+		$sdk = $this->get_sdk();
+		
+		$client = $sdk->createSns();
+		
+		return $client;
+	}
+	
 	function get_s3_client(?string $endpoint = null): \Aws\S3\S3Client
 	{
 		$config = $this->get_aws_sdk_config();
