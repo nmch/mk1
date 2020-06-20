@@ -20,6 +20,9 @@ class Log_Aws_Sns implements Logic_Interface_Log_Driver
 	{
 		if( $this->topic_arn ){
 			try {
+				if( Arr::get($this->config, 'add_uniqid') ){
+					$data['uniqid'] = Arr::get($data, "config.uniqid");
+				}
 				unset($data['config']);
 				$str = json_encode($data, JSON_HEX_TAG
 				                          | JSON_HEX_APOS
