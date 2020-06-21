@@ -21,6 +21,7 @@
 class Log
 {
 	use Singleton;
+	
 	const ALL       = 0;
 	const COREDEBUG = 100;
 	const DEBUG     = 200;
@@ -182,7 +183,7 @@ class Log
 	{
 		$original_threshold = static::get_global_threshold();
 		
-		static::$threshold  = $threshold;
+		static::$threshold = $threshold;
 		
 		return $original_threshold;
 	}
@@ -233,6 +234,22 @@ class Log
 								'config' => $driver_config,
 							];
 						$log_data['str'] = call_user_func_array(static::$makelogstr_function, [$log_data]);
+						
+						if( $add_env = ($driver_config['add_backtrace'] ?? null) ){
+							$log_data['backtrace'] = debug_backtrace();
+						}
+						
+						if( $add_env = ($driver_config['add_env'] ?? null) ){
+							$log_data['env'] = [];
+							if( is_array($add_env) ){
+								foreach($add_env as $add_env_key => $add_env_item){
+									$log_data['env'][$add_env_key] = getenv($add_env_item);
+								}
+							}
+							else{
+								$log_data['env'] = getenv();
+							}
+						}
 						
 						/** @var Logic_Interface_Log_Driver $driver_config */
 						$driver_config = $driver_config['driver_object'];
