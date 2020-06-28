@@ -3,6 +3,7 @@
 class Session
 {
 	use Singleton;
+	
 	protected static $config = [];
 	protected static $driver;
 	
@@ -75,6 +76,20 @@ class Session
 			static::$flash = [];
 		}
 		//		Log::coredebug("フラッシュセッションデータをロードしました",static::$flash);
+	}
+	
+	static function regenerate_id()
+	{
+		session_regenerate_id();
+		
+		return static::set_session_id(session_id());
+	}
+	
+	static function set_session_id($session_id)
+	{
+		static::$session_id = $session_id;
+		
+		return static::get_session_id();
 	}
 	
 	static function get_session_id()
