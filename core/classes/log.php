@@ -236,7 +236,7 @@ class Log
 						$log_data['str'] = call_user_func_array(static::$makelogstr_function, [$log_data]);
 						
 						if( $add_env = ($driver_config['add_backtrace'] ?? null) ){
-							$log_data['backtrace'] = debug_backtrace();
+							$log_data['backtrace'] = debug_backtrace(0);
 						}
 						
 						if( $add_env = ($driver_config['add_env'] ?? null) ){
