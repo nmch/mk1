@@ -21,14 +21,20 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 		
 		$num_of_fields = pg_num_fields($result);
 		for($c = 0; $c < $num_of_fields; $c++){
-			$field = [
-				'num'     => $c,
-				'table'   => pg_field_table($result, $c),
-				'type'    => pg_field_type($result, $c),
-				'name'    => pg_field_name($result, $c),
-				'prtlen'  => pg_field_prtlen($result, $c),
-				'is_null' => pg_field_is_null($result, $c),
+			$field          = [
+				'num'       => $c,
+				'table'     => null,
+				'table_oid' => pg_field_table($result, $c, true),
+				'type'      => null,
+				'type_oid'  => pg_field_type_oid($result, $c),
+				'name'      => pg_field_name($result, $c),
+				'prtlen'    => pg_field_prtlen($result, $c),
+				'is_null'   => pg_field_is_null($result, $c),
 			];
+			$type           = Database_Type::get_by_oid($field['type_oid']);
+			$field['type']  = ($type['typname'] ?? null);
+			$table          = Database_Table::get_by_oid($field['table_oid']);
+			$field['table'] = ($table['relname'] ?? null);
 			
 			$this->fields[$c]                            = $field;
 			$this->fields_hashed_by_name[$field['name']] = $field;
@@ -241,7 +247,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 							$value = [];
 						}
 						else{
-							$value = array_map(function ($str){
+							$value = array_map(function($str){
 								if( strtoupper($str) === 'NULL' ){
 									// fixme: 文字列型配列の場合の文字列としての'NULL'とSQLのnull値を区別しなければならない
 									$str = null;

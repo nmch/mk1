@@ -14,6 +14,13 @@ class Database_Type
 
 		return $name ? Arr::get(static::$type, $name, $default) : static::$type;
 	}
+	
+	static function get_by_oid($oid = null, $default = null)
+	{
+		static::make_cache();
+		
+		return $oid ? Arr::get(static::$type_hashed_by_oid, $oid, $default) : static::$type_hashed_by_oid;
+	}
 
 	static function make_cache()
 	{
@@ -38,19 +45,12 @@ class Database_Type
 	static function retrieve()
 	{
 		$type_list = [];
-		$r         = DB::select('oid,*')->from('pg_type')->execute()->as_array();
-		foreach($r as $type){
-			$type_list[$type['typname']] = $type;
+		$result     = Database_Connection::instance()->query('SELECT oid,* FROM pg_type', null, false, true);
+		while ($row = pg_fetch_assoc($result)) {
+			$type_list[$row['typname']] = $row;
 		}
 		unset($r);
 
 		return $type_list;
-	}
-
-	static function get_by_oid($oid = null, $default = null)
-	{
-		static::make_cache();
-
-		return $oid ? Arr::get(static::$type_hashed_by_oid, $oid, $default) : static::$type_hashed_by_oid;
 	}
 }

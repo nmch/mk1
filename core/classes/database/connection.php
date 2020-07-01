@@ -154,7 +154,7 @@ class Database_Connection
 		return pg_copy_to($this->connection, $table_name, $delimiter, $null_as);
 	}
 	
-	function query($sql, $parameters = [], $suppress_debug_log = false)
+	function query($sql, $parameters = [], $suppress_debug_log = false, $return_raw_result = false)
 	{
 		if( ! $suppress_debug_log ){
 			Log::coredebug("[dbconn] SQL {$this->connection} = {$sql} / " . var_export($parameters, true));
@@ -187,7 +187,7 @@ class Database_Connection
 		}
 		$this->last_error_details = [];
 		
-		return new Database_Resultset($query_result);
+		return $return_raw_result ? $query_result : (new Database_Resultset($query_result));
 	}
 	
 	function rollback_transaction()
