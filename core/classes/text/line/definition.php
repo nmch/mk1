@@ -7,6 +7,11 @@ class Text_Line_Definition extends Text_Line
 	protected string $description        = '';
 	protected int    $term_format_length = 0;
 	
+	function get_term(): string
+	{
+		return $this->term;
+	}
+	
 	function set_term(string $text): \Text_Line_Definition
 	{
 		$this->term = strval($text);
