@@ -13,10 +13,12 @@ class Response
 	public function __construct($body = null, $status = 200, array $headers = [])
 	{
 		Log::coredebug("[response] status=$status");
-		$this->body    = $body;
-		$this->status  = $status;
-		$this->headers = $headers;
+		$this->set_body($body);
+		$this->set_status($status);
 		
+		foreach($headers as $key => $value){
+			$this->set_header($key, $value);
+		}
 		foreach(Config::get('response.default_headers', []) as $key => $value){
 			$this->set_header($key, $value);
 		}
@@ -56,6 +58,27 @@ class Response
 		
 		$response->send(true);
 		exit;
+	}
+	
+	public function set_body($body)
+	{
+		$this->body = $body;
+		
+		return $this;
+	}
+	
+	public function get_body_as_json()
+	{
+		return json_decode($this->body, true);
+	}
+	
+	public function set_body_as_json($data)
+	{
+		$this->set_body(($data === null) ? null : Mk::json_encode($data));
+		
+		$this->set_header('Content-Type', Config::get('response_json.content-type', 'application/json; charset=utf-8'));
+		
+		return $this;
 	}
 	
 	/**
