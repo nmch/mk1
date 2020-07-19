@@ -11,11 +11,13 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 	private $fetch_as              = [];
 	private $fields;
 	private $fields_hashed_by_name = [];
+	private $connection;
 	private $query;
 	
-	function __construct($result)
+	function __construct($result, $connection = null)
 	{
 		$this->result_resource = $result;
+		$this->connection      = $connection;
 		$this->rows            = pg_num_rows($result);
 		$this->position        = 0;
 		
@@ -31,9 +33,9 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
 				'prtlen'    => pg_field_prtlen($result, $c),
 				'is_null'   => pg_field_is_null($result, $c),
 			];
-			$type           = Database_Type::get_by_oid($field['type_oid']);
+			$type           = Database_Type::get_by_oid($field['type_oid'], null, $this->connection);
 			$field['type']  = ($type['typname'] ?? null);
-			$table          = Database_Table::get_by_oid($field['table_oid']);
+			$table          = Database_Table::get_by_oid($field['table_oid'], null, $this->connection);
 			$field['table'] = ($table['relname'] ?? null);
 			
 			$this->fields[$c]                            = $field;

@@ -187,7 +187,7 @@ class Database_Connection
 		}
 		$this->last_error_details = [];
 		
-		return $return_raw_result ? $query_result : (new Database_Resultset($query_result));
+		return $return_raw_result ? $query_result : (new Database_Resultset($query_result, $this));
 	}
 	
 	function rollback_transaction()
