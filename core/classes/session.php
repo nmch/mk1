@@ -24,24 +24,26 @@ class Session
 		// ドライバ名が指定されていた場合のみPHPのデフォルトセッションハンドラを変更する
 		if( $driver_name ){
 			$driver_class_name = "Session_Driver_" . ucfirst(strtolower($driver_name));
-			if( ! class_exists($driver_class_name) ){
-				throw new Exception('driver not found');
-			}
-			if( method_exists($driver_class_name, "instance") ){
-				$driver = forward_static_call([$driver_class_name, "instance"], $driver_config);
+			if( class_exists($driver_class_name) ){
+				if( method_exists($driver_class_name, "instance") ){
+					$driver = forward_static_call([$driver_class_name, "instance"], $driver_config);
+				}
+				else{
+					$driver = new $driver_class_name($driver_config);
+				}
+				if( ! is_subclass_of($driver, 'SessionHandlerInterface') ){
+					throw new Exception('driver should extend SessionHandlerInterface');
+				}
+				
+				if( method_exists($driver, 'register') ){
+					$driver->register();
+				}
+				else{
+					session_set_save_handler($driver, false);
+				}
 			}
 			else{
-				$driver = new $driver_class_name($driver_config);
-			}
-			if( ! is_subclass_of($driver, 'SessionHandlerInterface') ){
-				throw new Exception('driver should extend SessionHandlerInterface');
-			}
-			
-			if( method_exists($driver, 'register') ){
-				$driver->register();
-			}
-			else{
-				session_set_save_handler($driver, false);
+				ini_set('session.save_handler', $driver_name);
 			}
 		}
 		
