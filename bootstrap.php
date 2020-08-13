@@ -5,6 +5,7 @@ mb_internal_encoding('UTF-8');
 
 class MkException extends Exception
 {
+	public $log_level = 'ERROR';
 }
 
 class AppException extends MkException
@@ -24,6 +25,10 @@ class HttpNotFoundException extends MkException
 }
 
 class UnauthorizedException extends MkException
+{
+}
+
+class InvalidCsrfTokenException extends MkException
 {
 }
 

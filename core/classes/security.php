@@ -36,11 +36,11 @@ class Security
 		
 		if( ! strlen($submitted_token) || ! strlen($saved_token) ){
 			Log::coredebug("[Security] CSRFトークンが不正です saved_token=[{$saved_token}] / submitted_token=[{$submitted_token}]");
-			throw new MkException("invalid CSRF Token");
+			throw new InvalidCsrfTokenException("invalid CSRF Token");
 		}
 		if( $submitted_token !== $saved_token ){
 			Log::coredebug("[Security] CSRFトークンが一致しません saved_token=[{$saved_token}] / submitted_token=[{$submitted_token}]");
-			throw new MkException("CSRF Token mismatch");
+			throw new InvalidCsrfTokenException("CSRF Token mismatch");
 		}
 	}
 }

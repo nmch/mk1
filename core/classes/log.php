@@ -37,6 +37,22 @@ class Log
 	const CRITICAL  = 600;
 	const ALERT     = 650;
 	const EMERGENCY = 700;
+	
+	const LEVEL_COREDEBUG = 'COREDEBUG';
+	const LEVEL_DEBUG     = 'DEBUG';
+	const LEVEL_DEBUG5    = 'DEBUG5';
+	const LEVEL_DEBUG4    = 'DEBUG4';
+	const LEVEL_DEBUG3    = 'DEBUG3';
+	const LEVEL_DEBUG2    = 'DEBUG2';
+	const LEVEL_DEBUG1    = 'DEBUG1';
+	const LEVEL_INFO      = 'INFO';
+	const LEVEL_NOTICE    = 'NOTICE';
+	const LEVEL_WARNING   = 'WARNING';
+	const LEVEL_ERROR     = 'ERROR';
+	const LEVEL_CRITICAL  = 'CRITICAL';
+	const LEVEL_ALERT     = 'ALERT';
+	const LEVEL_EMERGENCY = 'EMERGENCY';
+	
 	static         $threshold;
 	static         $date_format;
 	static         $makelogstr_function;
