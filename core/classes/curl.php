@@ -146,6 +146,17 @@ class Curl
 		return $this->curl_result;
 	}
 	
+	function get_curl_result_as_json()
+	{
+		try {
+			$result = json_decode($this->curl_result, true);
+		} catch(Exception $e){
+			// nop
+		}
+		
+		return ($result ?? null);
+	}
+	
 	function set_curl_option_array(array $options, $replace = false)
 	{
 		if( $replace ){
