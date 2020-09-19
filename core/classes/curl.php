@@ -302,13 +302,16 @@ class Curl
 		else{
 			$request_data = array_merge(Arr::get($this->options, static::OP_REQUEST_DATA, []), $this->request_data);
 			if( $this->method === static::METHOD_POST || $this->method === static::METHOD_PUT ){
+				if( Arr::get($this->options, static::OP_POST_AS_JSON) ){
+					// データの有無に関わらずOP_POST_AS_JSONの場合はContent-Typeを設定する
+					$this->add_request_headers([
+						'Content-Type' => 'application/json',
+					]);
+				}
 				if( $request_data || $this->request_files ){
 					if( is_array($request_data) ){
 						if( Arr::get($this->options, static::OP_POST_AS_JSON) ){
 							$curl_options[CURLOPT_POSTFIELDS] = Mk::json_encode($request_data);
-							$this->add_request_headers([
-								'Content-Type' => 'application/json',
-							]);
 						}
 						elseif( $this->request_files ){
 							foreach($this->request_files as $key => $file){
