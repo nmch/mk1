@@ -164,7 +164,7 @@ class Log
 		$caller     = [];
 		$backtraces = debug_backtrace();
 		foreach($backtraces as $backtrace){
-			if( $backtrace['class'] !== 'Log' ){
+			if( Arr::get($backtrace, 'class') !== 'Log' ){
 				$caller = $backtrace;
 				break;
 			}
