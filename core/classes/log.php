@@ -161,6 +161,16 @@ class Log
 	 */
 	static function make_log_string($data)
 	{
+		$caller     = [];
+		$backtraces = debug_backtrace();
+		foreach($backtraces as $backtrace){
+			if( $backtrace['class'] !== 'Log' ){
+				$caller = $backtrace;
+				break;
+			}
+		}
+		$data['source'] = $caller;
+		
 		if( ! is_scalar($data['message']) ){
 			if( is_object($data['message']) && method_exists($data['message'], '__toString') ){
 				$data['message'] = (string)$data['message'];
