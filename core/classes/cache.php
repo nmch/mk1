@@ -93,6 +93,11 @@ class Cache
 		return $key;
 	}
 	
+	public static function write($key, $group, $value, $expire = null)
+	{
+	
+	}
+	
 	public static function set()
 	{
 		$args = func_get_args();
