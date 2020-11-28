@@ -1,8 +1,12 @@
 <?php
-
 /**
- * DB返り値ハンドラ
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
  */
+
 class Database_Resultset implements Iterator, Countable, ArrayAccess
 {
 	private $result_resource;

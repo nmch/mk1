@@ -1,11 +1,14 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
 
 /**
  * マスタデータ編集
- *
- * @package    App
- * @subpackage Logic
- * @author
  */
 trait Logic_Masterdetail_Common
 {

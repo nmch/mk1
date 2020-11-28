@@ -1,8 +1,12 @@
 <?php
-
 /**
- * Class Curl
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
  */
+
 class Curl
 {
 	const OP_RETURN_AS_JSON         = 'return_as_json';

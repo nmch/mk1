@@ -1,8 +1,12 @@
 <?php
-
 /**
- * Class Database_Query
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
  */
+
 class Database_Query
 {
 	protected $_sql;

@@ -10,13 +10,6 @@
  * @link       http://fuelphp.com
  */
 
-/**
- * The Arr class provides a few nice functions for making
- * dealing with arrays easier
- *
- * @package     Fuel
- * @subpackage  Core
- */
 class Arr
 {
 	

@@ -1,9 +1,14 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
+
 require_once('phpseclib/Crypt/AES.php');
 
-/**
- * 暗号化
- */
 class Crypt
 {
 	function __construct()

@@ -1,8 +1,12 @@
 <?php
-
 /**
- * コントローラ
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
  */
+
 class Controller
 {
 	/** @var Actionform $af */

@@ -1,13 +1,16 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
 
 /**
  *
  * @property Actionform af
  * @property array      export_settings
- *
- * @package    App
- * @subpackage Logic
- * @author
  */
 trait Logic_View_Pager
 {

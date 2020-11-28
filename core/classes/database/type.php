@@ -1,8 +1,12 @@
 <?php
-
 /**
- * DB データ型
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
  */
+
 class Database_Type
 {
 	protected static $type;
