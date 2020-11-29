@@ -1,11 +1,14 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
 
 /**
  * 消費税率
- *
- * @package    App
- * @subpackage Model
- * @author     Hakonet Inc
  */
 class Price_Tax_Rate
 {

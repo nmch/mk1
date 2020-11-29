@@ -1,13 +1,16 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
 
 /**
  * マスタデータ編集
  *
  * @property Actionform af
- *
- * @package    App
- * @subpackage Logic
- * @author
  */
 trait Logic_Masterdetail_Controller
 {
