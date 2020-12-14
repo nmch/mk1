@@ -19,7 +19,6 @@ use function dirname;
 use function explode;
 use function extension_loaded;
 use function file;
-use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
 use function is_array;
@@ -652,7 +651,7 @@ final class PhptTestCase implements Reorderable, SelfDescribing, Test
         $coverage = RawCodeCoverageData::fromXdebugWithoutPathCoverage([]);
         $files    = $this->getCoverageFiles();
 
-        if (file_exists($files['coverage'])) {
+        if (is_file($files['coverage'])) {
             $buffer = @file_get_contents($files['coverage']);
 
             if ($buffer !== false) {
@@ -852,10 +851,10 @@ final class PhptTestCase implements Reorderable, SelfDescribing, Test
                     $settings[] = 'xdebug.mode=off';
                 }
             } else {
+                $settings[] = 'xdebug.default_enable=0';
+
                 if ($collectCoverage) {
                     $settings[] = 'xdebug.coverage_enable=1';
-                } else {
-                    $settings[] = 'xdebug.default_enable=0';
                 }
             }
         }

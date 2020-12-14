@@ -51,6 +51,7 @@ class CredentialProvider
     const ENV_SECRET = 'AWS_SECRET_ACCESS_KEY';
     const ENV_SESSION = 'AWS_SESSION_TOKEN';
     const ENV_TOKEN_FILE = 'AWS_WEB_IDENTITY_TOKEN_FILE';
+    const ENV_SHARED_CREDENTIALS_FILE = 'AWS_SHARED_CREDENTIALS_FILE';
 
     /**
      * Create a default credential provider that first checks for environment
@@ -316,6 +317,9 @@ class CredentialProvider
                 return self::reject("Cannot read credentials from $filename");
             }
             $data = self::loadProfiles($filename);
+            if (empty($data[$ssoProfileName])) {
+                return self::reject("Profile {$ssoProfileName} does not exist in {$filename}.");
+            }
             $ssoProfile = $data[$ssoProfileName];
             if (empty($ssoProfile['sso_start_url'])
                 || empty($ssoProfile['sso_region'])
@@ -324,7 +328,7 @@ class CredentialProvider
             ) {
                 return self::reject(
                     "Profile {$ssoProfileName} in {$filename} must contain the following keys: "
-                    . 'sso_start_url, sso_region, sso_account_id, and sso_role_name'
+                    . "sso_start_url, sso_region, sso_account_id, and sso_role_name."
                 );
             }
 
@@ -500,7 +504,7 @@ class CredentialProvider
      */
     public static function ini($profile = null, $filename = null, array $config = [])
     {
-        $filename = $filename ?: (self::getHomeDir() . '/.aws/credentials');
+        $filename = self::getFileName($filename);
         $profile = $profile ?: (getenv(self::ENV_PROFILE) ?: 'default');
 
         return function () use ($profile, $filename, $config) {
@@ -549,7 +553,8 @@ class CredentialProvider
                     $data,
                     $profile,
                     $filename,
-                    $stsClient
+                    $stsClient,
+                    $config
                 );
             }
 
@@ -590,7 +595,7 @@ class CredentialProvider
      */
     public static function process($profile = null, $filename = null)
     {
-        $filename = $filename ?: (self::getHomeDir() . '/.aws/credentials');
+        $filename = self::getFileName($filename);
         $profile = $profile ?: (getenv(self::ENV_PROFILE) ?: 'default');
 
         return function () use ($profile, $filename) {
@@ -662,8 +667,13 @@ class CredentialProvider
      *
      * @return callable
      */
-    private static function loadRoleProfile($profiles, $profileName, $filename, $stsClient)
-    {
+    private static function loadRoleProfile(
+        $profiles,
+        $profileName,
+        $filename,
+        $stsClient,
+        $config = []
+    ) {
         $roleProfile = $profiles[$profileName];
         $roleArn = isset($roleProfile['role_arn']) ? $roleProfile['role_arn'] : '';
         $roleSessionName = isset($roleProfile['role_session_name'])
@@ -687,17 +697,28 @@ class CredentialProvider
                     . " using profile " . $profileName . " does not exist"
                 );
             }
+            if (isset($config['visited_profiles']) &&
+                in_array($roleProfile['source_profile'], $config['visited_profiles'])
+            ) {
+                return self::reject("Circular source_profile reference found.");
+            }
+            $config['visited_profiles'] [] = $roleProfile['source_profile'];
+        } else {
+            if (empty($roleArn)) {
+                return self::reject(
+                    "A role_arn must be provided with credential_source in " .
+                    "file {$filename} under profile {$profileName} "
+                );
+            }
         }
-        $sourceRegion = isset($profiles[$sourceProfileName]['region'])
-            ? $profiles[$sourceProfileName]['region']
-            : 'us-east-1';
 
         if (empty($stsClient)) {
-            $config = [
-                'preferStaticCredentials' => true
-            ];
+            $sourceRegion = isset($profiles[$sourceProfileName]['region'])
+                ? $profiles[$sourceProfileName]['region']
+                : 'us-east-1';
+            $config['preferStaticCredentials'] = true;
             $sourceCredentials = null;
-            if ($roleProfile['source_profile']){
+            if (!empty($roleProfile['source_profile'])){
                 $sourceCredentials = call_user_func(
                     CredentialProvider::ini($sourceProfileName, $filename, $config)
                 )->wait();
@@ -798,7 +819,9 @@ class CredentialProvider
         $config = []
     ) {
         $data = self::loadProfiles($filename);
-        $credentialSource = !empty($data[$profileName]['credential_source']) ? $data[$profileName]['credential_source'] : null;
+        $credentialSource = !empty($data[$profileName]['credential_source'])
+            ? $data[$profileName]['credential_source']
+            : null;
         $credentialsPromise = null;
 
         switch ($credentialSource) {
@@ -812,7 +835,7 @@ class CredentialProvider
                 $credentialsPromise = self::ecsCredentials($config);
                 break;
             default:
-                throw new CredentialsException (
+                throw new CredentialsException(
                     "Invalid credential_source found in config file: {$credentialSource}. Valid inputs "
                     . "include Environment, Ec2InstanceMetadata, and EcsContainer."
                 );
@@ -836,5 +859,18 @@ class CredentialProvider
     private static function reject($msg)
     {
         return new Promise\RejectedPromise(new CredentialsException($msg));
+    }
+
+    /**
+     * @param $filename
+     * @return string
+     */
+    private static function getFileName($filename)
+    {
+        if (!isset($filename)) {
+            $filename = getenv(self::ENV_SHARED_CREDENTIALS_FILE) ?:
+                (self::getHomeDir() . '/.aws/credentials');
+        }
+        return $filename;
     }
 }
