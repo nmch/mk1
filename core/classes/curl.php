@@ -503,8 +503,8 @@ class Curl
 				CURLOPT_SSL_VERIFYPEER => false,
 				//CURLOPT_COOKIEFILE     => $this->cookie_path,
 				//CURLOPT_COOKIEJAR      => $this->cookie_path,
-				CURLOPT_COOKIEJAR      => '',
-				//			    CURLOPT_FILE => 'step1.txt',
+				//CURLOPT_COOKIEJAR      => '',
+				//CURLOPT_FILE => 'step1.txt',
 				CURLOPT_STDERR         => $this->error_output_file,
 				CURLOPT_WRITEHEADER    => $this->transfer_header_file,
 				
