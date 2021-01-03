@@ -74,6 +74,11 @@ class Response
 		return $this;
 	}
 	
+	public function get_body()
+	{
+		return $this->body;
+	}
+	
 	public function get_body_as_json()
 	{
 		return json_decode($this->body, true);
