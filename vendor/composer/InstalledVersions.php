@@ -29,7 +29,7 @@ class InstalledVersions
     'aliases' => 
     array (
     ),
-    'reference' => '3ac1d10757780b3bd1ba46f8d40580387b1d2b2a',
+    'reference' => '6b27d0cc05340aa70a414a50bc4646d74ef61be3',
     'name' => '__root__',
   ),
   'versions' => 
@@ -41,7 +41,7 @@ class InstalledVersions
       'aliases' => 
       array (
       ),
-      'reference' => '3ac1d10757780b3bd1ba46f8d40580387b1d2b2a',
+      'reference' => '6b27d0cc05340aa70a414a50bc4646d74ef61be3',
     ),
     'aws/aws-sdk-php' => 
     array (
@@ -51,15 +51,6 @@ class InstalledVersions
       array (
       ),
       'reference' => '02aaf7007c5678a6358ea924cd85531300aa1747',
-    ),
-    'brick/math' => 
-    array (
-      'pretty_version' => '0.9.1',
-      'version' => '0.9.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '283a40c901101e66de7061bd359252c013dcc43c',
     ),
     'doctrine/instantiator' => 
     array (
@@ -285,31 +276,6 @@ class InstalledVersions
       array (
       ),
       'reference' => '120b605dfeb996808c31b6477290a714d356e822',
-    ),
-    'ramsey/collection' => 
-    array (
-      'pretty_version' => '1.1.1',
-      'version' => '1.1.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '24d93aefb2cd786b7edd9f45b554aea20b28b9b1',
-    ),
-    'ramsey/uuid' => 
-    array (
-      'pretty_version' => '4.1.1',
-      'version' => '4.1.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'cd4032040a750077205918c86049aa0f43d22947',
-    ),
-    'rhumsaa/uuid' => 
-    array (
-      'replaced' => 
-      array (
-        0 => '4.1.1',
-      ),
     ),
     'sebastian/cli-parser' => 
     array (

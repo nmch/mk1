@@ -187,7 +187,7 @@ class Mk
 	
 	static function uuidv4(): string
 	{
-		return Ramsey\Uuid\Uuid::uuid4()->toString();
+		return uuid_create(UUID_TYPE_RANDOM);
 	}
 	
 	static function url2a($content)
