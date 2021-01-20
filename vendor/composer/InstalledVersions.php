@@ -29,7 +29,7 @@ class InstalledVersions
     'aliases' => 
     array (
     ),
-    'reference' => 'a8647326f7c6d29908fbff34006f386a4d309dd0',
+    'reference' => 'fb3841c98c2c5d10680efa3ba8e2e0c0da93123f',
     'name' => '__root__',
   ),
   'versions' => 
@@ -41,7 +41,7 @@ class InstalledVersions
       'aliases' => 
       array (
       ),
-      'reference' => 'a8647326f7c6d29908fbff34006f386a4d309dd0',
+      'reference' => 'fb3841c98c2c5d10680efa3ba8e2e0c0da93123f',
     ),
     'aws/aws-sdk-php' => 
     array (
@@ -127,6 +127,15 @@ class InstalledVersions
       array (
       ),
       'reference' => 'dbe56d23de8fcb157bbc0cfb3ad7c7de0cfb0984',
+    ),
+    'opis/json-schema' => 
+    array (
+      'pretty_version' => '1.0.19',
+      'version' => '1.0.19.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '1bcb3582881d0692d002537a4472964280f71313',
     ),
     'phar-io/manifest' => 
     array (

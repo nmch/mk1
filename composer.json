@@ -5,6 +5,7 @@
     },
     "require": {
         "aws/aws-sdk-php": "^3.155",
-        "ramsey/uuid": "^4.1"
+        "ramsey/uuid": "^4.1",
+        "opis/json-schema": "^1.0"
     }
 }
