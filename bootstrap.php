@@ -28,6 +28,10 @@ class UnauthorizedException extends MkException
 {
 }
 
+class RedirectException extends MkException
+{
+}
+
 class InvalidCsrfTokenException extends MkException
 {
 }
@@ -204,6 +208,9 @@ else{
 	try {
 		$request = new Request($uri);
 		$request->execute();
+	} catch(RedirectException $e){
+		http_response_code($e->getCode() ?: 302);
+		header('Location: ' . $e->getMessage());
 	} catch(UnauthorizedException $e){
 		$uri         = explode('/', Config::get('routes._403_', 'default/403'));
 		$request_403 = new Request($uri);
