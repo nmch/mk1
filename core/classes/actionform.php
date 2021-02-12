@@ -1,11 +1,12 @@
 <?php
+
 /**
  *  ActionForm.php
  *
- *  @author     Masaki Fujimoto <fujimoto@php.net>
- *  @license    http://www.opensource.org/licenses/bsd-license.php The BSD License
- *  @package    Ethna
- *  @version    $Id$
+ * @author     Masaki Fujimoto <fujimoto@php.net>
+ * @license    http://www.opensource.org/licenses/bsd-license.php The BSD License
+ * @package    Ethna
+ * @version    $Id$
  */
 class Actionform implements ArrayAccess
 {
@@ -239,6 +240,11 @@ class Actionform implements ArrayAccess
 	public static function request_uri()
 	{
 		return Arr::get($_SERVER, 'REQUEST_URI', '');
+	}
+	
+	public static function request_content_type()
+	{
+		return strtolower(Arr::get($_SERVER, 'CONTENT_TYPE', ''));
 	}
 	
 	function __unset($name)
