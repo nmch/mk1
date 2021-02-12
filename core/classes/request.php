@@ -17,6 +17,8 @@ class Request
 	public $response;
 	/** @var \View */
 	public $view;
+	/** @var Exception */
+	public $exception;
 	
 	function __construct($uri, $method = null, $data = [])
 	{
