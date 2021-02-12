@@ -28,6 +28,10 @@ class UnauthorizedException extends MkException
 {
 }
 
+class BadRequestException extends MkException
+{
+}
+
 class RedirectException extends MkException
 {
 }
@@ -140,6 +144,9 @@ try {
 		if( $e instanceof UnauthorizedException ){
 			http_response_code(403);
 		}
+		elseif( $e instanceof BadRequestException ){
+			http_response_code($e->getCode() ?: 400);
+		}
 		else{
 			http_response_code(500);
 		}
@@ -211,6 +218,10 @@ else{
 	} catch(RedirectException $e){
 		http_response_code($e->getCode() ?: 302);
 		header('Location: ' . $e->getMessage());
+	} catch(BadRequestException $e){
+		$uri         = explode('/', Config::get('routes._400_', 'default/400'));
+		$request_400 = new Request($uri);
+		$request_400->execute();
 	} catch(UnauthorizedException $e){
 		$uri         = explode('/', Config::get('routes._403_', 'default/403'));
 		$request_403 = new Request($uri);
