@@ -29,7 +29,7 @@ class InstalledVersions
     'aliases' => 
     array (
     ),
-    'reference' => '6b27d0cc05340aa70a414a50bc4646d74ef61be3',
+    'reference' => '030ac93edb9ae2968e2ee10f14e4d136464f8935',
     'name' => '__root__',
   ),
   'versions' => 
@@ -41,16 +41,16 @@ class InstalledVersions
       'aliases' => 
       array (
       ),
-      'reference' => '6b27d0cc05340aa70a414a50bc4646d74ef61be3',
+      'reference' => '030ac93edb9ae2968e2ee10f14e4d136464f8935',
     ),
     'aws/aws-sdk-php' => 
     array (
-      'pretty_version' => '3.171.20',
-      'version' => '3.171.20.0',
+      'pretty_version' => '3.173.8',
+      'version' => '3.173.8.0',
       'aliases' => 
       array (
       ),
-      'reference' => '02aaf7007c5678a6358ea924cd85531300aa1747',
+      'reference' => 'e6d08cdc8206af55dd7bbb967a0350b41263018c',
     ),
     'doctrine/instantiator' => 
     array (
