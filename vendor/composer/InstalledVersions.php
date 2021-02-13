@@ -29,7 +29,7 @@ class InstalledVersions
     'aliases' => 
     array (
     ),
-    'reference' => '030ac93edb9ae2968e2ee10f14e4d136464f8935',
+    'reference' => 'eae21955f009e498f88effcd78bb03f47744b0bd',
     'name' => '__root__',
   ),
   'versions' => 
@@ -41,7 +41,7 @@ class InstalledVersions
       'aliases' => 
       array (
       ),
-      'reference' => '030ac93edb9ae2968e2ee10f14e4d136464f8935',
+      'reference' => 'eae21955f009e498f88effcd78bb03f47744b0bd',
     ),
     'aws/aws-sdk-php' => 
     array (
@@ -229,12 +229,12 @@ class InstalledVersions
     ),
     'phpunit/phpunit' => 
     array (
-      'pretty_version' => '9.5.1',
-      'version' => '9.5.1.0',
+      'pretty_version' => '9.5.2',
+      'version' => '9.5.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'e7bdf4085de85a825f4424eae52c99a1cec2f360',
+      'reference' => 'f661659747f2f87f9e72095bb207bceb0f151cb4',
     ),
     'psr/http-client' => 
     array (
