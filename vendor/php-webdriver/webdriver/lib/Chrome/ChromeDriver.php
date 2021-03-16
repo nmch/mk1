@@ -11,6 +11,9 @@ use Facebook\WebDriver\Remote\WebDriverCommand;
 
 class ChromeDriver extends RemoteWebDriver
 {
+    /** @var ChromeDevToolsDriver */
+    private $devTools;
+
     /**
      * @return static
      */
@@ -35,6 +38,9 @@ class ChromeDriver extends RemoteWebDriver
             null,
             DriverCommand::NEW_SESSION,
             [
+                'capabilities' => [
+                    'firstMatch' => [(object) $desired_capabilities->toW3cCompatibleArray()],
+                ],
                 'desiredCapabilities' => (object) $desired_capabilities->toArray(),
             ]
         );
@@ -90,5 +96,17 @@ class ChromeDriver extends RemoteWebDriver
         $request_timeout_in_ms = null
     ) {
         throw new WebDriverException('Please use ChromeDriver::start() instead.');
+    }
+
+    /**
+     * @return ChromeDevToolsDriver
+     */
+    public function getDevTools()
+    {
+        if ($this->devTools === null) {
+            $this->devTools = new ChromeDevToolsDriver($this);
+        }
+
+        return $this->devTools;
     }
 }

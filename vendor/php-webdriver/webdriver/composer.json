@@ -24,7 +24,7 @@
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^2.0",
-    "ondram/ci-detector": "^2.1 || ^3.5",
+    "ondram/ci-detector": "^2.1 || ^3.5 || ^4.0",
     "php-coveralls/php-coveralls": "^2.4",
     "php-mock/php-mock-phpunit": "^1.1 || ^2.0",
     "php-parallel-lint/php-parallel-lint": "^1.2",
@@ -64,17 +64,33 @@
   },
   "minimum-stability": "beta",
   "scripts": {
-    "analyze": [
-      "vendor/bin/parallel-lint -j 10 ./lib ./tests example.php",
-      "vendor/bin/phpstan analyze -c phpstan.neon --ansi"
+    "all": [
+      "@lint",
+      "@analyze",
+      "@test"
     ],
-    "codestyle:check": [
+    "analyze": [
+      "vendor/bin/phpstan analyze -c phpstan.neon --ansi",
       "vendor/bin/php-cs-fixer fix --diff --diff-format=udiff --dry-run -vvv --ansi",
       "vendor/bin/phpcs --standard=PSR2 ./lib/ ./tests/"
     ],
-    "codestyle:fix": [
+    "fix": [
+      "@composer normalize",
       "vendor/bin/php-cs-fixer fix --diff --diff-format=udiff -vvv || exit 0",
       "vendor/bin/phpcbf --standard=PSR2 ./lib/ ./tests/"
+    ],
+    "lint": [
+      "vendor/bin/parallel-lint -j 10 ./lib ./tests example.php",
+      "@composer validate",
+      "@composer normalize --dry-run"
+    ],
+    "preinstall": [
+      "@composer update --no-progress --no-interaction",
+      "@composer require --dev phpstan/phpstan",
+      "@composer require --dev ergebnis/composer-normalize"
+    ],
+    "test": [
+      "vendor/bin/phpunit --colors=always"
     ]
   }
 }
