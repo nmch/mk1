@@ -2,7 +2,6 @@
 
 namespace Facebook\WebDriver\Remote;
 
-use Facebook\WebDriver\Exception\UnsupportedOperationException;
 use Facebook\WebDriver\Interactions\WebDriverActions;
 use Facebook\WebDriver\JavaScriptExecutor;
 use Facebook\WebDriver\WebDriver;
@@ -203,20 +202,13 @@ class RemoteWebDriver implements WebDriver, JavaScriptExecutor, WebDriverHasInpu
     /**
      * Create a new top-level browsing context.
      *
-     * @return RemoteWebDriver The current instance.
+     * @codeCoverageIgnore
+     * @deprecated Use $driver->switchTo()->newWindow()
+     * @return WebDriver The current instance.
      */
     public function newWindow()
     {
-        if (!$this->isW3cCompliant) {
-            throw new UnsupportedOperationException('New window is only supported in W3C mode');
-        }
-
-        $response = $this->execute(DriverCommand::NEW_WINDOW, []);
-        $handle = $response['handle'];
-
-        $this->switchTo()->window($handle);
-
-        return $this;
+        return $this->switchTo()->newWindow();
     }
 
     /**
@@ -618,6 +610,10 @@ class RemoteWebDriver implements WebDriver, JavaScriptExecutor, WebDriverHasInpu
     }
 
     /**
+     * Execute custom commands on remote end.
+     * For example vendor-specific commands or other commands not implemented by php-webdriver.
+     *
+     * @see https://github.com/php-webdriver/php-webdriver/wiki/Custom-commands
      * @param string $endpointUrl
      * @param string $method
      * @param array $params
