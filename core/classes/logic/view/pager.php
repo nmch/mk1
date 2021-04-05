@@ -80,7 +80,7 @@ trait Logic_View_Pager
 			$this->id_name = $model::primary_key();
 		}
 		
-		foreach($this->search_elements() as list($key, $value)){
+		foreach($this->search_elements() as [$key, $value]){
 			$method_name = 'search_' . $key;
 			if( method_exists($this, $method_name) ){
 				$this->{$method_name}($key, $value, $query);
@@ -206,7 +206,7 @@ trait Logic_View_Pager
 			if( ! in_array('do_not_explode', $option) ){
 				// スペースによる複数指定
 				if( is_scalar($values) ){
-					$values = explode(' ', trim($values));
+					$values = explode(' ', trim(mb_convert_kana($values, 's')));
 				}
 				if( ! $values ){
 					$values = [];
