@@ -7,6 +7,7 @@ return [
 	'cookie_path'            => '/',
 	'cookie_secure'          => false,
 	'cookie_httponly'        => true,
+	'cookie_expiration_time' => 86400 * 365 * 2,
 	'expire_on_close'        => false,
 	'expiration_time'        => 86400 * 365 * 2,
 	'flash_id'               => 'flash',

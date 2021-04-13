@@ -61,7 +61,8 @@ class Session
 		}
 		
 		session_name($cookie_name);
-		session_set_cookie_params($config['expiration_time'], $config['cookie_path'], $config['cookie_domain'], $config['cookie_secure'], $config['cookie_httponly']);
+		$coolie_expiration_time = ($config['cookie_expiration_time'] ?? $config['expiration_time']);
+		session_set_cookie_params($coolie_expiration_time, $config['cookie_path'], $config['cookie_domain'], $config['cookie_secure'], $config['cookie_httponly']);
 		if( isset($driver_config['path']) ){
 			session_save_path($driver_config['path']);
 		}
