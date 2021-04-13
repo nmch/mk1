@@ -120,6 +120,7 @@ class Route
 			if( $uri !== $_uri ){
 				Log::coredebug("[route] Route ReWrited : [$uri] to [$_uri]");
 				$uri = $_uri;
+				break;
 			}
 		}
 		
