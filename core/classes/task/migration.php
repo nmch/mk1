@@ -12,7 +12,9 @@
  */
 class Task_Migration extends Task
 {
-	protected $silent = false;
+	protected $silent   = false;
+	protected $messages = [];
+	protected $error;
 	
 	function run()
 	{
@@ -173,6 +175,13 @@ SQL;
 						DB::rollback_transaction();
 						//Log::coredebug($e->getMessage());
 						//print_r( $e->getTrace());
+						$this->error = [
+							'group'     => $group,
+							'seq'       => $seq,
+							'name'      => $name,
+							'exception' => $e,
+						];
+						
 						Log::error("[db migration] マイグレーション失敗 / group={$group} / seq={$seq} / {$name}", $e);
 						
 						$msg = "Error\n{$e->getMessage()}";
@@ -187,6 +196,11 @@ SQL;
 		DB::clear_schema_cache();
 	}
 	
+	function has_error(): bool
+	{
+		return boolval($this->error);
+	}
+	
 	function set_silent($silent = null)
 	{
 		$this->silent = $silent;
@@ -196,6 +210,10 @@ SQL;
 	
 	protected function echo_message($message)
 	{
+		if( trim($message) ){
+			$this->messages[] = trim($message);
+		}
+		
 		if( ! $this->silent ){
 			echo $message;
 		}
