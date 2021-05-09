@@ -124,7 +124,7 @@ class Mk
 	
 	static function json_decode($value)
 	{
-		return json_decode($value, true, 512, JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);
+		return json_decode($value, true, 512, JSON_INVALID_UTF8_SUBSTITUTE | JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_THROW_ON_ERROR);
 	}
 	
 	static function json_encode($value): string
