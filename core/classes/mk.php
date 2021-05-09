@@ -122,6 +122,11 @@ class Mk
 		return (strncmp(strtolower(self::$env), static::PRODUCTION, strlen(static::PRODUCTION)) === 0);
 	}
 	
+	static function json_decode($value)
+	{
+		return json_decode($value, true, 512, JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);
+	}
+	
 	static function json_encode($value): string
 	{
 		$json = json_encode($value, JSON_HEX_TAG
