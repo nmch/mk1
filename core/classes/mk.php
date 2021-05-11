@@ -1,4 +1,11 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
 
 class Mk
 {
@@ -115,6 +122,11 @@ class Mk
 		return (strncmp(strtolower(self::$env), static::PRODUCTION, strlen(static::PRODUCTION)) === 0);
 	}
 	
+	static function json_decode($value)
+	{
+		return json_decode($value, true, 512, JSON_INVALID_UTF8_SUBSTITUTE | JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_THROW_ON_ERROR);
+	}
+	
 	static function json_encode($value): string
 	{
 		$json = json_encode($value, JSON_HEX_TAG
@@ -180,7 +192,7 @@ class Mk
 	
 	static function uuidv4(): string
 	{
-		return Ramsey\Uuid\Uuid::uuid4()->toString();
+		return uuid_create(UUID_TYPE_RANDOM);
 	}
 	
 	static function url2a($content)

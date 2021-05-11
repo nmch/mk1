@@ -1,4 +1,11 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
 
 class Route
 {
@@ -19,7 +26,7 @@ class Route
 		}
 		
 		if( is_array($uri) ){
-			list($controller_name, $controller_method_name) = $uri;
+			[$controller_name, $controller_method_name] = $uri;
 			$controller_name        = 'Controller_' . ucfirst($controller_name);
 			$controller_method_name = static::find_method($controller_name, $controller_method_name, $request_method);
 		}
@@ -31,7 +38,7 @@ class Route
 			for($c = 0; $c < count($uri_exploded); $c++){
 				$tmp_uri_exploded = $uri_exploded;
 				
-				$controller_name_candidate = implode('_', array_map(function ($str){
+				$controller_name_candidate = implode('_', array_map(function($str){
 						return ucfirst($str);
 					}, array_splice($tmp_uri_exploded, 0, count($tmp_uri_exploded) - $c)
 					)
@@ -86,7 +93,7 @@ class Route
 		$uri = trim($uri, '/');
 		
 		if( ! $uri ){
-			$uri = explode('/', Config::get('routes._root_', 'default/index'));
+			$uri = Config::get('routes._root_', 'default/index');
 		}
 		
 		$routes = Config::get('routes');
@@ -110,9 +117,10 @@ class Route
 			], $search
 			);
 			$_uri   = preg_replace("#^$search$#", $route, $uri);
-			if( $uri != $_uri ){
+			if( $uri !== $_uri ){
 				Log::coredebug("[route] Route ReWrited : [$uri] to [$_uri]");
 				$uri = $_uri;
+				break;
 			}
 		}
 		

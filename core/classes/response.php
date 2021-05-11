@@ -1,4 +1,11 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
 
 class Response
 {
@@ -65,6 +72,11 @@ class Response
 		$this->body = $body;
 		
 		return $this;
+	}
+	
+	public function get_body()
+	{
+		return $this->body;
 	}
 	
 	public function get_body_as_json()

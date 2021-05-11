@@ -1,8 +1,12 @@
 <?php
-
 /**
- * Class Ipv4_Address
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
  */
+
 class Ipv4_Address
 {
 	protected $ipv4_address_string;

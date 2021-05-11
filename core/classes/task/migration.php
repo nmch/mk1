@@ -1,10 +1,21 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
 
 /**
  * データベースマイグレーション
  */
 class Task_Migration extends Task
 {
+	protected $silent   = false;
+	protected $messages = [];
+	protected $error;
+	
 	function run()
 	{
 		Log::coredebug("[db migration] データベースマイグレーションを実行します");
@@ -26,11 +37,11 @@ class Task_Migration extends Task
 					}
 					$new_filename .= "_{$file['name']}";
 					if( strlen($file['extension']) ){
-						$new_filename .= '.' . $file['extension'];
+						$new_filename .= ('.' . $file['extension']);
 					}
 					
 					Log::coredebug("[db migration] [Renumber] {$group}/{$file['seq']} -> [$seq]");
-					echo "[Renumber] {$group}/{$file['seq']} -> [$seq]\n";
+					$this->echo_message("[Renumber] {$group}/{$file['seq']} -> [$seq]\n");
 					
 					rename($file['dirname'] . '/' . $file['basename'], $file['dirname'] . '/' . $new_filename);
 					
@@ -107,10 +118,10 @@ SQL;
 				
 				if( $seq <= $last_seq ){
 					Log::coredebug("[db migration] マイグレーションをスキップしました / group={$group} / seq={$seq}");
-					echo ".";
+					$this->echo_message(".");
 				}
 				else{
-					printf("\n%10s : %4d : %s -> ", $group, $seq, $name);
+					$this->echo_message(sprintf("\n%10s : %4d : %s -> ", $group, $seq, $name));
 					
 					$filepath = ($migration_file['dirname'] . '/' . $migration_file['basename']);
 					$query    = file_get_contents($filepath);
@@ -159,23 +170,53 @@ SQL;
 						DB::update("migrations")->set(['migration_last_seq' => $seq])->where('migration_group', $group)->execute();
 						DB::commit_transaction();
 						Log::coredebug("[db migration] マイグレーションの実行に成功しました / group={$group} / seq={$seq} / {$name}");
-						echo "OK";
+						$this->echo_message("OK");
 					} catch(Exception $e){
 						DB::rollback_transaction();
 						//Log::coredebug($e->getMessage());
 						//print_r( $e->getTrace());
+						$this->error = [
+							'group'     => $group,
+							'seq'       => $seq,
+							'name'      => $name,
+							'exception' => $e,
+						];
+						
 						Log::error("[db migration] マイグレーション失敗 / group={$group} / seq={$seq} / {$name}", $e);
 						
 						$msg = "Error\n{$e->getMessage()}";
-						echo $msg;
+						$this->echo_message($msg);
 						break 2;
 					}
 				}
 			}
 		}
-		echo "\n";
+		$this->echo_message("\n");
 		
 		DB::clear_schema_cache();
+	}
+	
+	function has_error(): bool
+	{
+		return boolval($this->error);
+	}
+	
+	function set_silent($silent = null)
+	{
+		$this->silent = $silent;
+		
+		return $this;
+	}
+	
+	protected function echo_message($message)
+	{
+		if( trim($message) ){
+			$this->messages[] = trim($message);
+		}
+		
+		if( ! $this->silent ){
+			echo $message;
+		}
 	}
 	
 	function get_latest_migrations()

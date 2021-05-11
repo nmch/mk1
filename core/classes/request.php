@@ -1,4 +1,11 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
 
 class Request
 {
@@ -10,6 +17,8 @@ class Request
 	public $response;
 	/** @var \View */
 	public $view;
+	/** @var Exception */
+	public $exception;
 	
 	function __construct($uri, $method = null, $data = [])
 	{

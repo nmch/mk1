@@ -1,8 +1,12 @@
 <?php
-
 /**
- * Class Curl
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
  */
+
 class Curl
 {
 	const OP_RETURN_AS_JSON         = 'return_as_json';
@@ -499,8 +503,8 @@ class Curl
 				CURLOPT_SSL_VERIFYPEER => false,
 				//CURLOPT_COOKIEFILE     => $this->cookie_path,
 				//CURLOPT_COOKIEJAR      => $this->cookie_path,
-				CURLOPT_COOKIEJAR      => '',
-				//			    CURLOPT_FILE => 'step1.txt',
+				//CURLOPT_COOKIEJAR      => '',
+				//CURLOPT_FILE => 'step1.txt',
 				CURLOPT_STDERR         => $this->error_output_file,
 				CURLOPT_WRITEHEADER    => $this->transfer_header_file,
 				

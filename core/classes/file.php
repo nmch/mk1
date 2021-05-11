@@ -1,4 +1,11 @@
 <?php
+/**
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
+ */
 
 class File
 {
@@ -6,6 +13,8 @@ class File
 	const ENCODING_UTF8 = 'UTF-8';
 	const EOL_LF        = "\n";
 	const EOL_CRLF      = "\r\n";
+	
+	const DELIMITER_COMMA = ',';
 	
 	const MIME_CSV = 'text/csv';
 	
@@ -153,7 +162,7 @@ class File
 		fclose($fp);
 	}
 	
-	static function get_csv_from_obj($data, $headers, $csv_filename = null, $funcs = [], $array_delimiter = ','): File
+	static function get_csv_from_obj($data, $headers, $csv_filename = null, $funcs = [], $array_delimiter = File::DELIMITER_COMMA, $export_encoding = File::ENCODING_SJIS): File
 	{
 		$columns = [];
 		if( $data instanceof Database_Resultset ){
@@ -233,8 +242,10 @@ class File
 		fclose($fp);
 		
 		$tmp_file       = new File($tmp_filepath);
-		$converted_file = $tmp_file->convert_encoding();
-		unlink($tmp_filepath);
+		$converted_file = $tmp_file->convert_encoding($export_encoding);
+		if( $tmp_file !== $converted_file ){
+			unlink($tmp_filepath);
+		}
 		
 		if( ! $csv_filename ){
 			$csv_filename = 'data.csv';
@@ -263,6 +274,10 @@ class File
 	
 	function convert_encoding($to = File::ENCODING_SJIS, $from = File::ENCODING_UTF8): File
 	{
+		if( $to === $from ){
+			return $this;
+		}
+		
 		$convert_eol_from = null;
 		$convert_eol_to   = null;
 		if( $to === File::ENCODING_SJIS && $from === File::ENCODING_UTF8 ){

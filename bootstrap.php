@@ -28,6 +28,14 @@ class UnauthorizedException extends MkException
 {
 }
 
+class BadRequestException extends MkException
+{
+}
+
+class RedirectException extends MkException
+{
+}
+
 class InvalidCsrfTokenException extends MkException
 {
 }
@@ -136,6 +144,9 @@ try {
 		if( $e instanceof UnauthorizedException ){
 			http_response_code(403);
 		}
+		elseif( $e instanceof BadRequestException ){
+			http_response_code($e->getCode() ?: 400);
+		}
 		else{
 			http_response_code(500);
 		}
@@ -204,13 +215,23 @@ else{
 	try {
 		$request = new Request($uri);
 		$request->execute();
+	} catch(RedirectException $e){
+		http_response_code($e->getCode() ?: 302);
+		header('Location: ' . $e->getMessage());
+	} catch(BadRequestException $e){
+		$uri                    = explode('/', Config::get('routes._400_', 'default/400'));
+		$request_400            = new Request($uri);
+		$request_400->exception = $e;
+		$request_400->execute();
 	} catch(UnauthorizedException $e){
-		$uri         = explode('/', Config::get('routes._403_', 'default/403'));
-		$request_403 = new Request($uri);
+		$uri                    = explode('/', Config::get('routes._403_', 'default/403'));
+		$request_403            = new Request($uri);
+		$request_403->exception = $e;
 		$request_403->execute();
 	} catch(HttpNotFoundException $e){
-		$uri         = explode('/', Config::get('routes._404_', 'default/404'));
-		$request_404 = new Request($uri);
+		$uri                    = explode('/', Config::get('routes._404_', 'default/404'));
+		$request_404            = new Request($uri);
+		$request_404->exception = $e;
 		$request_404->execute();
 	}
 }

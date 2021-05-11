@@ -1,8 +1,12 @@
 <?php
-
 /**
- * ログドライバ : ファイル
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
  */
+
 class Log_File implements Logic_Interface_Log_Driver
 {
 	private $config = [];

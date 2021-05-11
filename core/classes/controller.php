@@ -1,14 +1,20 @@
 <?php
-
 /**
- * コントローラ
+ * Part of the mk1 framework.
+ *
+ * @package    mk1
+ * @author     nmch
+ * @license    MIT License
  */
+
 class Controller
 {
 	/** @var Actionform $af */
 	protected $af;
 	/** @var  Request */
 	protected $request;
+	/** @var Response|View|string|null */
+	protected $response;
 	protected $response_code = 200;
 	/** @var bool Controller::after()二重実行防止用実行済みフラグ */
 	private $after_method_executed = false;
@@ -19,7 +25,11 @@ class Controller
 			$this->request = $options['request'];
 		}
 		$this->af = Actionform::instance();
-		$this->before();
+		
+		$r = $this->before();
+		if( $r instanceof Response ){
+			$this->response = $r;
+		}
 	}
 	
 	function before(){ }
@@ -41,6 +51,11 @@ class Controller
 	
 	function execute($name, array $arguments = [])
 	{
+		// before()などですでにレスポンスが設定されていた場合は実行せずにレスポンスを返却する
+		if( $this->response ){
+			return $this->response;
+		}
+		
 		$r = null;
 		try {
 			if( method_exists($this, 'before_execute') ){
@@ -60,6 +75,8 @@ class Controller
 				throw $e;
 			}
 		}
+		
+		$this->response = $r;
 		
 		return $r;
 	}
