@@ -22,7 +22,11 @@ class Task_Createdb extends Task
 			$db_configs = Config::get('db');
 			foreach($db_configs ?: [] as $name => $db_config){
 				if( is_array($db_config) && ($db_config['connection'] ?? null) ){
-					$this->create($name, $db_config);
+					try {
+						$this->create($name, $db_config);
+					} catch(Exception $e){
+						Log::error($e->getMessage());
+					}
 				}
 			}
 		}
