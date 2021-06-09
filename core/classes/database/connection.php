@@ -12,11 +12,11 @@ class Database_Connection
 	/** @var Database_Connection[] $instances */
 	static $instances = [];
 	/** @var resource $connection */
-	private $connection;
-	private $savepoint_counter = 0;
-	private $current_database_name;
+	protected $connection;
+	protected $savepoint_counter = 0;
+	protected $current_database_name;
 	/** @var array 最後のエラー(最後のクエリが成功した場合は空配列) */
-	private $last_error_details = [];
+	protected $last_error_details = [];
 	
 	function __construct(array $config)
 	{
@@ -280,7 +280,35 @@ class Database_Connection
 	}
 	
 	/**
-	 * コルクションに残っているクエリ結果をすべて破棄する
+	 * 指定されたデータベースが存在しているか取得する
+	 */
+	function database_exists($db_name): bool
+	{
+		$r = DB::select()
+		       ->from('pg_database')
+		       ->where('datname', $db_name)
+		       ->execute($this)
+		;
+		
+		return boolval($r->count());
+	}
+	
+	/**
+	 * 指定されたテーブルが存在しているか取得する
+	 */
+	function table_exists($table_name): bool
+	{
+		$r = DB::select()
+		       ->from('information_schema.tables')
+		       ->where('table_name', $table_name)
+		       ->execute($this)
+		;
+		
+		return boolval($r->count());
+	}
+	
+	/**
+	 * コネクションに残っているクエリ結果をすべて破棄する
 	 *
 	 * @return $this
 	 */
