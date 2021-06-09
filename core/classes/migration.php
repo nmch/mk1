@@ -159,7 +159,10 @@ SQL;
 		DB::clear_schema_cache();
 	}
 	
-	const MIGRATION_SKIPPED = 'SKIPPED';
+	const MIGRATION_SKIPPED       = 'SKIPPED';
+	const MIGRATION_TASK_EXECUTED = 'TASK_EXECUTED';
+	const MIGRATION_PHP_EXECUTED  = 'PHP_EXECUTED';
+	const MIGRATION_SQL_EXECUTED  = 'SQL_EXECUTED';
 	
 	/**
 	 * マイグレーションファイルの実行
@@ -200,74 +203,94 @@ SQL;
 			$filepath = ($migration_file['dirname'] . '/' . $migration_file['basename']);
 			$query    = file_get_contents($filepath);
 			
-			$execute_connection = Database_Connection::instance($migration_file['db'] ?? null);
+			$execute_db_name           = ($migration_file['db'] ?? null);
+			$execute_connection_config = \Config::get("db.{$execute_db_name}");
+			$skip_migration_flag       = false;
+			if( $execute_db_name && ! $execute_connection_config ){
+				$skip_migration_flag = true;
+			}
+			if( $execute_connection_config['skip_migration'] ?? false ){
+				$skip_migration_flag = true;
+			}
 			
-			DB::start_transaction($execute_connection);
-			try {
-				if( Arr::get($migration_file, 'extension') === 'task' ){
-					/**
-					 * タスク実行
-					 */
-					$task_target      = explode(':', trim($query));
-					$task_class_name  = $task_target[0];
-					$task_method_name = isset($task_target[1]) ? $task_target[1] : 'run';
-					if( ! class_exists($task_class_name) ){
-						throw new MkException("タスク {$task_class_name} がみつかりません");
-					}
-					/** @var Task $task_class */
-					$task_class = new $task_class_name;
-					if( ! ($task_class instanceof Task) ){
-						throw new MkException("{$task_class_name} が実行できません");
-					}
-					if( ! method_exists($task_class, $task_method_name) ){
-						throw new MkException("{$task_class_name}:{$task_method_name} が実行できません");
-					}
-					$task_class->set_execute_connection($execute_connection);
-					
-					// migrationしたデータをModelで変更する場合はスキーマキャッシュを削除しなければいけない
-					$this->clear_schema_cache();
-					
-					call_user_func([$task_class, $task_method_name]);
-				}
-				elseif( Arr::get($migration_file, 'extension') === 'php' ){
-					/**
-					 * PHPコード実行
-					 */
-					$func = include($filepath);
-					call_user_func($func);
-				}
-				else{
-					/**
-					 * SQL実行
-					 */
-					DB::query($query)->execute($execute_connection);
-				}
-				
-				DB::commit_transaction($execute_connection);
-				
-				DB::update("migrations")->set(['migration_last_seq' => $seq])->where('migration_group', $group)->execute($this->connection);
-				Log::coredebug("[db migration] マイグレーションの実行に成功しました / group={$group} / seq={$seq} / {$name}");
+			if( $skip_migration_flag ){
+				$result = Migration::MIGRATION_SKIPPED;
 				if( is_callable($message_handler) ){
-					$message_handler("OK");
+					$message_handler("SKIP");
 				}
-			} catch(Exception $e){
-				DB::rollback_transaction($execute_connection);
-				//Log::coredebug($e->getMessage());
-				//print_r( $e->getTrace());
-				$this->error = [
-					'group'     => $group,
-					'seq'       => $seq,
-					'name'      => $name,
-					'exception' => $e,
-				];
-				
-				Log::error("[db migration] マイグレーション失敗 / group={$group} / seq={$seq} / {$name}", $e);
-				if( is_callable($message_handler) ){
-					$msg = "Error\n{$e->getMessage()}";
-					$message_handler($msg);
+			}
+			else{
+				$execute_connection = Database_Connection::instance($execute_db_name);
+				DB::start_transaction($execute_connection);
+				try {
+					if( Arr::get($migration_file, 'extension') === 'task' ){
+						/**
+						 * タスク実行
+						 */
+						$task_target      = explode(':', trim($query));
+						$task_class_name  = $task_target[0];
+						$task_method_name = isset($task_target[1]) ? $task_target[1] : 'run';
+						if( ! class_exists($task_class_name) ){
+							throw new MkException("タスク {$task_class_name} がみつかりません");
+						}
+						/** @var Task $task_class */
+						$task_class = new $task_class_name;
+						if( ! ($task_class instanceof Task) ){
+							throw new MkException("{$task_class_name} が実行できません");
+						}
+						if( ! method_exists($task_class, $task_method_name) ){
+							throw new MkException("{$task_class_name}:{$task_method_name} が実行できません");
+						}
+						$task_class->set_execute_connection($execute_connection);
+						
+						// migrationしたデータをModelで変更する場合はスキーマキャッシュを削除しなければいけない
+						$this->clear_schema_cache();
+						
+						call_user_func([$task_class, $task_method_name]);
+						$result = Migration::MIGRATION_TASK_EXECUTED;
+					}
+					elseif( Arr::get($migration_file, 'extension') === 'php' ){
+						/**
+						 * PHPコード実行
+						 */
+						$func = include($filepath);
+						call_user_func($func);
+						$result = Migration::MIGRATION_PHP_EXECUTED;
+					}
+					else{
+						/**
+						 * SQL実行
+						 */
+						DB::query($query)->execute($execute_connection);
+						$result = Migration::MIGRATION_SQL_EXECUTED;
+					}
+					
+					DB::commit_transaction($execute_connection);
+					
+					DB::update("migrations")->set(['migration_last_seq' => $seq])->where('migration_group', $group)->execute($this->connection);
+					Log::coredebug("[db migration] マイグレーションの実行に成功しました / group={$group} / seq={$seq} / {$name}");
+					if( is_callable($message_handler) ){
+						$message_handler("OK");
+					}
+				} catch(Exception $e){
+					DB::rollback_transaction($execute_connection);
+					//Log::coredebug($e->getMessage());
+					//print_r( $e->getTrace());
+					$this->error = [
+						'group'     => $group,
+						'seq'       => $seq,
+						'name'      => $name,
+						'exception' => $e,
+					];
+					
+					Log::error("[db migration] マイグレーション失敗 / group={$group} / seq={$seq} / {$name}", $e);
+					if( is_callable($message_handler) ){
+						$msg = "Error\n{$e->getMessage()}";
+						$message_handler($msg);
+					}
+					
+					throw $e;
 				}
-				
-				throw $e;
 			}
 		}
 		
