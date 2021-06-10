@@ -161,6 +161,16 @@ class Database_Connection
 		return pg_copy_to($this->connection, $table_name, $delimiter, $null_as);
 	}
 	
+	function put_line($line)
+	{
+		pg_put_line($this->connection, $line);
+	}
+	
+	function end_copy()
+	{
+		pg_end_copy($this->connection);
+	}
+	
 	function query($sql, $parameters = [], $suppress_debug_log = false, $return_raw_result = false)
 	{
 		if( ! $suppress_debug_log ){
