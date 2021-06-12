@@ -13,18 +13,12 @@ class Migration
 	/** @var Database_Connection */
 	protected $connection;
 	protected $dbname;
-	protected $schema;
-	
-	function __construct()
-	{
-	}
 	
 	function set_db_connection($db_definition_name = null)
 	{
 		$this->db_definition_name = $db_definition_name;
 		$this->connection         = DB::get_database_connection($db_definition_name);
 		$this->dbname             = $this->connection->get_current_database_name();
-		$this->schema             = Database_Schema::get(null, null, true, $db_definition_name);
 		
 		return $this;
 	}
