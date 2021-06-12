@@ -88,7 +88,7 @@ class Migration
 	 */
 	function migration_migrations_table()
 	{
-		$schema = Arr::get($this->schema, 'migrations');
+		$schema = Arr::get($this->schema ?: [], 'migrations');
 		
 		/**
 		 * migrationsテーブルのバージョンアップ
