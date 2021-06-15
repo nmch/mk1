@@ -13,14 +13,12 @@ class Migration
 	/** @var Database_Connection */
 	protected $connection;
 	protected $dbname;
-	protected $schema;
 	
 	function set_db_connection($db_definition_name = null)
 	{
 		$this->db_definition_name = $db_definition_name;
 		$this->connection         = DB::get_database_connection($db_definition_name);
 		$this->dbname             = $this->connection->get_current_database_name();
-		$this->schema             = Database_Schema::get(null, null, true, $db_definition_name);
 		
 		return $this;
 	}
@@ -88,7 +86,7 @@ class Migration
 	 */
 	function migration_migrations_table()
 	{
-		$schema = Arr::get($this->schema ?: [], 'migrations');
+		$schema = Database_Schema::get(null, null, true, $this->db_definition_name);
 		
 		/**
 		 * migrationsテーブルのバージョンアップ
