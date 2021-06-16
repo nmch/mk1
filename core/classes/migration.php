@@ -86,7 +86,7 @@ class Migration
 	 */
 	function migration_migrations_table()
 	{
-		$schema = Database_Schema::get(null, null, true, $this->db_definition_name);
+		$schema = Database_Schema::get('migrations', null, true, $this->db_definition_name);
 		
 		/**
 		 * migrationsテーブルのバージョンアップ
