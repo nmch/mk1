@@ -86,6 +86,52 @@ class Mk
 		}
 	}
 	
+	static function retry(callable $try_function, array $try_function_params = [], int $max_retry_count = 3, int $retry_interval_sec = 1, ?callable $retry_callback = null, ?callable $exception_callback = null)
+	{
+		if( ! $exception_callback ){
+			$exception_callback = function(Exception $e){
+				return true; // trueを返すとリトライ
+			};
+		}
+		if( ! $retry_callback ){
+			$retry_callback = function(int $retry_count, Exception $e){
+				Log::coredebug("Retry [{$retry_count}]: {$e->getMessage()}");
+			};
+		}
+		
+		/** @var Exception $last_error */
+		$result      = null;
+		$last_error  = null;
+		$retry_count = 0;
+		do{
+			if( $retry_count ){
+				$retry_callback($retry_count, $last_error);
+			}
+			try {
+				$result     = call_user_func_array($try_function, $try_function_params);
+				$last_error = null;
+				break;
+			} catch(Exception $e){
+				$last_error = $e;
+				
+				if( ! $exception_callback($e) ){
+					break;
+				}
+				
+				if( $retry_interval_sec ){
+					sleep($retry_interval_sec);
+				}
+			}
+			$retry_count++;
+		} while($retry_count < $max_retry_count);
+		
+		if( $last_error ){
+			throw $last_error;
+		}
+		
+		return $result;
+	}
+	
 	static function package_directories()
 	{
 		foreach(glob(PKGPATH . '*', GLOB_ONLYDIR) as $dir){

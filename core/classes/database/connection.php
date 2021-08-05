@@ -25,30 +25,11 @@ class Database_Connection
 		//Log::coredebug("[db connection] try connect to [{$connection_config}]");
 		$connect_retry          = intval(Arr::get($config, 'connect_retry'), 0);
 		$connect_retry_interval = intval(Arr::get($config, 'connect_retry_interval'), 0);
-		$retry_count            = 0;
 		
-		/** @var Exception $last_error */
-		$last_error = null;
-		do{
-			if( $retry_count ){
-				Log::warning("DB接続再試行[{$retry_count}]", $last_error);
-			}
-			try {
-				$this->connection = pg_connect($connection_config, PGSQL_CONNECT_FORCE_NEW);
-				$last_error       = null;
-				break;
-			} catch(Exception $e){
-				$last_error = $e;
-				
-				if( $connect_retry_interval ){
-					sleep($connect_retry_interval);
-				}
-			}
-			$retry_count++;
-		} while($retry_count < $connect_retry);
-		if( $last_error ){
-			throw $last_error;
-		}
+		$this->connection = \Mk::retry(function($connection_config){
+			return pg_connect($connection_config, PGSQL_CONNECT_FORCE_NEW);
+		}, [$connection_config], $connect_retry, $connect_retry_interval);
+		
 		
 		if( $this->connection === false ){
 			$connection_config_to_display = preg_replace("/password=[^ ]+/", "password=*SECRET*", $connection_config);
