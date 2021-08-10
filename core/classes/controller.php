@@ -21,10 +21,8 @@ class Controller
 	
 	function __construct($options = [])
 	{
-		if( isset($options['request']) ){
-			$this->request = $options['request'];
-		}
-		$this->af = Actionform::instance();
+		$this->request = ($options['request'] ?? null);
+		$this->af      = ($options['af'] ?? Actionform::instance());
 		
 		$r = $this->before();
 		if( $r instanceof Response ){

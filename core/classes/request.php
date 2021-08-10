@@ -9,6 +9,16 @@
 
 class Request
 {
+	const METHOD_GET     = 'GET';
+	const METHOD_HEAD    = 'HEAD';
+	const METHOD_POST    = 'POST';
+	const METHOD_PUT     = 'PUT';
+	const METHOD_DELETE  = 'DELETE';
+	const METHOD_CONNECT = 'CONNECT';
+	const METHOD_OPTIONS = 'OPTIONS';
+	const METHOD_TRACE   = 'TRACE';
+	const METHOD_PATCH   = 'PATCH';
+	
 	/** @var Actionform */
 	public $af;
 	public $uri;
@@ -19,31 +29,93 @@ class Request
 	public $view;
 	/** @var Exception */
 	public $exception;
+	/** @var Request */
+	protected $prev_request;
 	
-	function __construct($uri, $method = null, $data = [])
+	function __construct($uri, $method = null, $data = null, $af = null)
 	{
-		$this->uri    = $uri;
-		$this->method = $method;
-		$this->af     = Actionform::instance();
+		$this->uri($uri);
+		$this->method($method);
+		$this->af = ($af ?? Actionform::instance());
 		if( is_array($data) ){
 			$this->af->set($data);
 		}
 	}
 	
 	/**
+	 * リクエストURIの取得・変更
+	 *
+	 * @param string $uri
+	 *
+	 * @return string
+	 */
+	function uri($uri = null)
+	{
+		if( $uri !== null ){
+			$this->uri = $uri;
+		}
+		
+		return $this->uri;
+	}
+	
+	/**
+	 * 直前のリクエストの取得・変更
+	 *
+	 * @param Request|null $prev_request
+	 *
+	 * @return Request|null
+	 */
+	function prev_request($prev_request = null)
+	{
+		if( $prev_request !== null ){
+			$this->prev_request = $prev_request;
+		}
+		
+		return $this->prev_request;
+	}
+	
+	/**
+	 * 例外の取得・変更
+	 *
+	 * @param Exception|null $exception
+	 *
+	 * @return Exception|null
+	 */
+	function exception($exception = null)
+	{
+		if( $exception !== null ){
+			$this->exception = $exception;
+		}
+		
+		return $this->exception;
+	}
+	
+	/**
+	 * リクエストメソッドの取得・変更
+	 *
+	 * @param string $method
+	 *
+	 * @return string
+	 */
+	function method($method = null)
+	{
+		if( $method !== null ){
+			$this->method = strtoupper($method);
+		}
+		
+		return strtoupper($this->method);
+	}
+	
+	/**
 	 * @param null $offset
 	 *
-	 * @return array
+	 * @return array|string
 	 */
 	function uri_segments($offset = null)
 	{
 		$exploded = explode('/', $this->uri);
-		if( $offset === null ){
-			return $exploded;
-		}
-		else{
-			return isset($exploded[$offset]) ? $exploded[$offset] : null;
-		}
+		
+		return ($offset === null) ? $exploded : ($exploded[$offset] ?? null);
 	}
 	
 	/**
@@ -53,27 +125,29 @@ class Request
 	function execute()
 	{
 		$route_class_name = Config::get('class.route', 'Route');
-		list($controller_name, $controller_method_name, $controller_method_options) = $route_class_name::get_controller($this->uri, $this->method);
+		[$controller_name, $controller_method_name, $controller_method_options] = $route_class_name::get_controller($this->uri, $this->method);
 		Log::coredebug("[$route_class_name] controller = $controller_name / method = $controller_method_name");
 		
 		/** @var Controller $controller */
 		$controller = new $controller_name([
 				'request' => $this,
+				'af'      => $this->af,
 			]
 		);
 		
 		// 実行するメソッドのパラメータをActioformにもセットする
-		$af                           = Actionform::instance();
 		$controller_method_reflection = new ReflectionMethod($controller, $controller_method_name);
 		$controller_method_parameters = $controller_method_reflection->getParameters();
 		foreach($controller_method_options as $option_key => $option_value){
 			if( isset($controller_method_parameters[$option_key]) ){
-				$af->set($controller_method_parameters[$option_key]->name, $option_value);
+				$this->af->set($controller_method_parameters[$option_key]->name, $option_value);
 			}
 		}
 		
-		$controller_return_var = call_user_func_array([$controller, 'execute'], [$controller_method_name,
-		                                                                         $controller_method_options]);
+		$controller_return_var = call_user_func_array(
+			[$controller, 'execute'],
+			[$controller_method_name, $controller_method_options]
+		);
 		
 		if( $controller_return_var === null ){
 			return;
