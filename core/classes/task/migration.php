@@ -18,12 +18,17 @@ class Task_Migration extends Task
 	/** @var Migration */
 	protected $migration;
 	
+	function before()
+	{
+		parent::before();
+		
+		$this->migration = (new Migration())->set_db_connection();
+	}
+	
 	function run()
 	{
 		Log::coredebug("[db migration] データベースマイグレーションを実行します");
 		DB::clear_schema_cache();
-		
-		$this->migration = (new Migration())->set_db_connection();
 		
 		$argv = func_get_args();
 		
