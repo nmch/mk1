@@ -16,6 +16,8 @@ return array(
     'Psr\\Http\\Client\\' => array($vendorDir . '/psr/http-client/src'),
     'Prophecy\\' => array($vendorDir . '/phpspec/prophecy/src/Prophecy'),
     'PhpParser\\' => array($vendorDir . '/nikic/php-parser/lib/PhpParser'),
+    'Opis\\Uri\\' => array($vendorDir . '/opis/uri/src'),
+    'Opis\\String\\' => array($vendorDir . '/opis/string/src'),
     'Opis\\JsonSchema\\' => array($vendorDir . '/opis/json-schema/src'),
     'JmesPath\\' => array($vendorDir . '/mtdowling/jmespath.php/src'),
     'GuzzleHttp\\Psr7\\' => array($vendorDir . '/guzzlehttp/psr7/src'),

@@ -5,7 +5,7 @@
     },
     "require": {
         "aws/aws-sdk-php": "^3.171",
-        "opis/json-schema": "^1.0",
+        "opis/json-schema": "^2.1",
         "php-webdriver/webdriver": "^1.9"
     }
 }
