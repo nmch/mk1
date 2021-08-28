@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '640cdd4e213ede46a0915e93e002f3545cbe6931',
+        'reference' => '474a83840efd894749beff8cf2fbb25ffb5b08eb',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '640cdd4e213ede46a0915e93e002f3545cbe6931',
+            'reference' => '474a83840efd894749beff8cf2fbb25ffb5b08eb',
             'dev_requirement' => false,
         ),
         'aws/aws-sdk-php' => array(
@@ -236,12 +236,12 @@
             'dev_requirement' => true,
         ),
         'phpunit/phpunit' => array(
-            'pretty_version' => '9.5.2',
-            'version' => '9.5.2.0',
+            'pretty_version' => '9.5.4',
+            'version' => '9.5.4.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpunit/phpunit',
             'aliases' => array(),
-            'reference' => 'f661659747f2f87f9e72095bb207bceb0f151cb4',
+            'reference' => 'c73c6737305e779771147af66c96ca6a7ed8a741',
             'dev_requirement' => true,
         ),
         'psr/http-client' => array(
