@@ -208,26 +208,40 @@ class File
 				}
 			}
 			foreach($headers['columns'] as $header){
+				$col_value = null;
+				
 				if( array_key_exists('export', $header) && ! $header['export'] ){
 					// export=falseが明示的に設定されていた場合は値をセットしない
-					$line[] = '';
+					$col_value = '';
 				}
 				elseif( isset($funcs['get_value']) ){
-					$line[] = $funcs['get_value']($item, $header);
+					$col_value = $funcs['get_value']($item, $header);
 				}
 				else{
 					if( isset($header['col']) ){
 						if( is_object($item) ){
-							$line[] = $item->{$header['col']};
+							$col_value = $item->{$header['col']};
 						}
 						else{
-							$line[] = Arr::get($item, $header['col']);
+							$col_value = Arr::get($item, $header['col']);
 						}
 					}
-					else{
-						$line[] = Arr::get($header, 'value');
+					elseif( isset($header['value']) ){
+						$value = Arr::get($header, 'value');
+						if( is_callable($value) ){
+							$col_value = call_user_func($value, $item, $header);
+						}
+						else{
+							$col_value = $value;
+						}
+					}
+					
+					if( isset($header['post_filter']) && is_callable($header['post_filter']) ){
+						$col_value = call_user_func($header['post_filter'], $col_value);
 					}
 				}
+				
+				$line[] = $col_value;
 			}
 			
 			foreach($line as $line_key => $line_item){
