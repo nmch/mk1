@@ -226,6 +226,28 @@ class Log
 		return static::$threshold;
 	}
 	
+	static function get_level_num_to_string(int $level_num): string
+	{
+		$map = [
+			static::COREDEBUG => static::LEVEL_COREDEBUG,
+			static::DEBUG     => static::LEVEL_DEBUG,
+			static::DEBUG5    => static::LEVEL_DEBUG5,
+			static::DEBUG4    => static::LEVEL_DEBUG4,
+			static::DEBUG3    => static::LEVEL_DEBUG3,
+			static::DEBUG2    => static::LEVEL_DEBUG2,
+			static::DEBUG1    => static::LEVEL_DEBUG1,
+			static::INFO      => static::LEVEL_INFO,
+			static::NOTICE    => static::LEVEL_NOTICE,
+			static::WARNING   => static::LEVEL_WARNING,
+			static::ERROR     => static::LEVEL_ERROR,
+			static::CRITICAL  => static::LEVEL_CRITICAL,
+			static::ALERT     => static::LEVEL_ALERT,
+			static::EMERGENCY => static::LEVEL_EMERGENCY,
+		];
+		
+		return $map[$level_num];
+	}
+	
 	static function log($level, $message)
 	{
 		try {
