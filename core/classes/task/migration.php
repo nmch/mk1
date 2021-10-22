@@ -25,12 +25,14 @@ class Task_Migration extends Task
 		$this->migration = (new Migration())->set_db_connection();
 	}
 	
-	function run()
+	function run($argv = null)
 	{
 		Log::coredebug("[db migration] データベースマイグレーションを実行します");
 		DB::clear_schema_cache();
 		
-		$argv = func_get_args();
+		if( $argv === null ){
+			$argv = func_get_args();
+		}
 		
 		// renumberオプション
 		if( in_array('renumber', $argv) ){
