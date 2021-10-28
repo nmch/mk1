@@ -176,10 +176,9 @@ if( Mk::is_unittesting() ){
 	return;
 }
 
-
 // リクエストURIがある場合は URI → ルーター → コントローラーを実行
 // ない場合はモジュール名が決まっているので、Task_NAME を実行
-if( ! empty($_SERVER['argv']) ){
+if( Mk::is_cli() ){
 	$argv = $_SERVER['argv'];
 	// CLIで実行された場合
 	if( empty($_SERVER['argc']) || $_SERVER['argc'] < 2 ){
