@@ -4,6 +4,7 @@ namespace Facebook\WebDriver\Chrome;
 
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use JsonSerializable;
+use ReturnTypeWillChange;
 
 /**
  * The class manages the capabilities in ChromeDriver.
@@ -13,12 +14,12 @@ use JsonSerializable;
 class ChromeOptions implements JsonSerializable
 {
     /**
-     * The key of chrome options desired capabilities (in legacy OSS JsonWire protocol)
+     * The key of chromeOptions in desired capabilities (in legacy OSS JsonWire protocol)
      * @todo Replace value with 'goog:chromeOptions' after JsonWire protocol support is removed
      */
     const CAPABILITY = 'chromeOptions';
     /**
-     * The key of chrome options desired capabilities (in W3C compatible protocol)
+     * The key of chromeOptions in desired capabilities (in W3C compatible protocol)
      */
     const CAPABILITY_W3C = 'goog:chromeOptions';
     /**
@@ -43,6 +44,7 @@ class ChromeOptions implements JsonSerializable
      *
      * @return array
      */
+    #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->toArray();

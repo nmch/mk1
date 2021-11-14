@@ -126,28 +126,11 @@ class RemoteWebDriver implements WebDriver, JavaScriptExecutor, WebDriverHasInpu
 
         $parameters['desiredCapabilities'] = (object) $desired_capabilities->toArray();
 
-        $command = new WebDriverCommand(
-            null,
-            DriverCommand::NEW_SESSION,
-            $parameters
-        );
+        $command = WebDriverCommand::newSession($parameters);
 
         $response = $executor->execute($command);
-        $value = $response->getValue();
 
-        if (!$isW3cCompliant = isset($value['capabilities'])) {
-            $executor->disableW3cCompliance();
-        }
-
-        if ($isW3cCompliant) {
-            $returnedCapabilities = DesiredCapabilities::createFromW3cCapabilities($value['capabilities']);
-        } else {
-            $returnedCapabilities = new DesiredCapabilities($value);
-        }
-
-        $driver = new static($executor, $response->getSessionID(), $returnedCapabilities, $isW3cCompliant);
-
-        return $driver;
+        return static::createFromResponse($response, $executor);
     }
 
     /**
@@ -381,9 +364,7 @@ class RemoteWebDriver implements WebDriver, JavaScriptExecutor, WebDriverHasInpu
      */
     public function takeScreenshot($save_as = null)
     {
-        $screenshot = base64_decode(
-            $this->execute(DriverCommand::SCREENSHOT)
-        );
+        $screenshot = base64_decode($this->execute(DriverCommand::SCREENSHOT), true);
 
         if ($save_as !== null) {
             $directoryPath = dirname($save_as);
@@ -644,6 +625,30 @@ class RemoteWebDriver implements WebDriver, JavaScriptExecutor, WebDriverHasInpu
     public function isW3cCompliant()
     {
         return $this->isW3cCompliant;
+    }
+
+    /**
+     * Create instance based on response to NEW_SESSION command.
+     * Also detect W3C/OSS dialect and setup the driver/executor accordingly.
+     *
+     * @internal
+     * @return static
+     */
+    protected static function createFromResponse(WebDriverResponse $response, HttpCommandExecutor $commandExecutor)
+    {
+        $responseValue = $response->getValue();
+
+        if (!$isW3cCompliant = isset($responseValue['capabilities'])) {
+            $commandExecutor->disableW3cCompliance();
+        }
+
+        if ($isW3cCompliant) {
+            $returnedCapabilities = DesiredCapabilities::createFromW3cCapabilities($responseValue['capabilities']);
+        } else {
+            $returnedCapabilities = new DesiredCapabilities($responseValue);
+        }
+
+        return new static($commandExecutor, $response->getSessionID(), $returnedCapabilities, $isW3cCompliant);
     }
 
     /**
