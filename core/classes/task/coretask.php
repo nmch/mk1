@@ -157,11 +157,12 @@ class Task_Coretask extends Task
 	
 	public static function refine_error($error)
 	{
-		echo "[Error]---\n";
 		if( $error instanceof Exception ){
+			printf("Error: [%d] %s (Line: %d)\n", $error->getCode(), $error->getFile(), $error->getLine());
 			$error = (string)$error;
 		}
 		if( is_array($error) ){
+			echo "[Error]\n";
 			$error = print_r($error, true);
 		}
 		echo $error . "\n";
