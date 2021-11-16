@@ -154,38 +154,44 @@ class Database_Connection
 	
 	function query($sql, $parameters = [], $suppress_debug_log = false, $return_raw_result = false)
 	{
-		if( ! $suppress_debug_log ){
-			Log::coredebug("[dbconn] SQL {$this->connection} = {$sql} / " . var_export($parameters, true));
-		}
+		return Sentry::span("sql.query", function() use ($sql, $parameters, $suppress_debug_log, $return_raw_result){
+			if( ! $suppress_debug_log ){
+				Log::coredebug("[dbconn] SQL {$this->connection} = {$sql} / " . var_export($parameters, true));
+			}
+			
+			/**
+			 * クエリ送信
+			 * pg_result_error()を使うためにはpg_send_query()を使用するようにとドキュメントには書いてあるが
+			 * pg_send_query()を使うと接続が非同期モードに変換される。非同期モードになった接続はAWS Aurora Serverlessで使うと
+			 * プログラム終了時にコネクションが切られない問題が発生したため同期モードのまま使えるpg_query()を使うように変更した (2019.10)
+			 *
+			 * @see https://www.php.net/manual/ja/function.pg-result-error.php
+			 */
+			if( $parameters ){
+				$query_result = pg_query_params($this->connection, $sql, $parameters);
+			}
+			else{
+				$query_result = pg_query($this->connection, $sql);
+			}
+			
+			if( $query_result === false ){
+				$error_msg     = trim(pg_last_error($this->connection));
+				$error_details = [
+					'message' => $error_msg,
+				];
+				// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
+				Log::coredebug("Query Error", $error_details);
+				$this->last_error_details = $error_details;
+				throw new DatabaseQueryError($error_msg);
+			}
+			$this->last_error_details = [];
+			
+			return $return_raw_result ? $query_result : (new Database_Resultset($query_result, $this));
+		}, $sql, [
+			'sql'                => $sql,
+			'last_error_details' => $this->last_error_details,
+		]);
 		
-		/**
-		 * クエリ送信
-		 * pg_result_error()を使うためにはpg_send_query()を使用するようにとドキュメントには書いてあるが
-		 * pg_send_query()を使うと接続が非同期モードに変換される。非同期モードになった接続はAWS Aurora Serverlessで使うと
-		 * プログラム終了時にコネクションが切られない問題が発生したため同期モードのまま使えるpg_query()を使うように変更した (2019.10)
-		 *
-		 * @see https://www.php.net/manual/ja/function.pg-result-error.php
-		 */
-		if( $parameters ){
-			$query_result = pg_query_params($this->connection, $sql, $parameters);
-		}
-		else{
-			$query_result = pg_query($this->connection, $sql);
-		}
-		
-		if( $query_result === false ){
-			$error_msg     = trim(pg_last_error($this->connection));
-			$error_details = [
-				'message' => $error_msg,
-			];
-			// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
-			Log::coredebug("Query Error", $error_details);
-			$this->last_error_details = $error_details;
-			throw new DatabaseQueryError($error_msg);
-		}
-		$this->last_error_details = [];
-		
-		return $return_raw_result ? $query_result : (new Database_Resultset($query_result, $this));
 	}
 	
 	function rollback_transaction()
@@ -278,8 +284,7 @@ class Database_Connection
 		$r = DB::select()
 		       ->from('pg_database')
 		       ->where('datname', $db_name)
-		       ->execute($this)
-		;
+		       ->execute($this);
 		
 		return boolval($r->count());
 	}
@@ -292,8 +297,7 @@ class Database_Connection
 		$r = DB::select()
 		       ->from('information_schema.tables')
 		       ->where('table_name', $table_name)
-		       ->execute($this)
-		;
+		       ->execute($this);
 		
 		return boolval($r->count());
 	}

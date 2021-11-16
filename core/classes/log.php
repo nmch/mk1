@@ -67,7 +67,9 @@ class Log
 	
 	function __construct()
 	{
-		$drivers = Config::get('log.drivers', []);
+		$uniqid               = uniqid();
+		$drivers              = Config::get('log.drivers', []);
+		$global_driver_config = Config::get('log', []);
 		if( is_array($drivers) ){
 			foreach($drivers as $index => $config_value){
 				/**
@@ -80,25 +82,25 @@ class Log
 					continue;
 				}
 				
-				$global_driver_config = Config::get('log', []);
-				
-				if( is_array($config_value) ){
-					$driver_config = $config_value + $global_driver_config;
-				}
-				else{
-					$driver_config = [
-						                 'name'      => $index,
-						                 'threshold' => $config_value,
-					                 ] + $global_driver_config;
+				if( ! is_array($config_value) ){
+					$config_value = [
+						'name'      => $index,
+						'threshold' => $config_value,
+					];
 				}
 				
-				$driver_name = Arr::get($driver_config, 'driver') ?: Arr::get($driver_config, 'name');
+				$driver_name = Arr::get($config_value, 'driver') ?: Arr::get($config_value, 'name');
 				if( ! strlen($driver_name) ){
 					throw new MkException('invalid driver name');
 				}
-				$driver_name                    = 'Log_' . ucfirst($driver_name);
-				$driver_config['uniqid']        = uniqid();
-				$driver_config['driver_object'] = new $driver_name($driver_config);
+				$default_driver_config = Arr::get($global_driver_config, "default.{$driver_name}", []);
+				
+				$driver_config = array_merge($global_driver_config, $default_driver_config, $config_value);
+				
+				$driver_class_name              = 'Log_' . ucfirst($driver_name);
+				$driver_config['uniqid']        = $uniqid;
+				$driver_config['driver_object'] = new $driver_class_name($driver_config);
+				unset($driver_config['default']);
 				
 				static::$drivers[] = $driver_config;
 			}
@@ -248,7 +250,7 @@ class Log
 		return $map[$level_num];
 	}
 	
-	static function log($level, $message)
+	static function log($level, ...$messages)
 	{
 		try {
 			$log = static::instance();
@@ -263,52 +265,66 @@ class Log
 				return false;
 			}
 			
-			$messages = [$message];
-			if( func_num_args() > 2 ){
-				$messages = array_merge($messages, array_slice(func_get_args(), 2));
-			}
+			$timestamp_unixtime = time();
+			// キーで使える文字はmake_log_string()内で[a-z0-9_.]に制限されている
+			/** @see \Log::make_log_string */
+			$base_log_data = [
+				'timestamp_unixtime' => $timestamp_unixtime,
+				'timestamp_string'   => date(static::$date_format, $timestamp_unixtime),
+				'level'              => $level,
+				'level_num'          => $level_num,
+			];
 			
-			foreach($messages as $message){
-				$timestamp_unixtime = time();
-				// キーで使える文字はmake_log_string()内で[a-z0-9_.]に制限されている
-				/** @see \Log::make_log_string */
-				$base_log_data = [
-					'timestamp_unixtime' => $timestamp_unixtime,
-					'timestamp_string'   => date(static::$date_format, $timestamp_unixtime),
-					'level'              => $level,
-					'level_num'          => $level_num,
-					'message'            => $message,
-				];
-				
-				foreach(static::$drivers as $driver_config){
-					if( Arr::get($driver_config, 'suppress') ){
-						continue;
+			foreach(static::$drivers as $driver_config){
+				if( Arr::get($driver_config, 'suppress') ){
+					continue;
+				}
+				if( $driver_config['threshold'] <= $level_num ){
+					$log_data = $base_log_data + [
+							'config' => $driver_config,
+						];
+					
+					if( $add_env = ($driver_config['add_backtrace'] ?? null) ){
+						$log_data['backtrace'] = debug_backtrace(0);
 					}
-					if( $driver_config['threshold'] <= $level_num ){
-						$log_data        = $base_log_data + [
-								'config' => $driver_config,
+					
+					if( $add_env = ($driver_config['add_env'] ?? null) ){
+						$log_data['env'] = [];
+						if( is_array($add_env) ){
+							foreach($add_env as $add_env_key => $add_env_item){
+								$log_data['env'][$add_env_key] = getenv($add_env_item);
+							}
+						}
+						else{
+							$log_data['env'] = getenv();
+						}
+					}
+					
+					$write_data = $log_data;
+					if( Arr::get($driver_config, 'aggregate') ){
+						$write_data['messages'] = [];
+						foreach($messages as $message){
+							$write_data['messages'][] = [
+								'message' => $message,
+								'str'     => call_user_func_array(static::$makelogstr_function, [
+									$log_data + ['message' => $message],
+								]),
 							];
-						$log_data['str'] = call_user_func_array(static::$makelogstr_function, [$log_data]);
-						
-						if( $add_env = ($driver_config['add_backtrace'] ?? null) ){
-							$log_data['backtrace'] = debug_backtrace(0);
 						}
 						
-						if( $add_env = ($driver_config['add_env'] ?? null) ){
-							$log_data['env'] = [];
-							if( is_array($add_env) ){
-								foreach($add_env as $add_env_key => $add_env_item){
-									$log_data['env'][$add_env_key] = getenv($add_env_item);
-								}
-							}
-							else{
-								$log_data['env'] = getenv();
-							}
+						/** @var Logic_Interface_Log_Driver $driver */
+						$driver = $driver_config['driver_object'];
+						$driver->write($write_data);
+					}
+					else{
+						foreach($messages as $message){
+							$write_data['message'] = $message;
+							$write_data['str']     = call_user_func_array(static::$makelogstr_function, [$write_data]);
+							
+							/** @var Logic_Interface_Log_Driver $driver */
+							$driver = $driver_config['driver_object'];
+							$driver->write($write_data);
 						}
-						
-						/** @var Logic_Interface_Log_Driver $driver_config */
-						$driver_config = $driver_config['driver_object'];
-						$driver_config->write($log_data);
 					}
 				}
 				

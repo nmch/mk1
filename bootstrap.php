@@ -154,6 +154,9 @@ try {
 	throw $e;
 }
 
+// Sentry初期化
+Sentry::instance();
+
 // ユニットテストモード
 if( Mk::is_unittesting() ){
 	/*
