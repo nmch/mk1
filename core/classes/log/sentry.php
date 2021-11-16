@@ -68,10 +68,7 @@ class Log_Sentry implements Logic_Interface_Log_Driver
 				$title = $message;
 			}
 			if( is_object($message) ){
-				if( $message instanceof Exception ){
-					//$exception = $message;
-				}
-				$message_bag['message'] = (get_class($message));
+				$message_bag['message'] = get_class($message);
 			}
 		}
 		

@@ -35,8 +35,6 @@ class Sentry
 			
 			ErrorHandler::add_error_handler(function($e){
 				\Sentry\withScope(function(\Sentry\State\Scope $scope) use ($e): void{
-					//$scope->$scope->setLevel(\Sentry\Severity::warning());
-					
 					\Sentry\captureException($e);
 				});
 			});
@@ -61,7 +59,7 @@ class Sentry
 			
 			\Sentry\SentrySdk::getCurrentHub()->setSpan($this->transaction);
 			
-			$event_id = $this->transaction->finish();
+			$this->transaction->finish();
 		}
 	}
 	
@@ -95,7 +93,6 @@ class Sentry
 		
 		$this->transaction = \Sentry\startTransaction($context);
 		
-		// Setting the Transaction on the Hub
 		\Sentry\SentrySdk::getCurrentHub()->setSpan($this->transaction);
 		
 		$appContextStart = new \Sentry\Tracing\SpanContext();
@@ -144,16 +141,13 @@ class Sentry
 	{
 		if( $this->initialized ){
 			\Sentry\withScope(function(\Sentry\State\Scope $scope) use ($message, $data): void{
-				$current_span = static::currentTracingSpan();
-				//$scope->setSpan($current_span);
-				
 				$level = Arr::get($data, 'level', \Sentry\Severity::error());
 				$scope->setLevel($level);
 				if( $extra = Arr::get($data, 'extra') ){
 					$scope->setExtras($extra);
 				}
 				
-				$event_id = \Sentry\captureMessage($message);
+				\Sentry\captureMessage($message);
 			});
 		}
 	}
