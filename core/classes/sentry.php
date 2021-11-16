@@ -92,7 +92,7 @@ class Sentry
 		}
 		else{
 			$path = Arr::get($_SERVER, 'PATH_INFO');
-			$context->setName($path);
+			$context->setName($path ?: 'request');
 			$context->setOp('http.server');
 			$context->setData([
 				'url'    => $path,
