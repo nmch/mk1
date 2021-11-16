@@ -63,6 +63,16 @@ class Sentry
 		}
 	}
 	
+	public function get_app_span(): ?\Sentry\Tracing\Span
+	{
+		return static::is_enable() ? $this->app_span : null;
+	}
+	
+	public function get_transaction(): ?\Sentry\Tracing\Transaction
+	{
+		return static::is_enable() ? $this->transaction : null;
+	}
+	
 	public function start_transaction()
 	{
 		$request_start_time  = Arr::get($_SERVER, 'REQUEST_TIME_FLOAT', microtime(true));
