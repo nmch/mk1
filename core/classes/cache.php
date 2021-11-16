@@ -54,7 +54,7 @@ class Cache
 		}
 	}
 	
-	public static function get(string $key, ?string $group = null, ?callable $retrieve_handler = null)
+	public static function get(string $key, ?string $group = null, ?callable $retrieve_handler = null, ?int $ttl = null)
 	{
 		$cache  = Cache::instance();
 		$driver = $cache->driver();
@@ -66,7 +66,7 @@ class Cache
 		} catch(CacheMissException $e){
 			if( is_callable($retrieve_handler) ){
 				$data = call_user_func_array($retrieve_handler, [$key, $group]);
-				static::set($key, $group, $data);
+				static::set_with_ttl($key, $group, $data, $ttl);
 			}
 		} catch(Exception $e){
 			$cache->log_on_exception("キャッシュ取得中にエラーが発生しました", $e);
