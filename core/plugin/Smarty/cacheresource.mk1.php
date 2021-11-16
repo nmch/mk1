@@ -29,6 +29,8 @@
  */
 class Smarty_CacheResource_Mk1 extends Smarty_CacheResource_KeyValueStore
 {
+	protected $cache_group = 'smarty';
+	
 	/**
 	 * Read values for a set of keys from cache
 	 *
@@ -41,7 +43,7 @@ class Smarty_CacheResource_Mk1 extends Smarty_CacheResource_KeyValueStore
 	{
 		$res = [];
 		foreach($keys as $key){
-			$res[$key] = Cache::get($key);
+			$res[$key] = Cache::get($key, $this->cache_group);
 		}
 		
 		return $res;
@@ -58,7 +60,7 @@ class Smarty_CacheResource_Mk1 extends Smarty_CacheResource_KeyValueStore
 	protected function write(array $keys, $expire = null)
 	{
 		foreach($keys as $k => $v){
-			Cache::write($k, $v, $expire);
+			Cache::set_with_ttl($k, $this->cache_group, $v, $expire);
 		}
 		
 		return true;
@@ -74,8 +76,7 @@ class Smarty_CacheResource_Mk1 extends Smarty_CacheResource_KeyValueStore
 	protected function delete(array $keys)
 	{
 		foreach($keys as $k){
-			$k = sha1($k);
-			$this->memcache->delete($k);
+			Cache::clear($k, $this->cache_group);
 		}
 		
 		return true;
@@ -88,6 +89,8 @@ class Smarty_CacheResource_Mk1 extends Smarty_CacheResource_KeyValueStore
 	 */
 	protected function purge()
 	{
-		return $this->memcache->flush();
+		Cache::clear(null, $this->cache_group);
+		
+		return true;
 	}
 }

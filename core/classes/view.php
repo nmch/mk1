@@ -71,12 +71,6 @@ class View
 		}
 		$this->smarty->setPluginsDir(array_reverse($list));
 		
-		// キャッシュハンドラ設定
-		$this->smarty->setCachingType('mk1');
-		$this->smarty->loadPlugin('Smarty_CacheResource_Mk1');
-		$smarty_cache_handler = new Smarty_CacheResource_Mk1();
-		$this->smarty->registerCacheResource('pdo', $smarty_cache_handler);
-		
 		// その他の設定
 		$environments = Config::get('smarty.environment');
 		if( is_array($environments) ){

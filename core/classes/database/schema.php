@@ -113,11 +113,6 @@ SQL;
 	{
 		static::$schema = null;
 		
-		$cache_dir = Cache::cache_dir(null, 'core_db');
-		Log::coredebug("Database_Schema::clear_cache() cache_dir=$cache_dir", Mk::env());
-		if( is_dir($cache_dir) ){
-			File::rm($cache_dir);
-			Log::coredebug("cache clear success");
-		}
+		Cache::clear(null, 'core_db');
 	}
 }

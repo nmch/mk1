@@ -2,6 +2,8 @@
 /**
  * Part of the mk1 framework.
  *
+ * @method static Cache instance()
+ *
  * @package    mk1
  * @author     nmch
  * @license    MIT License
@@ -9,37 +11,66 @@
 
 class Cache
 {
-	public static function get($key, $group = null, $retrieve_handler = null)
+	use Singleton;
+	
+	protected Cache_Driver $cache_driver;
+	protected array        $cache_config;
+	
+	function __construct()
 	{
-		$cache_dir = static::cache_dir($key, $group);
-		$filepath  = $cache_dir . static::key($key, $group);
+		$driver_name = Config::get('cache.driver');
+		
+		$driver_class_name = ("Cache_Driver_" . ucfirst($driver_name));
+		if( ! class_exists($driver_class_name) ){
+			throw new MkException("キャッシュドライバ {$driver_name} がみつかりません");
+		}
+		
+		$global_config         = Config::get("cache.global_config", []);
+		$driver_default_config = Config::get("cache.driver_config.{$driver_name}", []);
+		$this->cache_config    = array_merge($global_config, $driver_default_config);
+		
+		$this->cache_driver = new $driver_class_name($this->cache_config);
+		if( ! $this->cache_driver instanceof Cache_Driver ){
+			throw new MkException("不正なキャッシュドライバです");
+		}
+	}
+	
+	function driver(): \Cache_Driver
+	{
+		return $this->cache_driver;
+	}
+	
+	function log_on_exception(string $message, Exception $e)
+	{
+		if( $log_level = Arr::get($this->cache_config, 'log_on_exception') ){
+			Log::log($log_level, $message, $e);
+		}
+	}
+	
+	function throw_on_exception(Exception $e)
+	{
+		if( Arr::get($this->cache_config, 'throw_on_exception') ){
+			throw $e;
+		}
+	}
+	
+	public static function get(string $key, ?string $group = null, ?callable $retrieve_handler = null)
+	{
+		$cache  = Cache::instance();
+		$driver = $cache->driver();
 		
 		$data = null;
 		
 		try {
+			$data = $driver->get($key, $group);
+		} catch(CacheMissException $e){
 			if( is_callable($retrieve_handler) ){
 				$data = call_user_func_array($retrieve_handler, [$key, $group]);
 				static::set($key, $group, $data);
 			}
-			else{
-				if( file_exists($filepath) ){
-					//Log::coredebug("[cache] hit $key($group)");
-					$expire = Config::get('cache.default_expire');
-					if( $expire ){
-						$filemtime = filemtime($filepath);
-						$live_time = (time() - $filemtime);
-						if( $live_time < $expire ){
-							$data = unserialize(file_get_contents($filepath));
-						}
-						else{
-							unlink($filepath);
-						}
-					}
-				}
-			}
 		} catch(Exception $e){
-			Log::error("キャッシュ取得中にエラーが発生しました", $e);
-			$data = null;
+			$cache->log_on_exception("キャッシュ取得中にエラーが発生しました", $e);
+			$cache->throw_on_exception($e);
 		}
 		
 		return $data;
@@ -47,99 +78,42 @@ class Cache
 	
 	public static function clear($key = null, $group = null)
 	{
-		$cache_dir = static::cache_dir($key, $group);
-		$filepath  = $cache_dir . static::key($key, $group);
-		Log::coredebug("[Cache]: キャッシュクリア({$key}/{$group}", $filepath);
+		$cache  = Cache::instance();
+		$driver = $cache->driver();
+		
 		try {
-			File::rm($filepath);
+			$driver->clear($key, $group);
 		} catch(Exception $e){
-			// 削除できなくてもエラーにはしない
+			$cache->log_on_exception("キャッシュクリア中にエラーが発生しました(key={$key} / group={$group})", $e);
+			$cache->throw_on_exception($e);
 		}
 	}
 	
-	public static function clear_group($group)
+	public static function clear_group(string $group)
 	{
-		$cache_dir = static::cache_dir(null, $group);
+		static::clear(null, $group);
+	}
+	
+	public static function set_with_ttl(string $key, ?string $group, $value, ?int $ttl = null)
+	{
+		$cache  = Cache::instance();
+		$driver = $cache->driver();
+		
 		try {
-			if( is_dir($cache_dir) ){
-				File::rm($cache_dir);
-			}
+			$driver->set($key, $value, $group, $ttl);
 		} catch(Exception $e){
-			// 削除できなくてもエラーにはしない
+			$cache->log_on_exception("キャッシュ保存中にエラーが発生しました", $e);
+			$cache->throw_on_exception($e);
 		}
+		
+		return $value;
 	}
 	
-	public static function cache_dir($key, $group = null)
+	public static function set(string $key, ?string $group, ...$options)
 	{
-		$cache_dir = Config::get('cache.cache_dir');
-		if( ! $cache_dir ){
-			throw new Exception('invalid cache dir');
-		}
-		if( $group ){
-			$cache_dir .= sha1($group) . '/';
-		}
-		if( $key ){
-			// ここでkeyが必須ではないのは、migration時等にディレクトリだけ特定して全部消す用途でも使われるから。
-			$cache_dir .= substr(sha1($key), 0, 3) . '/';
-		}
+		// group未指定の場合は$groupを$valueとして扱う
+		$value = empty($options) ? $group : ($options[0] ?? null);
 		
-		return $cache_dir;
-	}
-	
-	protected static function key($key, $group = null)
-	{
-		if( ! $key ){
-			throw new Exception('invalid key');
-		}
-		$key = sha1($key);
-		
-		if( $group ){
-			$key = $group . '_' . $key;
-		}
-		
-		return $key;
-	}
-	
-	public static function write($key, $group, $value, $expire = null)
-	{
-	
-	}
-	
-	public static function set()
-	{
-		$args = func_get_args();
-		if( count($args) == 2 ){
-			$key   = $args[0];
-			$group = null;
-			$value = $args[1];
-		}
-		else{
-			if( count($args) == 3 ){
-				$key   = $args[0];
-				$group = $args[1];
-				$value = $args[2];
-			}
-			else{
-				throw new Exception('invalid parameters');
-			}
-		}
-		
-		$cache_dir = static::cache_dir($key, $group);
-		if( ! file_exists($cache_dir) ){
-			try {
-				$r = mkdir($cache_dir, 0777, true);
-				if( $r === false ){
-					throw new Exception();
-				}
-			} catch(Exception $e){
-				throw new Exception("cannot make cache dir [{$cache_dir}]", $e->getCode(), $e);
-			}
-		}
-		
-		$filepath = $cache_dir . static::key($key, $group);
-		$r        = file_put_contents($filepath, serialize($value));
-		if( $r === false ){
-			throw new Exception('cannot write cache file');
-		}
+		return static::set_with_ttl($key, $group, $value);
 	}
 }
