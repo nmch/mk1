@@ -113,7 +113,14 @@ class Task_Coretask extends Task
 		
 		Log::coredebug("[task] run {$class_name}->{$method_name}", $args);
 		
-		return call_user_func_array([$task_object, $method_name], $args);
+		$r = Sentry::span("{$class_name}::{$method_name}", function() use ($task_object, $method_name, $args){
+			return call_user_func_array([$task_object, $method_name], $args);
+		}, null, [
+			'class_name'  => $class_name,
+			'method_name' => $method_name,
+		]);
+		
+		return $r;
 	}
 	
 	public static function _job_daemon($concurrency = 3)

@@ -6,7 +6,7 @@ return [
 			'driver'    => 'file',
 			'threshold' => Log::ALL,
 		],
-
+		
 		// 旧形式
 		//'file' => Log::ALL,
 	],
@@ -15,4 +15,12 @@ return [
 	'fileext'     => 'log',
 	'date_format' => 'Y-m-d H:i:s',
 	'log_format'  => '{timestamp_string} [{config.uniqid}] - {level} :  {message}',
+	
+	'default' => [
+		'file'   => [],
+		'stream' => [],
+		'sentry' => [
+			'aggregate' => true,
+		],
+	],
 ];
