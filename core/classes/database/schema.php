@@ -35,7 +35,7 @@ class Database_Schema
 			$retval = Arr::get(static::$schema[$database_name], "public.{$name}", $default);
 		}
 		else{
-			$retval = static::$schema[$database_name]['public'];
+			$retval = (static::$schema[$database_name]['public'] ?? $default);
 		}
 		
 		return $retval;

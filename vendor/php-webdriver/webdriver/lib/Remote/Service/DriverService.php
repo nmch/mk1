@@ -9,6 +9,7 @@ use Symfony\Component\Process\ProcessBuilder;
 
 /**
  * Start local WebDriver service (when remote WebDriver server is not used).
+ * This will start new process of respective browser driver and take care of its lifecycle.
  */
 class DriverService
 {
@@ -166,7 +167,7 @@ class DriverService
     {
         // BC: ProcessBuilder deprecated since Symfony 3.4 and removed in Symfony 4.0.
         if (class_exists(ProcessBuilder::class)
-            && false === mb_strpos('@deprecated', (new \ReflectionClass(ProcessBuilder::class))->getDocComment())
+            && mb_strpos('@deprecated', (new \ReflectionClass(ProcessBuilder::class))->getDocComment()) === false
         ) {
             $processBuilder = (new ProcessBuilder())
                 ->setPrefix($this->executable)

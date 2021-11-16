@@ -11,10 +11,19 @@ class Task
 {
 	/** @var Model_Task_History */
 	protected $lock;
+	/** @var Database_Connection */
+	protected $execute_connection;
 	
 	function set_task_history(Model_Task_History $th)
 	{
 		$this->lock = $th;
+		
+		return $this;
+	}
+	
+	function set_execute_connection($connection)
+	{
+		$this->execute_connection = $connection;
 		
 		return $this;
 	}

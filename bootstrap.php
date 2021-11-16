@@ -154,6 +154,9 @@ try {
 	throw $e;
 }
 
+// Sentry初期化
+Sentry::instance();
+
 // ユニットテストモード
 if( Mk::is_unittesting() ){
 	/*
@@ -176,10 +179,9 @@ if( Mk::is_unittesting() ){
 	return;
 }
 
-
 // リクエストURIがある場合は URI → ルーター → コントローラーを実行
 // ない場合はモジュール名が決まっているので、Task_NAME を実行
-if( ! empty($_SERVER['argv']) ){
+if( Mk::is_cli() ){
 	$argv = $_SERVER['argv'];
 	// CLIで実行された場合
 	if( empty($_SERVER['argc']) || $_SERVER['argc'] < 2 ){
@@ -207,31 +209,35 @@ else{
 		$af = Actionform::instance();
 		$af->set('error', $e);
 		$uri         = explode('/', Config::get('routes._500_', 'default/500'));
-		$request_500 = new Request($uri);
+		$request_500 = new Request($uri, Request::METHOD_GET);
+		$request_500->exception($e);
 		$request_500->execute();
 	}
 	);
 	
+	$request = new Request($uri, $request_method);
 	try {
-		$request = new Request($uri);
 		$request->execute();
 	} catch(RedirectException $e){
 		http_response_code($e->getCode() ?: 302);
 		header('Location: ' . $e->getMessage());
 	} catch(BadRequestException $e){
-		$uri                    = explode('/', Config::get('routes._400_', 'default/400'));
-		$request_400            = new Request($uri);
-		$request_400->exception = $e;
+		$uri         = explode('/', Config::get('routes._400_', 'default/400'));
+		$request_400 = new Request($uri, Request::METHOD_GET);
+		$request_400->prev_request($request);
+		$request_400->exception($e);
 		$request_400->execute();
 	} catch(UnauthorizedException $e){
-		$uri                    = explode('/', Config::get('routes._403_', 'default/403'));
-		$request_403            = new Request($uri);
-		$request_403->exception = $e;
+		$uri         = explode('/', Config::get('routes._403_', 'default/403'));
+		$request_403 = new Request($uri, Request::METHOD_GET);
+		$request_403->prev_request($request);
+		$request_403->exception($e);
 		$request_403->execute();
 	} catch(HttpNotFoundException $e){
-		$uri                    = explode('/', Config::get('routes._404_', 'default/404'));
-		$request_404            = new Request($uri);
-		$request_404->exception = $e;
+		$uri         = explode('/', Config::get('routes._404_', 'default/404'));
+		$request_404 = new Request($uri, Request::METHOD_GET);
+		$request_404->prev_request($request);
+		$request_404->exception($e);
 		$request_404->execute();
 	}
 }

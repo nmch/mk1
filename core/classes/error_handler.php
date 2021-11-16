@@ -16,14 +16,14 @@ class ErrorHandler
 	static function exception_handler($e)
 	{
 		$log_level = ($e instanceof MkException ? $e->log_level : \Log::LEVEL_ERROR) ?? \Log::LEVEL_ERROR;
-		Log::log($log_level, (string)$e);
+		Log::log($log_level, $e->getMessage(), [
+			'code' => $e->getCode(),
+			'file' => $e->getFile(),
+			'line' => $e->getLine(),
+		], $e);
 		
 		foreach(Arr::merge(static::$exception_handler, static::$error_handler) as $function){
 			$function($e);
-		}
-		
-		if( ! Mk::is_production() ){
-			echo (string)$e;
 		}
 	}
 	

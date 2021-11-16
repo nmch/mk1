@@ -12,11 +12,11 @@ class Database_Connection
 	/** @var Database_Connection[] $instances */
 	static $instances = [];
 	/** @var resource $connection */
-	private $connection;
-	private $savepoint_counter = 0;
-	private $current_database_name;
+	protected $connection;
+	protected $savepoint_counter = 0;
+	protected $current_database_name;
 	/** @var array 最後のエラー(最後のクエリが成功した場合は空配列) */
-	private $last_error_details = [];
+	protected $last_error_details = [];
 	
 	function __construct(array $config)
 	{
@@ -25,30 +25,11 @@ class Database_Connection
 		//Log::coredebug("[db connection] try connect to [{$connection_config}]");
 		$connect_retry          = intval(Arr::get($config, 'connect_retry'), 0);
 		$connect_retry_interval = intval(Arr::get($config, 'connect_retry_interval'), 0);
-		$retry_count            = 0;
 		
-		/** @var Exception $last_error */
-		$last_error = null;
-		do{
-			if( $retry_count ){
-				Log::warning("DB接続再試行[{$retry_count}]", $last_error);
-			}
-			try {
-				$this->connection = pg_connect($connection_config, PGSQL_CONNECT_FORCE_NEW);
-				$last_error       = null;
-				break;
-			} catch(Exception $e){
-				$last_error = $e;
-				
-				if( $connect_retry_interval ){
-					sleep($connect_retry_interval);
-				}
-			}
-			$retry_count++;
-		} while($retry_count < $connect_retry);
-		if( $last_error ){
-			throw $last_error;
-		}
+		$this->connection = \Mk::retry(function($connection_config){
+			return pg_connect($connection_config, PGSQL_CONNECT_FORCE_NEW);
+		}, [$connection_config], $connect_retry, $connect_retry_interval);
+		
 		
 		if( $this->connection === false ){
 			$connection_config_to_display = preg_replace("/password=[^ ]+/", "password=*SECRET*", $connection_config);
@@ -161,40 +142,56 @@ class Database_Connection
 		return pg_copy_to($this->connection, $table_name, $delimiter, $null_as);
 	}
 	
+	function put_line($line)
+	{
+		pg_put_line($this->connection, $line);
+	}
+	
+	function end_copy()
+	{
+		pg_end_copy($this->connection);
+	}
+	
 	function query($sql, $parameters = [], $suppress_debug_log = false, $return_raw_result = false)
 	{
-		if( ! $suppress_debug_log ){
-			Log::coredebug("[dbconn] SQL {$this->connection} = {$sql} / " . var_export($parameters, true));
-		}
+		return Sentry::span("sql.query", function() use ($sql, $parameters, $suppress_debug_log, $return_raw_result){
+			if( ! $suppress_debug_log ){
+				Log::coredebug("[dbconn] SQL {$this->connection} = {$sql} / " . var_export($parameters, true));
+			}
+			
+			/**
+			 * クエリ送信
+			 * pg_result_error()を使うためにはpg_send_query()を使用するようにとドキュメントには書いてあるが
+			 * pg_send_query()を使うと接続が非同期モードに変換される。非同期モードになった接続はAWS Aurora Serverlessで使うと
+			 * プログラム終了時にコネクションが切られない問題が発生したため同期モードのまま使えるpg_query()を使うように変更した (2019.10)
+			 *
+			 * @see https://www.php.net/manual/ja/function.pg-result-error.php
+			 */
+			if( $parameters ){
+				$query_result = pg_query_params($this->connection, $sql, $parameters);
+			}
+			else{
+				$query_result = pg_query($this->connection, $sql);
+			}
+			
+			if( $query_result === false ){
+				$error_msg     = trim(pg_last_error($this->connection));
+				$error_details = [
+					'message' => $error_msg,
+				];
+				// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
+				Log::coredebug("Query Error", $error_details);
+				$this->last_error_details = $error_details;
+				throw new DatabaseQueryError($error_msg);
+			}
+			$this->last_error_details = [];
+			
+			return $return_raw_result ? $query_result : (new Database_Resultset($query_result, $this));
+		}, $sql, [
+			'sql'                => $sql,
+			'last_error_details' => $this->last_error_details,
+		]);
 		
-		/**
-		 * クエリ送信
-		 * pg_result_error()を使うためにはpg_send_query()を使用するようにとドキュメントには書いてあるが
-		 * pg_send_query()を使うと接続が非同期モードに変換される。非同期モードになった接続はAWS Aurora Serverlessで使うと
-		 * プログラム終了時にコネクションが切られない問題が発生したため同期モードのまま使えるpg_query()を使うように変更した (2019.10)
-		 *
-		 * @see https://www.php.net/manual/ja/function.pg-result-error.php
-		 */
-		if( $parameters ){
-			$query_result = pg_query_params($this->connection, $sql, $parameters);
-		}
-		else{
-			$query_result = pg_query($this->connection, $sql);
-		}
-		
-		if( $query_result === false ){
-			$error_msg     = trim(pg_last_error($this->connection));
-			$error_details = [
-				'message' => $error_msg,
-			];
-			// ここでERRORレベルでログを記録した場合、MUTEXのためのロック獲得エラー時に正常処理のなかでERRORログが残ってしまう
-			Log::coredebug("Query Error", $error_details);
-			$this->last_error_details = $error_details;
-			throw new DatabaseQueryError($error_msg);
-		}
-		$this->last_error_details = [];
-		
-		return $return_raw_result ? $query_result : (new Database_Resultset($query_result, $this));
 	}
 	
 	function rollback_transaction()
@@ -280,7 +277,33 @@ class Database_Connection
 	}
 	
 	/**
-	 * コルクションに残っているクエリ結果をすべて破棄する
+	 * 指定されたデータベースが存在しているか取得する
+	 */
+	function database_exists($db_name): bool
+	{
+		$r = DB::select()
+		       ->from('pg_database')
+		       ->where('datname', $db_name)
+		       ->execute($this);
+		
+		return boolval($r->count());
+	}
+	
+	/**
+	 * 指定されたテーブルが存在しているか取得する
+	 */
+	function table_exists($table_name): bool
+	{
+		$r = DB::select()
+		       ->from('information_schema.tables')
+		       ->where('table_name', $table_name)
+		       ->execute($this);
+		
+		return boolval($r->count());
+	}
+	
+	/**
+	 * コネクションに残っているクエリ結果をすべて破棄する
 	 *
 	 * @return $this
 	 */

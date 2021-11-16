@@ -3,6 +3,7 @@
 namespace Facebook\WebDriver\Remote;
 
 use Facebook\WebDriver\Exception\ElementNotInteractableException;
+use Facebook\WebDriver\Exception\UnsupportedOperationException;
 use Facebook\WebDriver\Exception\WebDriverException;
 use Facebook\WebDriver\Interactions\Internal\WebDriverCoordinates;
 use Facebook\WebDriver\Internal\WebDriverLocatable;
@@ -132,6 +133,8 @@ class RemoteWebElement implements WebDriverElement, WebDriverLocatable
 
     /**
      * Get the value of the given attribute of the element.
+     * Attribute is meant what is declared in the HTML markup of the element.
+     * To read a value of a IDL "JavaScript" property (like `innerHTML`), use `getDomProperty()` method.
      *
      * @param string $attribute_name The name of the attribute.
      * @return string|null The value of the attribute.
@@ -160,6 +163,28 @@ class RemoteWebElement implements WebDriverElement, WebDriverLocatable
         }
 
         return $this->executor->execute(DriverCommand::GET_ELEMENT_ATTRIBUTE, $params);
+    }
+
+    /**
+     * Gets the value of a IDL JavaScript property of this element (for example `innerHTML`, `tagName` etc.).
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Glossary/IDL
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Element#properties
+     * @param string $propertyName
+     * @return string|null The property's current value or null if the value is not set or the property does not exist.
+     */
+    public function getDomProperty($propertyName)
+    {
+        if (!$this->isW3cCompliant) {
+            throw new UnsupportedOperationException('This method is only supported in W3C mode');
+        }
+
+        $params = [
+            ':name' => $propertyName,
+            ':id' => $this->id,
+        ];
+
+        return $this->executor->execute(DriverCommand::GET_ELEMENT_PROPERTY, $params);
     }
 
     /**
@@ -204,10 +229,25 @@ class RemoteWebElement implements WebDriverElement, WebDriverLocatable
      */
     public function getLocationOnScreenOnceScrolledIntoView()
     {
-        $location = $this->executor->execute(
-            DriverCommand::GET_ELEMENT_LOCATION_ONCE_SCROLLED_INTO_VIEW,
-            [':id' => $this->id]
-        );
+        if ($this->isW3cCompliant) {
+            $script = <<<JS
+var e = arguments[0];
+e.scrollIntoView({ behavior: 'instant', block: 'end', inline: 'nearest' }); 
+var rect = e.getBoundingClientRect(); 
+return {'x': rect.left, 'y': rect.top};
+JS;
+
+            $result = $this->executor->execute(DriverCommand::EXECUTE_SCRIPT, [
+                'script' => $script,
+                'args' => [[JsonWireCompat::WEB_DRIVER_ELEMENT_IDENTIFIER => $this->id]],
+            ]);
+            $location = ['x' => $result['x'], 'y' => $result['y']];
+        } else {
+            $location = $this->executor->execute(
+                DriverCommand::GET_ELEMENT_LOCATION_ONCE_SCROLLED_INTO_VIEW,
+                [':id' => $this->id]
+            );
+        }
 
         return new WebDriverPoint($location['x'], $location['y']);
     }
@@ -410,12 +450,23 @@ class RemoteWebElement implements WebDriverElement, WebDriverLocatable
     public function submit()
     {
         if ($this->isW3cCompliant) {
+            // Submit method cannot be called directly in case an input of this form is named "submit".
+            // We use this polyfill to trigger 'submit' event using form.dispatchEvent().
+            $submitPolyfill = $script = <<<HTXT
+                var form = arguments[0];
+                while (form.nodeName !== "FORM" && form.parentNode) { // find the parent form of this element
+                    form = form.parentNode;
+                }
+                if (!form) {
+                    throw Error('Unable to find containing form element');
+                }
+                var event = new Event('submit', {bubbles: true, cancelable: true});
+                if (form.dispatchEvent(event)) {
+                    HTMLFormElement.prototype.submit.call(form);
+                }
+HTXT;
             $this->executor->execute(DriverCommand::EXECUTE_SCRIPT, [
-                // cannot call the submit method directly in case an input of this form is named "submit"
-                'script' => sprintf(
-                    'return Object.getPrototypeOf(%1$s).submit.call(%1$s);',
-                    $this->getTagName() === 'form' ? 'arguments[0]' : 'arguments[0].form'
-                ),
+                'script' => $submitPolyfill,
                 'args' => [[JsonWireCompat::WEB_DRIVER_ELEMENT_IDENTIFIER => $this->id]],
             ]);
 
@@ -452,7 +503,8 @@ class RemoteWebElement implements WebDriverElement, WebDriverLocatable
             $this->executor->execute(
                 DriverCommand::TAKE_ELEMENT_SCREENSHOT,
                 [':id' => $this->id]
-            )
+            ),
+            true
         );
 
         if ($save_as !== null) {

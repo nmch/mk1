@@ -26,9 +26,9 @@ class DB
 	 * @param $name
 	 * @param $args
 	 *
-	 * @see Database_Query
 	 * @return mixed
 	 * @throws MkException
+	 * @see Database_Query
 	 */
 	static function __callStatic($name, $args)
 	{
@@ -85,13 +85,13 @@ class DB
 			}
 		}
 		if( $typecat == 'S' ){
-			$data = array_map(function ($str){
+			$data = array_map(function($str){
 				return '"' . pg_escape_string($str) . '"';
 			}, $data
 			);
 		}
 		else{
-			$data = array_map(function ($str){
+			$data = array_map(function($str){
 				return is_numeric($str) ? $str : 'NULL';
 			}, $data
 			);
@@ -185,5 +185,15 @@ class DB
 	static function rollback_savepoint($point_name, $connection = null)
 	{
 		return static::get_database_connection($connection)->rollback_savepoint($point_name);
+	}
+	
+	static function table_exists($table_name, $connection = null)
+	{
+		return static::get_database_connection($connection)->table_exists($table_name);
+	}
+	
+	static function database_exists($db_name, $name = null)
+	{
+		return static::get_template1_connection($name)->database_exists($db_name);
 	}
 }
