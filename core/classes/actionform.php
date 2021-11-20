@@ -20,7 +20,6 @@ class Actionform implements ArrayAccess
 	private $validated_values   = [];
 	private $messages           = [];
 	private $request_method;
-	private $useragent;
 	private $referer;
 	private $server_vars;
 	
@@ -59,9 +58,7 @@ class Actionform implements ArrayAccess
 			//echo "<PRE>values = "; print_r($this->values); echo "</PRE>";
 			//$this->af_filter = new \Model_ActionformFilter;
 			//$this->request_method = Arr::get($_SERVER,'REQUEST_METHOD','');
-			$this->referer     = Arr::get($_SERVER, 'HTTP_REFERER');
-			$this->useragent   = Arr::get($_SERVER, 'HTTP_USER_AGENT');
-			$this->server_vars = $_SERVER;
+			$this->set_server_vars($_SERVER);
 			
 			// アップロードされたファイル
 			if( is_array($_FILES) && count($_FILES) ){
@@ -242,9 +239,33 @@ class Actionform implements ArrayAccess
 		return Arr::get($_SERVER, 'REQUEST_URI', '');
 	}
 	
+	public function get_request_uri(): string
+	{
+		return $this->server_vars('REQUEST_URI', '');
+	}
+	
 	public static function request_content_type()
 	{
 		return strtolower(Arr::get($_SERVER, 'CONTENT_TYPE', ''));
+	}
+	
+	public function get_client_ip_address(): ?string
+	{
+		$remote_addr               = $this->server_vars('REMOTE_ADDR');
+		$forwarded_for             = $this->server_vars('HTTP_X_FORWARDED_FOR');
+		$cloudfront_viewer_address = $this->server_vars('HTTP_CLOUDFRONT_VIEWER_ADDRESS');
+		
+		if( preg_match('/^(<address>[0-9]+\.[0-9]+\.[0-9]+):(<port>[0-9]+)$/', $cloudfront_viewer_address, $match) ){
+			return $match['address'];
+		}
+		elseif( $forwarded_for ){
+			$exploded_forwarded_for = explode(',', $forwarded_for);
+			
+			return trim($exploded_forwarded_for[array_key_last($exploded_forwarded_for)]) ?: null;
+		}
+		else{
+			return $remote_addr;
+		}
 	}
 	
 	function __unset($name)
@@ -653,7 +674,7 @@ class Actionform implements ArrayAccess
 	
 	public function referer()
 	{
-		return $this->referer;
+		return $this->server_vars('HTTP_REFERER');
 	}
 	
 	function get_default($name = null)
@@ -713,9 +734,9 @@ class Actionform implements ArrayAccess
 		return key_exists($name);
 	}
 	
-	function useragent()
+	function useragent(): string
 	{
-		return $this->useragent;
+		return $this->server_vars('HTTP_USER_AGENT', '');
 	}
 	
 	function is_mobiledevice()
@@ -725,13 +746,13 @@ class Actionform implements ArrayAccess
 			return true;
 		}
 		
-		if( $this->useragent ){
+		if( $this->useragent() ){
 			// BHT2Browser
-			if( strpos($this->useragent, 'BBR/') === 0 ){
+			if( strpos($this->useragent(), 'BBR/') === 0 ){
 				return true;
 			}
 			
-			return Cache::get($this->useragent, 'ismobiledevice_by_ua', function($useragent){
+			return Cache::get($this->useragent(), 'ismobiledevice_by_ua', function($useragent){
 				$browser = get_browser($useragent);
 				if( is_object($browser) ){
 					return $browser->ismobiledevice;
@@ -768,9 +789,16 @@ class Actionform implements ArrayAccess
 		return ($this->server_vars('HTTPS') === 'on' || $this->server_vars('HTTP_X_FORWARDED_PROTO') === 'https');
 	}
 	
-	function server_vars($name)
+	function server_vars($name, $default = null)
 	{
-		return Arr::get($this->server_vars, $name);
+		return Arr::get($this->server_vars, $name, $default);
+	}
+	
+	function set_server_vars(array $server_vars)
+	{
+		$this->server_vars = $server_vars;
+		
+		return $this;
 	}
 	
 	function is_ajax_request()
