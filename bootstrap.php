@@ -43,12 +43,12 @@ class InvalidCsrfTokenException extends MkException
 class ValidateErrorException extends MkException
 {
 	protected static $af;
-	
+
 	public function set_af(Actionform $af)
 	{
 		static::$af = $af;
 	}
-	
+
 	public function get_af(): Actionform
 	{
 		return static::$af ?: Actionform::instance();
@@ -154,9 +154,6 @@ try {
 	throw $e;
 }
 
-// Sentry初期化
-Sentry::instance();
-
 // ユニットテストモード
 if( Mk::is_unittesting() ){
 	/*
@@ -175,7 +172,7 @@ if( Mk::is_unittesting() ){
 		// マイグレーション実行
 		Task_Coretask::refine('migration');
 	}
-	
+
 	return;
 }
 
@@ -204,7 +201,7 @@ else{
 	}
 	$request_method = Arr::get($_SERVER, 'REQUEST_METHOD');
 	Log::coredebug("[REQUEST] $request_method $uri");
-	
+
 	ErrorHandler::add_error_handler(function($e){
 		$af = Actionform::instance();
 		$af->set('error', $e);
@@ -214,7 +211,7 @@ else{
 		$request_500->execute();
 	}
 	);
-	
+
 	$request = new Request($uri, $request_method);
 	try {
 		$request->execute();
