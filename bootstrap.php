@@ -38,6 +38,7 @@ class RedirectException extends MkException
 
 class InvalidCsrfTokenException extends MkException
 {
+	public $log_level = 'WARNING';
 }
 
 class ValidateErrorException extends MkException
