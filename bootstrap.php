@@ -10,6 +10,7 @@ class MkException extends Exception
 
 class AppException extends MkException
 {
+	public $log_level = 'INFO';
 }
 
 class DatabaseQueryError extends MkException
