@@ -10,6 +10,7 @@ class MkException extends Exception
 
 class AppException extends MkException
 {
+	public $log_level = 'INFO';
 }
 
 class DatabaseQueryError extends MkException
@@ -38,6 +39,7 @@ class RedirectException extends MkException
 
 class InvalidCsrfTokenException extends MkException
 {
+	public $log_level = 'WARNING';
 }
 
 class ValidateErrorException extends MkException
