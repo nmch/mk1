@@ -29,7 +29,7 @@ class File
 		}
 		$this->filepath          = $filepath;
 		$this->filename          = $filename ?: basename($filepath);
-		$this->mime_content_type = $mime_content_type ?: (mime_content_type($filename) ?: "application/octet-stream");
+		$this->mime_content_type = $mime_content_type ?: (mime_content_type($this->filename) ?: "application/octet-stream");
 	}
 
 	static function create_from_uploaded_file(array $file)
