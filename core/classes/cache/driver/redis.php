@@ -28,6 +28,10 @@ class Cache_Driver_Redis extends Cache_Driver
 		$cache_key     = sprintf('%s:%s', $this->hash($group), $this->hash($key));
 		$cache_payload = base64_encode(serialize($value));
 		
+		if( $expire === null ){
+			$expire = ($this->config['default_ttl'] ?? null);
+		}
+		
 		if( $expire > 0 ){
 			$r = $this->redis->setex($cache_key, $expire, $cache_payload);
 		}

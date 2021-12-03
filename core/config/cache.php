@@ -14,9 +14,10 @@ return [
 			'default_expire' => 3600,
 		],
 		'redis' => [
-			'endpoint' => getenv('REDIS_ENDPOINT'),
-			'port'     => getenv('REDIS_PORT'),
-			'timeout'  => 3,
+			'endpoint'    => getenv('REDIS_ENDPOINT'),
+			'port'        => getenv('REDIS_PORT'),
+			'timeout'     => 3,
+			'default_ttl' => 3600,
 		],
 	],
 ];
