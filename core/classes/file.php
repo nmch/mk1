@@ -13,15 +13,15 @@ class File
 	const ENCODING_UTF8 = 'UTF-8';
 	const EOL_LF        = "\n";
 	const EOL_CRLF      = "\r\n";
-
+	
 	const DELIMITER_COMMA = ',';
-
+	
 	const MIME_CSV = 'text/csv';
-
+	
 	protected $filepath;
 	protected $filename;
 	protected $mime_content_type;
-
+	
 	function __construct($filepath, $filename = null, $mime_content_type = null)
 	{
 		if( ! file_exists($filepath) || ! is_file($filepath) || ! is_readable($filepath) ){
@@ -29,54 +29,54 @@ class File
 		}
 		$this->filepath          = $filepath;
 		$this->filename          = $filename ?: basename($filepath);
-		$this->mime_content_type = $mime_content_type ?: (mime_content_type($this->filename) ?: "application/octet-stream");
+		$this->mime_content_type = $mime_content_type ?: (mime_content_type($this->filepath) ?: "application/octet-stream");
 	}
-
+	
 	static function create_from_uploaded_file(array $file)
 	{
 		$filename = $file['tmp_name'] ?? null;
 		if( ! is_uploaded_file($filename) ){
 			throw new Exception();
 		}
-
+		
 		return new \File($filename);
 	}
-
+	
 	function fopen($mode = 'rt')
 	{
 		return fopen($this->filepath, $mode);
 	}
-
+	
 	function unlink()
 	{
 		unlink($this->filepath);
 	}
-
+	
 	function get_filepath()
 	{
 		return $this->filepath;
 	}
-
+	
 	function get_filesize()
 	{
 		return filesize($this->get_filepath());
 	}
-
+	
 	function get_contents()
 	{
 		return file_get_contents($this->get_filepath());
 	}
-
+	
 	function get_mime_content_type()
 	{
 		return $this->mime_content_type;
 	}
-
+	
 	function hash($algo)
 	{
 		return hash_file($algo, $this->get_filepath());
 	}
-
+	
 	/**
 	 * CSVとして読み込む
 	 *
@@ -113,21 +113,21 @@ class File
 				$convert_encoding = $source_encoding;
 			}
 		}
-
+		
 		$src_file = $convert_encoding ? $this->convert_encoding(File::ENCODING_UTF8, $convert_encoding) : $this;
-
+		
 		$fp = $src_file->fopen();
 		if( $skip_bom ){
 			fseek($fp, $skip_bom);
 		}
 		$line_num = 0;
-
+		
 		// $ignore_head_linesのぶんだけ先頭行を捨てる
 		for($c = 0; $c < $ignore_head_lines; $c++){
 			$line_num++;
 			fgets($fp);
 		}
-
+		
 		if( $csv_header === null ){
 			$line_num++;
 			$csv_header = fgetcsv($fp);
@@ -135,10 +135,10 @@ class File
 				throw new AppException('ヘッダがありません');
 			}
 		}
-
+		
 		while($line = fgetcsv($fp)){
 			$line_num++;
-
+			
 			if( $pass_raw_line ){
 				$item = $line;
 			}
@@ -147,26 +147,26 @@ class File
 				foreach($csv_header as $header_key => $header){
 					// headerにドットが入っているとArr::get()したときに1次元配列として扱えないため、アンダースコアに変換する
 					$header = str_replace('.', '_', $header);
-
+					
 					$column = array_key_exists($header_key, $line) ? strval($line[$header_key]) : null;
-
+					
 					if( ! $pass_raw_column ){
 						$column = str_replace(["\n", "\r"], '', $column);
 						$column = trim($column);
 					}
-
+					
 					$item[$header] = $column;
 				}
 			}
-
+			
 			yield $line_num => $item;
-
+			
 			unset($item);
 		}
-
+		
 		fclose($fp);
 	}
-
+	
 	static function get_csv_from_obj($data, $headers, $csv_filename = null, $funcs = [], $array_delimiter = File::DELIMITER_COMMA, $export_encoding = File::ENCODING_SJIS): File
 	{
 		$columns = [];
@@ -185,10 +185,10 @@ class File
 			throw new Exception('invalid data type');
 		}
 		//Log::debug($columns);
-
+		
 		$tmp_filepath = tempnam(sys_get_temp_dir(), 'CSV');
 		$fp           = fopen($tmp_filepath, 'w+t');
-
+		
 		/**
 		 * $dataがModel_Queryからのデータだった場合はモデルからカラム定義を取得して補完する
 		 */
@@ -202,7 +202,7 @@ class File
 		}
 		fputcsv($fp, array_column($headers['columns'], 'label'));
 		//Log::debug(array_column($headers,'label'));
-
+		
 		//Log::debug('$headers=', $headers);
 		foreach($data as $item){
 			$line = [];
@@ -214,7 +214,7 @@ class File
 			}
 			foreach($headers['columns'] as $header){
 				$col_value = null;
-
+				
 				if( array_key_exists('export', $header) && ! $header['export'] ){
 					// export=falseが明示的に設定されていた場合は値をセットしない
 					$col_value = '';
@@ -240,15 +240,15 @@ class File
 							$col_value = $value;
 						}
 					}
-
+					
 					if( isset($header['post_filter']) && is_callable($header['post_filter']) ){
 						$col_value = call_user_func($header['post_filter'], $col_value);
 					}
 				}
-
+				
 				$line[] = $col_value;
 			}
-
+			
 			foreach($line as $line_key => $line_item){
 				if( is_array($line_item) ){
 					$line[$line_key] = implode($array_delimiter, $line_item);
@@ -257,22 +257,22 @@ class File
 			fputcsv($fp, $line);
 			unset($line);
 		}
-
+		
 		fclose($fp);
-
+		
 		$tmp_file       = new File($tmp_filepath);
 		$converted_file = $tmp_file->convert_encoding($export_encoding);
 		if( $tmp_file !== $converted_file ){
 			unlink($tmp_filepath);
 		}
-
+		
 		if( ! $csv_filename ){
 			$csv_filename = 'data.csv';
 		}
-
+		
 		return $converted_file;
 	}
-
+	
 	/**
 	 * DBのデータをCSVにエクスポートする
 	 *
@@ -287,16 +287,16 @@ class File
 	static function respond_obj_as_csv($data, $headers, $csv_filename = null, $funcs = [], $array_delimiter = ',')
 	{
 		$converted_file = static::get_csv_from_obj($data, $headers, $csv_filename, $funcs, $array_delimiter);
-
+		
 		return new Response_File($converted_file->get_filepath(), static::make_download_filename($csv_filename));
 	}
-
+	
 	function convert_encoding($to = File::ENCODING_SJIS, $from = File::ENCODING_UTF8): File
 	{
 		if( $to === $from ){
 			return $this;
 		}
-
+		
 		$convert_eol_from = null;
 		$convert_eol_to   = null;
 		if( $to === File::ENCODING_SJIS && $from === File::ENCODING_UTF8 ){
@@ -309,12 +309,12 @@ class File
 			$convert_eol_from = \File::EOL_CRLF;
 			$convert_eol_to   = \File::EOL_LF;
 		}
-
+		
 		$fp = fopen($this->filepath, "rt");
-
+		
 		$tmp_filepath = tempnam(null, "CSV");
 		$fw           = fopen($tmp_filepath, "w+t");
-
+		
 		while($line = fgets($fp)){
 			if( $convert_eol_from && $convert_eol_to ){
 				$line = str_replace($convert_eol_from, $convert_eol_to, $line);
@@ -323,13 +323,13 @@ class File
 			fputs($fw, $line);
 			unset($line);
 		}
-
+		
 		fclose($fw);
 		fclose($fp);
-
+		
 		return new File($tmp_filepath);
 	}
-
+	
 	/**
 	 * ダウンロードするファイル名を生成する
 	 *
@@ -354,10 +354,10 @@ class File
 			$filename .= date('-Ymd-His.');
 			$filename .= ($exploded_filename[1] ?? '');
 		}
-
+		
 		return $filename;
 	}
-
+	
 	/**
 	 * 再帰的にファイルまたはディレクトリを削除
 	 */
@@ -371,7 +371,7 @@ class File
 				if( $object == "." || $object == ".." ){
 					continue;
 				}
-
+				
 				static::rm($filepath . "/" . $object);
 			}
 			unset($objects);
