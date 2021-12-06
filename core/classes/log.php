@@ -24,6 +24,8 @@
  * @method static void debug4($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
  * @method static void debug5($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
  * @method static void coredebug($message1, $message2 = null, $message3 = null, $message4 = null, $message5 = null)
+ *
+ * @method static Log instance()
  */
 class Log
 {
@@ -59,6 +61,16 @@ class Log
 	const LEVEL_CRITICAL  = 'CRITICAL';
 	const LEVEL_ALERT     = 'ALERT';
 	const LEVEL_EMERGENCY = 'EMERGENCY';
+	
+	const BEFORE_FUNCTION      = 'BEFORE_FUNCTION'; // Log::$threshold 判定後、ログドライバ呼び出し前
+	const AFTER_WRITE_FUNCTION = 'AFTER_WRITE_FUNCTION'; // 各ログドライバ呼び出し直後 (ドライバに送信したデータが手に入る)
+	const AFTER_FUNCTION       = 'AFTER_FUNCTION'; // 全てのログドライバ呼び出し後
+	
+	protected array $functions = [
+		'BEFORE_FUNCTION'      => [],
+		'AFTER_WRITE_FUNCTION' => [],
+		'AFTER_FUNCTION'       => [],
+	];
 	
 	static         $threshold;
 	static         $date_format;
@@ -250,11 +262,46 @@ class Log
 		return $map[$level_num];
 	}
 	
+	static function capture(Closure $func, Closure $callback, int $threshold = Log::ALL, $type = Log::AFTER_FUNCTION)
+	{
+		$log = Log::instance();
+		
+		$id = $log->register_function($type, $callback, $threshold);
+		
+		try {
+			return $func();
+		} finally{
+			$log->unregister_function($id);
+		}
+	}
+	
+	function register_function($type, Closure $func, int $threshold = Log::ALL): string
+	{
+		$id  = uniqid('LOG_FUNC_');
+		$key = "{$type}.{$id}";
+		Arr::set($this->functions, $key, [
+			'key'       => $key,
+			'threshold' => $threshold,
+			'function'  => $func,
+		]);
+		
+		return $key;
+	}
+	
+	function unregister_function($key)
+	{
+		Arr::delete($this->functions, $key);
+	}
+	
 	static function log($level, ...$messages)
 	{
+		$log = Log::instance();
+		$log->write($level, ...$messages);
+	}
+	
+	function write($level, ...$messages)
+	{
 		try {
-			$log = static::instance();
-			
 			$level            = strtoupper($level);
 			$level_const_name = 'Log::' . $level;
 			if( ! defined($level_const_name) ){
@@ -274,6 +321,8 @@ class Log
 				'level'              => $level,
 				'level_num'          => $level_num,
 			];
+			
+			$this->call_functions(Log::BEFORE_FUNCTION, $level_num, $base_log_data, $messages);
 			
 			foreach(static::$drivers as $driver_config){
 				if( Arr::get($driver_config, 'suppress') ){
@@ -315,6 +364,7 @@ class Log
 						/** @var Logic_Interface_Log_Driver $driver */
 						$driver = $driver_config['driver_object'];
 						$driver->write($write_data);
+						$this->call_functions(Log::AFTER_WRITE_FUNCTION, $level_num, $write_data);
 					}
 					else{
 						foreach($messages as $message){
@@ -324,6 +374,7 @@ class Log
 							/** @var Logic_Interface_Log_Driver $driver */
 							$driver = $driver_config['driver_object'];
 							$driver->write($write_data);
+							$this->call_functions(Log::AFTER_WRITE_FUNCTION, $level_num, $write_data);
 						}
 					}
 				}
@@ -331,9 +382,44 @@ class Log
 				unset($log_data);
 				unset($log_str);
 			}
+			
+			$this->call_functions(Log::AFTER_FUNCTION, $level_num, $base_log_data, $messages);
+			
 			unset($messages);
 		} catch(Exception $e){
-			echo $e;
+			if( $e instanceof \PHPUnit\Framework\Exception ){
+				throw $e;
+			}
+			else{
+				echo $e;
+			}
+		}
+	}
+	
+	/**
+	 * @param string $type
+	 * @param int    $log_level
+	 *
+	 * @return Generator<Closure>
+	 */
+	protected function functions(string $type, int $log_level): Generator
+	{
+		$functions = $this->functions[$type] ?? [];
+		foreach($functions as $item){
+			$function = Arr::get($item, 'function');
+			if( $function instanceof Closure ){
+				$threshold = $item['threshold'] ?? Log::ALL;
+				if( $threshold <= $log_level ){
+					yield $log_level => $function;
+				}
+			}
+		}
+	}
+	
+	protected function call_functions(string $type, int $log_level, ...$params)
+	{
+		foreach($this->functions($type, $log_level) as $function){
+			$function($log_level, ...$params);
 		}
 	}
 	
