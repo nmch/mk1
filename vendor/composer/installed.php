@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '7d55d936ca229d1eef570993d3e7f9d9852c24cb',
+        'reference' => 'b0fd9feb5a206a2e6c231c8d75d57fc351bee077',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '7d55d936ca229d1eef570993d3e7f9d9852c24cb',
+            'reference' => 'b0fd9feb5a206a2e6c231c8d75d57fc351bee077',
             'dev_requirement' => false,
         ),
         'aws/aws-crt-php' => array(
@@ -60,6 +60,15 @@
             'replaced' => array(
                 0 => '*',
             ),
+        ),
+        'fakerphp/faker' => array(
+            'pretty_version' => 'v1.17.0',
+            'version' => '1.17.0.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../fakerphp/faker',
+            'aliases' => array(),
+            'reference' => 'b85e9d44eae8c52cca7aa0939483611f7232b669',
+            'dev_requirement' => false,
         ),
         'guzzlehttp/guzzle' => array(
             'pretty_version' => '7.4.0',
