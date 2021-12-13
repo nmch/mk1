@@ -160,4 +160,12 @@ class Aws_Sdk
 		
 		return $client;
 	}
+	
+	function get_sts_client(): \Aws\Sts\StsClient
+	{
+		$config = $this->get_aws_sdk_config();
+		$sdk    = $this->get_sdk($config);
+		
+		return $sdk->createSts();
+	}
 }
