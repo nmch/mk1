@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '816a6ca97a222d279e527e599560f3be126b7e2b',
+        'reference' => '7d55d936ca229d1eef570993d3e7f9d9852c24cb',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '816a6ca97a222d279e527e599560f3be126b7e2b',
+            'reference' => '7d55d936ca229d1eef570993d3e7f9d9852c24cb',
             'dev_requirement' => false,
         ),
         'aws/aws-crt-php' => array(
@@ -29,12 +29,12 @@
             'dev_requirement' => false,
         ),
         'aws/aws-sdk-php' => array(
-            'pretty_version' => '3.202.2',
-            'version' => '3.202.2.0',
+            'pretty_version' => '3.208.4',
+            'version' => '3.208.4.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../aws/aws-sdk-php',
             'aliases' => array(),
-            'reference' => '4460481cd63446454869534c69ddaf00cffa45be',
+            'reference' => '46376c60570103b55d9440142356995bd6d37c39',
             'dev_requirement' => false,
         ),
         'clue/stream-filter' => array(
@@ -388,8 +388,8 @@
         'psr/http-factory-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '^1.0',
-                1 => '1.0',
+                0 => '1.0',
+                1 => '^1.0',
             ),
         ),
         'psr/http-message' => array(
@@ -570,12 +570,12 @@
             'dev_requirement' => true,
         ),
         'sentry/sdk' => array(
-            'pretty_version' => '3.1.0',
-            'version' => '3.1.0.0',
+            'pretty_version' => '3.1.1',
+            'version' => '3.1.1.0',
             'type' => 'metapackage',
             'install_path' => NULL,
             'aliases' => array(),
-            'reference' => 'f03133b067fdf03fed09ff03daf3f1d68f5f3673',
+            'reference' => '2de7de3233293f80d1e244bd950adb2121a3731c',
             'dev_requirement' => false,
         ),
         'sentry/sentry' => array(
