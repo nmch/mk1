@@ -128,6 +128,11 @@ class Response
 		$this->headers[$name] = $value;
 	}
 	
+	public function get_header($name)
+	{
+		return Arr::get($this->headers, $name);
+	}
+	
 	/**
 	 * 送出前実行関数を設定する
 	 *
