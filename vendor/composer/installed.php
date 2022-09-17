@@ -1,22 +1,22 @@
 <?php return array(
     'root' => array(
-        'pretty_version' => '201808.x-dev',
-        'version' => '201808.9999999.9999999.9999999-dev',
+        'pretty_version' => '1.0.0+no-version-set',
+        'version' => '1.0.0.0',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'b0fd9feb5a206a2e6c231c8d75d57fc351bee077',
+        'reference' => NULL,
         'name' => '__root__',
         'dev' => true,
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => '201808.x-dev',
-            'version' => '201808.9999999.9999999.9999999-dev',
+            'pretty_version' => '1.0.0+no-version-set',
+            'version' => '1.0.0.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'b0fd9feb5a206a2e6c231c8d75d57fc351bee077',
+            'reference' => NULL,
             'dev_requirement' => false,
         ),
         'aws/aws-crt-php' => array(
@@ -353,12 +353,12 @@
             'dev_requirement' => true,
         ),
         'phpunit/phpunit' => array(
-            'pretty_version' => '9.5.10',
-            'version' => '9.5.10.0',
+            'pretty_version' => '9.5.14',
+            'version' => '9.5.14.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpunit/phpunit',
             'aliases' => array(),
-            'reference' => 'c814a05837f2edb0d1471d6e3f4ab3501ca3899a',
+            'reference' => '1883687169c017d6ae37c58883ca3994cfc34189',
             'dev_requirement' => true,
         ),
         'psr/container' => array(
