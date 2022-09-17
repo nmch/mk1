@@ -62,12 +62,12 @@
             ),
         ),
         'fakerphp/faker' => array(
-            'pretty_version' => 'v1.17.0',
-            'version' => '1.17.0.0',
+            'pretty_version' => 'v1.20.0',
+            'version' => '1.20.0.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../fakerphp/faker',
             'aliases' => array(),
-            'reference' => 'b85e9d44eae8c52cca7aa0939483611f7232b669',
+            'reference' => '37f751c67a5372d4e26353bd9384bc03744ec77b',
             'dev_requirement' => false,
         ),
         'guzzlehttp/guzzle' => array(
