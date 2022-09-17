@@ -2,6 +2,74 @@
 
 All notable changes of the PHPUnit 9.5 release series are documented in this file using the [Keep a CHANGELOG](https://keepachangelog.com/) principles.
 
+## [9.5.24] - 2022-08-30
+
+### Added
+
+* [#4931](https://github.com/sebastianbergmann/phpunit/issues/4931): Support `null` and `false` as stand-alone types
+* [#4955](https://github.com/sebastianbergmann/phpunit/issues/4955): Support `true` as stand-alone type
+
+### Fixed
+
+* [#4913](https://github.com/sebastianbergmann/phpunit/issues/4913): Failed `assert()` should show a backtrace
+* [#5012](https://github.com/sebastianbergmann/phpunit/pull/5012): Memory leak in `ExceptionWrapper`
+
+## [9.5.23] - 2022-08-22
+
+### Changed
+
+* [#5033](https://github.com/sebastianbergmann/phpunit/issues/5033): Do not depend on phpspec/prophecy
+
+## [9.5.22] - 2022-08-20
+
+### Fixed
+
+* [#5015](https://github.com/sebastianbergmann/phpunit/pull/5015): Ukraine banner unreadable on black background
+* [#5020](https://github.com/sebastianbergmann/phpunit/issues/5020): PHPUnit 9 breaks loading of PSR-0/PEAR style classes
+* [#5022](https://github.com/sebastianbergmann/phpunit/issues/5022): `ExcludeList::addDirectory()` does not work correctly
+
+## [9.5.21] - 2022-06-19
+
+### Fixed
+
+* [#4950](https://github.com/sebastianbergmann/phpunit/issues/4950): False error on `atMost()` invocation rule without call
+* [#4962](https://github.com/sebastianbergmann/phpunit/issues/4962): Ukraine banner unreadable on white background
+
+## [9.5.20] - 2022-04-01
+
+### Fixed
+
+* [#4938](https://github.com/sebastianbergmann/phpunit/issues/4938): Test Double code generator does not handle `void` return type declaration on `__clone()` methods
+* [#4947](https://github.com/sebastianbergmann/phpunit/issues/4947): Test annotated with `@coversNothing` may lead to files missing from code coverage report
+
+## [9.5.19] - 2022-03-15
+
+### Fixed
+
+* [#4929](https://github.com/sebastianbergmann/phpunit/issues/4929): Test Double code generator does not handle new expressions inside parameter default values
+* [#4932](https://github.com/sebastianbergmann/phpunit/issues/4932): Backport support for intersection types from PHPUnit 10 to PHPUnit 9.5
+* [#4933](https://github.com/sebastianbergmann/phpunit/issues/4933): Backport support for `never` type from PHPUnit 10 to PHPUnit 9.5
+
+## [9.5.18] - 2022-03-08
+
+### Fixed
+
+* [#4877](https://github.com/sebastianbergmann/phpunit/issues/4877): No stack trace shown when an error occurs during bootstrap
+
+## [9.5.17] - 2022-03-05 - #StandWithUkraine
+
+## [9.5.16] - 2022-02-23
+
+### Changed
+
+* Reverted sync with API change in (now yanked) phpunit/php-code-coverage 9.2.12
+
+## [9.5.15] - 2022-02-23 [YANKED]
+
+### Fixed
+
+* When the HTML code coverage report's configured low upper bound is larger than the high lower bound then the default values are used instead
+
 ## [9.5.14] - 2022-02-18
 
 ### Changed
@@ -122,6 +190,16 @@ All notable changes of the PHPUnit 9.5 release series are documented in this fil
 
 * [#4535](https://github.com/sebastianbergmann/phpunit/issues/4535): `getMockFromWsdl()` does not handle methods that do not have parameters correctly
 
+[9.5.24]: https://github.com/sebastianbergmann/phpunit/compare/9.5.23...9.5.24
+[9.5.23]: https://github.com/sebastianbergmann/phpunit/compare/9.5.22...9.5.23
+[9.5.22]: https://github.com/sebastianbergmann/phpunit/compare/9.5.21...9.5.22
+[9.5.21]: https://github.com/sebastianbergmann/phpunit/compare/9.5.20...9.5.21
+[9.5.20]: https://github.com/sebastianbergmann/phpunit/compare/9.5.19...9.5.20
+[9.5.19]: https://github.com/sebastianbergmann/phpunit/compare/9.5.18...9.5.19
+[9.5.18]: https://github.com/sebastianbergmann/phpunit/compare/9.5.17...9.5.18
+[9.5.17]: https://github.com/sebastianbergmann/phpunit/compare/9.5.16...9.5.17
+[9.5.16]: https://github.com/sebastianbergmann/phpunit/compare/dc738383c519243b0a967f63943a848d3fd861aa...9.5.16
+[9.5.15]: https://github.com/sebastianbergmann/phpunit/compare/9.5.14...dc738383c519243b0a967f63943a848d3fd861aa
 [9.5.14]: https://github.com/sebastianbergmann/phpunit/compare/9.5.13...9.5.14
 [9.5.13]: https://github.com/sebastianbergmann/phpunit/compare/9.5.12...9.5.13
 [9.5.12]: https://github.com/sebastianbergmann/phpunit/compare/9.5.11...9.5.12
