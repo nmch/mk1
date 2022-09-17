@@ -186,4 +186,66 @@ class Request
 
         $response->send();
     }
+
+    public function get_status_code(): ?int
+    {
+        return $this->response?->status();
+    }
+
+    public function get_location_header(): ?string
+    {
+        return $this->response?->get_header('Location');
+    }
+
+    public function is_redirect(): bool
+    {
+        return (in_array($this->get_status_code(), [201, 301, 302, 303, 307, 308]) && $this->get_location_header());
+    }
+
+    public function assert_location(?string $uri): static
+    {
+        \PHPUnit\Framework\Assert::assertSame($uri, $this->get_location_header());
+
+        return $this;
+    }
+
+    public function assert_status(int $status): static
+    {
+        $actual = $this->get_status_code();
+
+        \PHPUnit\Framework\Assert::assertSame($status, $actual);
+
+        return $this;
+    }
+
+    public function assert_ok(): static
+    {
+        return $this->assert_status(200);
+    }
+
+    public function assert_redirect(?string $uri = null): static
+    {
+        \PHPUnit\Framework\Assert::assertTrue($this->is_redirect());
+
+        if (!is_null($uri)) {
+            $this->assert_location($uri);
+        }
+
+        return $this;
+    }
+
+    public function assert_unauthorized(): static
+    {
+        return $this->assert_status(401);
+    }
+
+    public function assert_forbidden(): static
+    {
+        return $this->assert_status(403);
+    }
+
+    public function assert_not_found(): static
+    {
+        return $this->assert_status(404);
+    }
 }
