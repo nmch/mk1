@@ -121,6 +121,8 @@ use Psr\Http\Message\RequestInterface;
  * @method \GuzzleHttp\Promise\Promise getObjectAsync(array $args = [])
  * @method \Aws\Result getObjectAcl(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getObjectAclAsync(array $args = [])
+ * @method \Aws\Result getObjectAttributes(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise getObjectAttributesAsync(array $args = [])
  * @method \Aws\Result getObjectLegalHold(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getObjectLegalHoldAsync(array $args = [])
  * @method \Aws\Result getObjectLockConfiguration(array $args = [])
@@ -427,6 +429,9 @@ class S3Client extends AwsClient implements S3ClientInterface
      */
     public static function isBucketDnsCompatible($bucket)
     {
+        if (!is_string($bucket)) {
+            return false;
+        }
         $bucketLen = strlen($bucket);
 
         return ($bucketLen >= 3 && $bucketLen <= 63) &&
@@ -458,17 +463,19 @@ class S3Client extends AwsClient implements S3ClientInterface
     {
         $command = clone $command;
         $command->getHandlerList()->remove('signer');
+        $request = \Aws\serialize($command);
+        $signing_name = $this->getSigningName($request->getUri()->getHost());
 
         /** @var \Aws\Signature\SignatureInterface $signer */
         $signer = call_user_func(
             $this->getSignatureProvider(),
             $this->getConfig('signature_version'),
-            $this->getConfig('signing_name'),
+            $signing_name,
             $this->getConfig('signing_region')
         );
 
         return $signer->presign(
-            \Aws\serialize($command),
+            $request,
             $this->getCredentials()->wait(),
             $expires,
             $options
@@ -636,6 +643,22 @@ class S3Client extends AwsClient implements S3ClientInterface
         };
     }
 
+    /**
+     * Special handling for when the service name is s3-object-lambda.
+     * So, if the host contains s3-object-lambda, then the service name
+     * returned is s3-object-lambda, otherwise the default signing service is returned.
+     * @param string $host The host to validate if is a s3-object-lambda URL.
+     * @return string returns the signing service name to be used
+     */
+    private function getSigningName($host)
+    {
+        if (strpos( $host, 's3-object-lambda')) {
+            return 's3-object-lambda';
+        }
+
+        return $this->getConfig('signing_name');
+    }
+
     /** @internal */
     public static function _applyRetryConfig($value, $args, HandlerList $list)
     {
@@ -729,13 +752,16 @@ class S3Client extends AwsClient implements S3ClientInterface
     {
         ClientResolver::_apply_api_provider($value, $args);
         $args['parser'] = new GetBucketLocationParser(
-            new AmbiguousSuccessParser(
-                new RetryableMalformedResponseParser(
-                    $args['parser'],
+            new ValidateResponseChecksumParser(
+                new AmbiguousSuccessParser(
+                    new RetryableMalformedResponseParser(
+                        $args['parser'],
+                        $args['exception_class']
+                    ),
+                    $args['error_parser'],
                     $args['exception_class']
                 ),
-                $args['error_parser'],
-                $args['exception_class']
+                $args['api']
             )
         );
     }

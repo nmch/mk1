@@ -239,7 +239,45 @@ final class Middleware
             };
         };
     }
+    /**
+     * Middleware wrapper function that adds a trace id header to requests
+     * from clients instantiated in supported Lambda runtime environments.
+     *
+     * The purpose for this header is to track and stop Lambda functions
+     * from being recursively invoked due to misconfigured resources.
+     *
+     * @return callable
+     */
+    public static function recursionDetection()
+    {
+        return function (callable $handler) {
+            return function (
+                CommandInterface $command,
+                RequestInterface $request
+            ) use ($handler){
+                $isLambda = getenv('AWS_LAMBDA_FUNCTION_NAME');
+                $traceId = str_replace('\e', '\x1b', getenv('_X_AMZN_TRACE_ID'));
 
+                if ($isLambda && $traceId) {
+                    if (!$request->hasHeader('X-Amzn-Trace-Id')) {
+                        $ignoreChars = ['=', ';', ':', '+', '&', '[', ']', '{', '}', '"', '\'', ','];
+                        $traceIdEncoded = rawurlencode(stripcslashes($traceId));
+
+                        foreach($ignoreChars as $char) {
+                            $encodedChar = rawurlencode($char);
+                            $traceIdEncoded = str_replace($encodedChar, $char,  $traceIdEncoded);
+                        }
+
+                        return $handler($command, $request->withHeader(
+                            'X-Amzn-Trace-Id',
+                            $traceIdEncoded
+                        ));
+                    }
+                }
+                return $handler($command, $request);
+            };
+        };
+    }
     /**
      * Tracks command and request history using a history container.
      *

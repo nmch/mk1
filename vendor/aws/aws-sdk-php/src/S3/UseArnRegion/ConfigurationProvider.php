@@ -80,7 +80,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
         $configProviders[] = self::fallback();
 
         $memo = self::memoize(
-            call_user_func_array('self::chain', $configProviders)
+            call_user_func_array([ConfigurationProvider::class, 'chain'], $configProviders)
         );
 
         if (isset($config['use_arn_region'])
@@ -131,7 +131,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
         $profile = $profile ?: (getenv(self::ENV_PROFILE) ?: 'default');
 
         return function () use ($profile, $filename) {
-            if (!is_readable($filename)) {
+            if (!@is_readable($filename)) {
                 return self::reject("Cannot read configuration from $filename");
             }
 
@@ -144,7 +144,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
                 return self::reject("'$profile' not found in config file");
             }
             if (!isset($data[$profile][self::INI_USE_ARN_REGION])) {
-                return self::reject("Required S3 Use Arn Region config values 
+                return self::reject("Required S3 Use Arn Region config values
                     not present in INI profile '{$profile}' ({$filename})");
             }
 

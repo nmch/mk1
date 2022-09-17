@@ -4,7 +4,7 @@
         "smarty/smarty": "3.1.39"
     },
     "require": {
-        "aws/aws-sdk-php": "^3.171",
+        "aws/aws-sdk-php": "^3.235",
         "php-webdriver/webdriver": "^1.9",
         "opis/json-schema": "^2.1",
         "sentry/sdk": "^3.2",

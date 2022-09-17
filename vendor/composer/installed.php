@@ -29,12 +29,12 @@
             'dev_requirement' => false,
         ),
         'aws/aws-sdk-php' => array(
-            'pretty_version' => '3.208.4',
-            'version' => '3.208.4.0',
+            'pretty_version' => '3.235.10',
+            'version' => '3.235.10.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../aws/aws-sdk-php',
             'aliases' => array(),
-            'reference' => '46376c60570103b55d9440142356995bd6d37c39',
+            'reference' => '943f96f50d19244584675c34fb3e4c8aa3eaddce',
             'dev_requirement' => false,
         ),
         'clue/stream-filter' => array(
@@ -71,12 +71,12 @@
             'dev_requirement' => false,
         ),
         'guzzlehttp/guzzle' => array(
-            'pretty_version' => '7.4.0',
-            'version' => '7.4.0.0',
+            'pretty_version' => '7.5.0',
+            'version' => '7.5.0.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../guzzlehttp/guzzle',
             'aliases' => array(),
-            'reference' => '868b3571a039f0ebc11ac8f344f4080babe2cb94',
+            'reference' => 'b50a2a1251152e43f6a37f0fa053e730a67d25ba',
             'dev_requirement' => false,
         ),
         'guzzlehttp/promises' => array(
@@ -567,12 +567,12 @@
             'dev_requirement' => true,
         ),
         'symfony/deprecation-contracts' => array(
-            'pretty_version' => 'v2.5.2',
-            'version' => '2.5.2.0',
+            'pretty_version' => 'v3.0.2',
+            'version' => '3.0.2.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/deprecation-contracts',
             'aliases' => array(),
-            'reference' => 'e8b495ea28c1d97b5e0c121748d6f9b53d075c66',
+            'reference' => '26954b3d62a6c5fd0ea8a2a00c0353a14978d05c',
             'dev_requirement' => false,
         ),
         'symfony/http-client' => array(
@@ -609,12 +609,12 @@
             'dev_requirement' => false,
         ),
         'symfony/polyfill-mbstring' => array(
-            'pretty_version' => 'v1.23.1',
-            'version' => '1.23.1.0',
+            'pretty_version' => 'v1.26.0',
+            'version' => '1.26.0.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/polyfill-mbstring',
             'aliases' => array(),
-            'reference' => '9174a3d80210dca8daa7f31fec659150bbeabfc6',
+            'reference' => '9344f9cb97f3b19424af1a21a3b0e75b0a7d8d7e',
             'dev_requirement' => false,
         ),
         'symfony/polyfill-php80' => array(
