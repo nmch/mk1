@@ -1012,17 +1012,17 @@
         },
         {
             "name": "opis/json-schema",
-            "version": "2.2.0",
-            "version_normalized": "2.2.0.0",
+            "version": "2.3.0",
+            "version_normalized": "2.3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/opis/json-schema.git",
-                "reference": "9ff2919681446bdd1e5ca5aeed9566a53f55bd75"
+                "reference": "c48df6d7089a45f01e1c82432348f2d5976f9bfb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/opis/json-schema/zipball/9ff2919681446bdd1e5ca5aeed9566a53f55bd75",
-                "reference": "9ff2919681446bdd1e5ca5aeed9566a53f55bd75",
+                "url": "https://api.github.com/repos/opis/json-schema/zipball/c48df6d7089a45f01e1c82432348f2d5976f9bfb",
+                "reference": "c48df6d7089a45f01e1c82432348f2d5976f9bfb",
                 "shasum": ""
             },
             "require": {
@@ -1036,7 +1036,7 @@
                 "ext-intl": "*",
                 "phpunit/phpunit": "^9.0"
             },
-            "time": "2021-10-12T20:47:35+00:00",
+            "time": "2022-01-08T20:38:03+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1074,23 +1074,23 @@
             ],
             "support": {
                 "issues": "https://github.com/opis/json-schema/issues",
-                "source": "https://github.com/opis/json-schema/tree/2.2.0"
+                "source": "https://github.com/opis/json-schema/tree/2.3.0"
             },
             "install-path": "../opis/json-schema"
         },
         {
             "name": "opis/string",
-            "version": "2.0.0",
-            "version_normalized": "2.0.0.0",
+            "version": "2.0.1",
+            "version_normalized": "2.0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/opis/string.git",
-                "reference": "5a82da2c29279087abf1c62088fa4d05ca728109"
+                "reference": "9ebf1a1f873f502f6859d11210b25a4bf5d141e7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/opis/string/zipball/5a82da2c29279087abf1c62088fa4d05ca728109",
-                "reference": "5a82da2c29279087abf1c62088fa4d05ca728109",
+                "url": "https://api.github.com/repos/opis/string/zipball/9ebf1a1f873f502f6859d11210b25a4bf5d141e7",
+                "reference": "9ebf1a1f873f502f6859d11210b25a4bf5d141e7",
                 "shasum": ""
             },
             "require": {
@@ -1101,7 +1101,7 @@
             "require-dev": {
                 "phpunit/phpunit": "^9.0"
             },
-            "time": "2021-04-13T18:48:54+00:00",
+            "time": "2022-01-14T15:42:23+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1139,7 +1139,7 @@
             ],
             "support": {
                 "issues": "https://github.com/opis/string/issues",
-                "source": "https://github.com/opis/string/tree/2.0.0"
+                "source": "https://github.com/opis/string/tree/2.0.1"
             },
             "install-path": "../opis/string"
         },
