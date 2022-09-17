@@ -7,7 +7,7 @@ namespace Sentry\Tracing;
 use Sentry\EventId;
 
 /**
- * This class stores all the information about a Span.
+ * This class stores all the information about a span.
  */
 class Span
 {
@@ -22,22 +22,22 @@ class Span
     protected $traceId;
 
     /**
-     * @var string|null Description of the Span
+     * @var string|null Description of the span
      */
     protected $description;
 
     /**
-     * @var string|null Operation of the Span
+     * @var string|null Operation of the span
      */
     protected $op;
 
     /**
-     * @var SpanStatus|null Completion status of the Span
+     * @var SpanStatus|null Completion status of the span
      */
     protected $status;
 
     /**
-     * @var SpanId|null ID of the parent Span
+     * @var SpanId|null ID of the parent span
      */
     protected $parentSpanId;
 
@@ -47,7 +47,7 @@ class Span
     protected $sampled;
 
     /**
-     * @var array<string, string> A List of tags associated to this Span
+     * @var array<string, string> A List of tags associated to this span
      */
     protected $tags = [];
 
@@ -67,9 +67,14 @@ class Span
     protected $endTimestamp;
 
     /**
-     * @var SpanRecorder|null Reference instance to the SpanRecorder
+     * @var SpanRecorder|null Reference instance to the {@see SpanRecorder}
      */
     protected $spanRecorder;
+
+    /**
+     * @var Transaction|null The transaction containing this span
+     */
+    protected $transaction;
 
     /**
      * Constructor.
@@ -80,26 +85,17 @@ class Span
      */
     public function __construct(?SpanContext $context = null)
     {
-        $this->traceId = TraceId::generate();
-        $this->spanId = SpanId::generate();
-        $this->startTimestamp = microtime(true);
-
         if (null === $context) {
+            $this->traceId = TraceId::generate();
+            $this->spanId = SpanId::generate();
+            $this->startTimestamp = microtime(true);
+
             return;
         }
 
-        if (null !== $context->getTraceId()) {
-            $this->traceId = $context->getTraceId();
-        }
-
-        if (null !== $context->getSpanId()) {
-            $this->spanId = $context->getSpanId();
-        }
-
-        if (null !== $context->getStartTimestamp()) {
-            $this->startTimestamp = $context->getStartTimestamp();
-        }
-
+        $this->traceId = $context->getTraceId() ?? TraceId::generate();
+        $this->spanId = $context->getSpanId() ?? SpanId::generate();
+        $this->startTimestamp = $context->getStartTimestamp() ?? microtime(true);
         $this->parentSpanId = $context->getParentSpanId();
         $this->description = $context->getDescription();
         $this->op = $context->getOp();
@@ -399,6 +395,7 @@ class Span
         $context->setTraceId($this->traceId);
 
         $span = new self($context);
+        $span->transaction = $this->transaction;
         $span->spanRecorder = $this->spanRecorder;
 
         if (null != $span->spanRecorder) {
@@ -424,6 +421,14 @@ class Span
     public function detachSpanRecorder(): void
     {
         $this->spanRecorder = null;
+    }
+
+    /**
+     * Returns the transaction containing this span.
+     */
+    public function getTransaction(): ?Transaction
+    {
+        return $this->transaction;
     }
 
     /**

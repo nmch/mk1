@@ -86,7 +86,6 @@ final class IntegrationRegistry
         $userIntegrations = $options->getIntegrations();
 
         if (\is_array($userIntegrations)) {
-            /** @psalm-suppress PossiblyInvalidArgument */
             $userIntegrationsClasses = array_map('get_class', $userIntegrations);
             $pickedIntegrationsClasses = [];
 
@@ -100,7 +99,6 @@ final class IntegrationRegistry
             }
 
             foreach ($userIntegrations as $userIntegration) {
-                /** @psalm-suppress PossiblyInvalidArgument */
                 $integrationClassName = \get_class($userIntegration);
 
                 if (!isset($pickedIntegrationsClasses[$integrationClassName])) {
@@ -128,14 +126,17 @@ final class IntegrationRegistry
             return [];
         }
 
-        return [
-            new ExceptionListenerIntegration(),
-            new ErrorListenerIntegration(),
-            new FatalErrorListenerIntegration(),
+        $integrations = [
             new RequestIntegration(),
             new TransactionIntegration(),
             new FrameContextifierIntegration(),
             new EnvironmentIntegration(),
         ];
+
+        if (null !== $options->getDsn()) {
+            array_unshift($integrations, new ExceptionListenerIntegration(), new ErrorListenerIntegration(), new FatalErrorListenerIntegration());
+        }
+
+        return $integrations;
     }
 }

@@ -43,14 +43,14 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
     use CommonResponseTrait;
     use TransportResponseTrait;
 
-    private static $nextId = 'a';
+    private static string $nextId = 'a';
 
     private $multi;
-    private $options;
+    private ?array $options;
     private $canceller;
-    private $onProgress;
+    private \Closure $onProgress;
 
-    private static $delay;
+    private static ?string $delay = null;
 
     /**
      * @internal
@@ -87,6 +87,7 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
         $info['upload_content_length'] = -1.0;
         $info['download_content_length'] = -1.0;
         $info['user_data'] = $options['user_data'];
+        $info['max_duration'] = $options['max_duration'];
         $info['debug'] = '';
 
         $onProgress = $options['on_progress'] ?? static function () {};
@@ -125,6 +126,7 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
             }
         };
 
+        $multi->lastTimeout = null;
         $multi->openHandles[$id] = $id;
         ++$multi->responseCount;
 
@@ -137,15 +139,12 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
     /**
      * {@inheritdoc}
      */
-    public function getInfo(string $type = null)
+    public function getInfo(string $type = null): mixed
     {
         return null !== $type ? $this->info[$type] ?? null : $this->info;
     }
 
-    /**
-     * @return array
-     */
-    public function __sleep()
+    public function __sleep(): array
     {
         throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
     }
@@ -329,7 +328,7 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
                 // Discard body of redirects
                 while (null !== yield $response->getBody()->read()) {
                 }
-            } catch (HttpException | StreamException $e) {
+            } catch (HttpException|StreamException $e) {
                 // Ignore streaming errors on previous responses
             }
 

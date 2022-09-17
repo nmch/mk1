@@ -31,6 +31,7 @@ use Symfony\Component\HttpClient\Response\StreamableInterface;
 use Symfony\Component\HttpClient\Response\StreamWrapper;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\Service\ResetInterface;
 
 if (!interface_exists(RequestFactoryInterface::class)) {
     throw new \LogicException('You cannot use the "Symfony\Component\HttpClient\Psr18Client" as the "psr/http-factory" package is not installed. Try running "composer require nyholm/psr7".');
@@ -49,7 +50,7 @@ if (!interface_exists(ClientInterface::class)) {
  *
  * @author Nicolas Grekas <p@tchwork.com>
  */
-final class Psr18Client implements ClientInterface, RequestFactoryInterface, StreamFactoryInterface, UriFactoryInterface
+final class Psr18Client implements ClientInterface, RequestFactoryInterface, StreamFactoryInterface, UriFactoryInterface, ResetInterface
 {
     private $client;
     private $responseFactory;
@@ -58,24 +59,24 @@ final class Psr18Client implements ClientInterface, RequestFactoryInterface, Str
     public function __construct(HttpClientInterface $client = null, ResponseFactoryInterface $responseFactory = null, StreamFactoryInterface $streamFactory = null)
     {
         $this->client = $client ?? HttpClient::create();
+        $streamFactory ??= $responseFactory instanceof StreamFactoryInterface ? $responseFactory : null;
+
+        if (null === $responseFactory || null === $streamFactory) {
+            if (!class_exists(Psr17Factory::class) && !class_exists(Psr17FactoryDiscovery::class)) {
+                throw new \LogicException('You cannot use the "Symfony\Component\HttpClient\Psr18Client" as no PSR-17 factories have been provided. Try running "composer require nyholm/psr7".');
+            }
+
+            try {
+                $psr17Factory = class_exists(Psr17Factory::class, false) ? new Psr17Factory() : null;
+                $responseFactory ??= $psr17Factory ?? Psr17FactoryDiscovery::findResponseFactory();
+                $streamFactory ??= $psr17Factory ?? Psr17FactoryDiscovery::findStreamFactory();
+            } catch (NotFoundException $e) {
+                throw new \LogicException('You cannot use the "Symfony\Component\HttpClient\HttplugClient" as no PSR-17 factories have been found. Try running "composer require nyholm/psr7".', 0, $e);
+            }
+        }
+
         $this->responseFactory = $responseFactory;
-        $this->streamFactory = $streamFactory ?? ($responseFactory instanceof StreamFactoryInterface ? $responseFactory : null);
-
-        if (null !== $this->responseFactory && null !== $this->streamFactory) {
-            return;
-        }
-
-        if (!class_exists(Psr17Factory::class) && !class_exists(Psr17FactoryDiscovery::class)) {
-            throw new \LogicException('You cannot use the "Symfony\Component\HttpClient\Psr18Client" as no PSR-17 factories have been provided. Try running "composer require nyholm/psr7".');
-        }
-
-        try {
-            $psr17Factory = class_exists(Psr17Factory::class, false) ? new Psr17Factory() : null;
-            $this->responseFactory = $this->responseFactory ?? $psr17Factory ?? Psr17FactoryDiscovery::findResponseFactory();
-            $this->streamFactory = $this->streamFactory ?? $psr17Factory ?? Psr17FactoryDiscovery::findStreamFactory();
-        } catch (NotFoundException $e) {
-            throw new \LogicException('You cannot use the "Symfony\Component\HttpClient\HttplugClient" as no PSR-17 factories have been found. Try running "composer require nyholm/psr7".', 0, $e);
-        }
+        $this->streamFactory = $streamFactory;
     }
 
     /**
@@ -189,6 +190,13 @@ final class Psr18Client implements ClientInterface, RequestFactoryInterface, Str
         }
 
         throw new \LogicException(sprintf('You cannot use "%s()" as the "nyholm/psr7" package is not installed. Try running "composer require nyholm/psr7".', __METHOD__));
+    }
+
+    public function reset()
+    {
+        if ($this->client instanceof ResetInterface) {
+            $this->client->reset();
+        }
     }
 }
 
