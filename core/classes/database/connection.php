@@ -154,7 +154,7 @@ class Database_Connection
     {
         return Sentry::span("sql.query", function () use ($sql, $parameters, $suppress_debug_log, $return_raw_result) {
             if (!$suppress_debug_log) {
-                Log::coredebug("[dbconn] SQL {$this->connection} = {$sql} / ".var_export($parameters, true));
+                Log::coredebug(sprintf("[dbconn] SQL = {%s} / %s", $sql, var_export($parameters, true)));
             }
 
             /**
