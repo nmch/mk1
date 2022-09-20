@@ -871,32 +871,32 @@ class Model implements Iterator, Countable, ArrayAccess
         return $model_query->get_query();                // Database_Queryを得る
     }
 
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
-        return $this->set($offset, $value);
+        $this->set($offset, $value);
     }
 
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return $this->is_exist($offset);
     }
 
-    function is_exist($name)
+    function is_exist($name): bool
     {
         return (array_key_exists($name, $this->_data) || array_key_exists($name, $this->_original));
     }
 
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         $this->_unset($offset);
     }
 
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->get($offset);
     }
 
-    function rewind()
+    function rewind(): void
     {
         $this->_iter_keylist = $this->keys();
         $this->_iter_curkey = 0;
@@ -907,29 +907,29 @@ class Model implements Iterator, Countable, ArrayAccess
         return array_merge(array_keys($this->_original), array_keys($this->_data));
     }
 
-    function current()
+    function current(): mixed
     {
         return $this->get($this->key());
     }
 
-    function key()
+    function key(): mixed
     {
         return $this->_iter_keylist[$this->_iter_curkey];
     }
 
-    function next()
+    function next(): void
     {
         if ($this->valid()) {
             $this->_iter_curkey++;
         }
     }
 
-    function valid()
+    function valid(): bool
     {
         return ($this->_iter_curkey < $this->count());
     }
 
-    function count()
+    function count(): int
     {
         return count($this->_iter_keylist);
     }
