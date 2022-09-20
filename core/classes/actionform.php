@@ -255,7 +255,7 @@ class Actionform implements ArrayAccess
         $forwarded_for = $this->server_vars('HTTP_X_FORWARDED_FOR');
         $cloudfront_viewer_address = $this->server_vars('HTTP_CLOUDFRONT_VIEWER_ADDRESS');
 
-        if (preg_match('/^(<address>[0-9]+\.[0-9]+\.[0-9]+):(<port>[0-9]+)$/', $cloudfront_viewer_address, $match)) {
+        if (preg_match('/^(<address>[0-9]+\.[0-9]+\.[0-9]+):(<port>[0-9]+)$/', $cloudfront_viewer_address ?? '', $match)) {
             return $match['address'];
         } elseif ($forwarded_for) {
             $exploded_forwarded_for = explode(',', $forwarded_for);
