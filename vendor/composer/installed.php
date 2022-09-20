@@ -558,13 +558,13 @@
             'dev_requirement' => false,
         ),
         'smarty/smarty' => array(
-            'pretty_version' => 'v3.1.39',
-            'version' => '3.1.39.0',
+            'pretty_version' => 'v4.2.1',
+            'version' => '4.2.1.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../smarty/smarty',
             'aliases' => array(),
-            'reference' => 'e27da524f7bcd7361e3ea5cdfa99c4378a7b5419',
-            'dev_requirement' => true,
+            'reference' => 'ffa2b81a8e354a49fd8a2f24742dc9dc399e8007',
+            'dev_requirement' => false,
         ),
         'symfony/deprecation-contracts' => array(
             'pretty_version' => 'v3.0.2',
