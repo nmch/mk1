@@ -165,16 +165,14 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
         return $data;
     }
 
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return is_numeric($offset) && ($offset < $this->rows);
     }
 
-    function next()
+    function next(): void
     {
         $this->position++;
-
-        return $this;
     }
 
     /**
@@ -263,7 +261,7 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
                     break;
                 case 'U':
                     if ($type['typname'] === 'json' || $type['typname'] === 'jsonb') {
-                        $value = json_decode($value, true);
+                        $value = is_null($value) ? null : json_decode($value, true);
                     }
                     break;
             }
@@ -359,30 +357,30 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
         return $this;
     }
 
-    function rewind()
+    function rewind(): void
     {
         pg_result_seek($this->result_resource, 0);
         $this->position = 0;
     }
 
-    function current()
+    function current(): mixed
     {
         return $this->fetch();
     }
 
-    function key()
+    function key(): mixed
     {
         return $this->position;
     }
 
-    function valid()
+    function valid(): bool
     {
         return $this->offsetExists($this->position);
     }
 
-    function count()
+    function count(): int
     {
-        return $this->rows;
+        return $this->rows ?? 0;
     }
 
     function seek($position)
@@ -394,17 +392,17 @@ class Database_Resultset implements Iterator, Countable, ArrayAccess
         return $this;
     }
 
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         // nop
     }
 
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         // nop
     }
 
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->fetch(null, $offset);
     }
