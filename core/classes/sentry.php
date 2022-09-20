@@ -35,7 +35,9 @@ class Sentry
 
             ErrorHandler::add_error_handler(function ($e) {
                 \Sentry\withScope(function (\Sentry\State\Scope $scope) use ($e): void {
-                    \Sentry\captureException($e);
+                    if ($e instanceof Throwable) {
+                        \Sentry\captureException($e);
+                    }
                 });
             });
 
