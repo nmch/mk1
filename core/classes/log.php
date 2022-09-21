@@ -205,7 +205,7 @@ class Log
             foreach ($vars[1] as $var) {
                 $var_value = '';
 
-                if (strlen($var) >= 1 && $var[0] === '@') {
+                if (strlen($var ?? '') >= 1 && $var[0] === '@') {
                     // 先頭に@があった場合はPHPの関数として解釈する
                     $php_function = 'return '.ltrim($var, '@').';';
                     try {
