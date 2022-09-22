@@ -9,7 +9,7 @@
 
 class Session_Driver_Db extends Session_Driver
 {
-    function gc($maxlifetime)
+    function gc($maxlifetime): int|false
     {
         $database = Arr::get($this->config, "database");
 
@@ -24,7 +24,7 @@ class Session_Driver_Db extends Session_Driver
         return true;
     }
 
-    function destroy($id)
+    function destroy($id): bool
     {
         $database = Arr::get($this->config, "database");
 
@@ -36,7 +36,7 @@ class Session_Driver_Db extends Session_Driver
         return true;
     }
 
-    function write($id, $data)
+    function write($id, $data): bool
     {
         $database = Arr::get($this->config, "database");
         list($encoded_data, $hash) = $this->encode_data($data);
@@ -57,7 +57,7 @@ class Session_Driver_Db extends Session_Driver
         return true;
     }
 
-    function read($id)
+    function read($id): string|false
     {
         $data = null;
 
@@ -73,12 +73,12 @@ class Session_Driver_Db extends Session_Driver
         return strval($data);
     }
 
-    function close()
+    function close(): bool
     {
         return true;
     }
 
-    function open($savePath, $sessionName)
+    function open($savePath, $sessionName): bool
     {
         $table_name = Arr::get($this->config, "table");
         $database = Arr::get($this->config, "database");
