@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+## 3.9.1 (2022-10-11)
+
+- fix: Suppress errors on is_callable (#1401)
+
+## 3.9.0 (2022-10-05)
+
+- feat: Add tracePropagationTargets option (#1396)
+- feat: Expose a function to retrieve the URL of the CSP endpoint (#1378)
+- feat: Add support for Dynamic Sampling (#1360)
+  - Add `segment` to `UserDataBag`
+  - Add `TransactionSource`, to set information about the transaction name via `TransactionContext::setSource()` (#1382)
+  - Deprecate `TransactionContext::fromSentryTrace()` in favor of `TransactionContext::fromHeaders()`
+
+## 3.8.1 (2022-09-21)
+
+- fix: Use constant for the SDK version (#1374)
+- fix: Do not throw an TypeError on numeric HTTP headers (#1370)
+
 ## 3.8.0 (2022-09-05)
 
 - Add `Sentry\Monolog\BreadcrumbHandler`, a Monolog handler to allow registration of logs as breadcrumbs (#1199)
