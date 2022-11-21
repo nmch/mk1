@@ -376,4 +376,18 @@ class File
             }
         }
     }
+
+    static function temporary(callable $function): string
+    {
+        $tmp_filepath = tempnam(sys_get_temp_dir(), 'TMP');
+        $fp = fopen($tmp_filepath, 'w+');
+
+        try {
+            $function($fp);
+        } finally {
+            fclose($fp);
+        }
+
+        return $tmp_filepath;
+    }
 }
