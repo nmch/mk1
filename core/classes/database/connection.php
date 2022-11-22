@@ -292,6 +292,18 @@ class Database_Connection
         }
     }
 
+    function rollback(Closure $callback)
+    {
+        $savepoint = DB::place_savepoint();
+        try {
+            $result = $callback();
+
+            return $result;
+        } finally {
+            DB::rollback_savepoint($savepoint);
+        }
+    }
+
     /**
      * 指定されたデータベースが存在しているか取得する
      */
