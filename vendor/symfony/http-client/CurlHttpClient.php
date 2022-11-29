@@ -50,7 +50,7 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
     /**
      * An internal object to share state between the client and its responses.
      */
-    private $multi;
+    private CurlClientState $multi;
 
     /**
      * @param array $defaultOptions     Default request's options
@@ -65,7 +65,7 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
             throw new \LogicException('You cannot use the "Symfony\Component\HttpClient\CurlHttpClient" as the "curl" extension is not installed.');
         }
 
-        $this->defaultOptions['buffer'] = $this->defaultOptions['buffer'] ?? \Closure::fromCallable([__CLASS__, 'shouldBuffer']);
+        $this->defaultOptions['buffer'] ??= self::shouldBuffer(...);
 
         if ($defaultOptions) {
             [, $this->defaultOptions] = self::prepareRequest(null, null, $defaultOptions, $this->defaultOptions);
@@ -90,6 +90,7 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
         $scheme = $url['scheme'];
         $authority = $url['authority'];
         $host = parse_url($authority, \PHP_URL_HOST);
+        $port = parse_url($authority, \PHP_URL_PORT) ?: ('http:' === $scheme ? 80 : 443);
         $proxy = $options['proxy']
             ?? ('https:' === $url['scheme'] ? $_SERVER['https_proxy'] ?? $_SERVER['HTTPS_PROXY'] ?? null : null)
             // Ignore HTTP_PROXY except on the CLI to work around httpoxy set of vulnerabilities
@@ -167,7 +168,6 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
             // First reset any old DNS cache entries then add the new ones
             $resolve = $this->multi->dnsCache->evictions;
             $this->multi->dnsCache->evictions = [];
-            $port = parse_url($authority, \PHP_URL_PORT) ?: ('http:' === $scheme ? 80 : 443);
 
             if ($resolve && 0x072A00 > CurlClientState::$curlVersion['version_number']) {
                 // DNS cache removals require curl 7.42 or higher
@@ -276,21 +276,21 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
             unset($this->multi->pushedResponses[$url]);
 
             if (self::acceptPushForRequest($method, $options, $pushedResponse)) {
-                $this->logger && $this->logger->debug(sprintf('Accepting pushed response: "%s %s"', $method, $url));
+                $this->logger?->debug(sprintf('Accepting pushed response: "%s %s"', $method, $url));
 
                 // Reinitialize the pushed response with request's options
                 $ch = $pushedResponse->handle;
                 $pushedResponse = $pushedResponse->response;
                 $pushedResponse->__construct($this->multi, $url, $options, $this->logger);
             } else {
-                $this->logger && $this->logger->debug(sprintf('Rejecting pushed response: "%s"', $url));
+                $this->logger?->debug(sprintf('Rejecting pushed response: "%s"', $url));
                 $pushedResponse = null;
             }
         }
 
         if (!$pushedResponse) {
             $ch = curl_init();
-            $this->logger && $this->logger->info(sprintf('Request: "%s %s"', $method, $url));
+            $this->logger?->info(sprintf('Request: "%s %s"', $method, $url));
             $curlopts += [\CURLOPT_SHARE => $this->multi->share];
         }
 
@@ -301,7 +301,7 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
             }
         }
 
-        return $pushedResponse ?? new CurlResponse($this->multi, $ch, $options, $this->logger, $method, self::createRedirectResolver($options, $host), CurlClientState::$curlVersion['version_number']);
+        return $pushedResponse ?? new CurlResponse($this->multi, $ch, $options, $this->logger, $method, self::createRedirectResolver($options, $host, $port), CurlClientState::$curlVersion['version_number'], $url);
     }
 
     /**
@@ -381,11 +381,12 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
      *
      * Work around CVE-2018-1000007: Authorization and Cookie headers should not follow redirects - fixed in Curl 7.64
      */
-    private static function createRedirectResolver(array $options, string $host): \Closure
+    private static function createRedirectResolver(array $options, string $host, int $port): \Closure
     {
         $redirectHeaders = [];
         if (0 < $options['max_redirects']) {
             $redirectHeaders['host'] = $host;
+            $redirectHeaders['port'] = $port;
             $redirectHeaders['with_auth'] = $redirectHeaders['no_auth'] = array_filter($options['headers'], static function ($h) {
                 return 0 !== stripos($h, 'Host:');
             });
@@ -400,7 +401,7 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
         return static function ($ch, string $location, bool $noContent) use (&$redirectHeaders) {
             try {
                 $location = self::parseUrl($location);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 return null;
             }
 
@@ -413,7 +414,8 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
             }
 
             if ($redirectHeaders && $host = parse_url('http:'.$location['authority'], \PHP_URL_HOST)) {
-                $requestHeaders = $redirectHeaders['host'] === $host ? $redirectHeaders['with_auth'] : $redirectHeaders['no_auth'];
+                $port = parse_url('http:'.$location['authority'], \PHP_URL_PORT) ?: ('http:' === $location['scheme'] ? 80 : 443);
+                $requestHeaders = $redirectHeaders['host'] === $host && $redirectHeaders['port'] === $port ? $redirectHeaders['with_auth'] : $redirectHeaders['no_auth'];
                 curl_setopt($ch, \CURLOPT_HTTPHEADER, $requestHeaders);
             } elseif ($noContent && $redirectHeaders) {
                 curl_setopt($ch, \CURLOPT_HTTPHEADER, $redirectHeaders['with_auth']);

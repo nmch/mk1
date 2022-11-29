@@ -1328,17 +1328,17 @@
         },
         {
             "name": "php-http/client-common",
-            "version": "2.5.0",
-            "version_normalized": "2.5.0.0",
+            "version": "2.6.0",
+            "version_normalized": "2.6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/client-common.git",
-                "reference": "d135751167d57e27c74de674d6a30cef2dc8e054"
+                "reference": "45db684cd4e186dcdc2b9c06b22970fe123796c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/client-common/zipball/d135751167d57e27c74de674d6a30cef2dc8e054",
-                "reference": "d135751167d57e27c74de674d6a30cef2dc8e054",
+                "url": "https://api.github.com/repos/php-http/client-common/zipball/45db684cd4e186dcdc2b9c06b22970fe123796c0",
+                "reference": "45db684cd4e186dcdc2b9c06b22970fe123796c0",
                 "shasum": ""
             },
             "require": {
@@ -1367,7 +1367,7 @@
                 "php-http/logger-plugin": "PSR-3 Logger plugin",
                 "php-http/stopwatch-plugin": "Symfony Stopwatch plugin"
             },
-            "time": "2021-11-26T15:01:24+00:00",
+            "time": "2022-09-29T09:59:43+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1400,7 +1400,7 @@
             ],
             "support": {
                 "issues": "https://github.com/php-http/client-common/issues",
-                "source": "https://github.com/php-http/client-common/tree/2.5.0"
+                "source": "https://github.com/php-http/client-common/tree/2.6.0"
             },
             "install-path": "../php-http/client-common"
         },
@@ -3578,25 +3578,25 @@
         },
         {
             "name": "sentry/sdk",
-            "version": "3.2.0",
-            "version_normalized": "3.2.0.0",
+            "version": "3.3.0",
+            "version_normalized": "3.3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-php-sdk.git",
-                "reference": "6d78bd83b43efbb52f81d6824f4af344fa9ba292"
+                "reference": "d0678fc7274dbb03046ed05cb24eb92945bedf8e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-php-sdk/zipball/6d78bd83b43efbb52f81d6824f4af344fa9ba292",
-                "reference": "6d78bd83b43efbb52f81d6824f4af344fa9ba292",
+                "url": "https://api.github.com/repos/getsentry/sentry-php-sdk/zipball/d0678fc7274dbb03046ed05cb24eb92945bedf8e",
+                "reference": "d0678fc7274dbb03046ed05cb24eb92945bedf8e",
                 "shasum": ""
             },
             "require": {
                 "http-interop/http-factory-guzzle": "^1.0",
-                "sentry/sentry": "^3.5",
+                "sentry/sentry": "^3.9",
                 "symfony/http-client": "^4.3|^5.0|^6.0"
             },
-            "time": "2022-05-21T11:10:11+00:00",
+            "time": "2022-10-11T09:05:00+00:00",
             "type": "metapackage",
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -3621,7 +3621,7 @@
             ],
             "support": {
                 "issues": "https://github.com/getsentry/sentry-php-sdk/issues",
-                "source": "https://github.com/getsentry/sentry-php-sdk/tree/3.2.0"
+                "source": "https://github.com/getsentry/sentry-php-sdk/tree/3.3.0"
             },
             "funding": [
                 {
@@ -3637,17 +3637,17 @@
         },
         {
             "name": "sentry/sentry",
-            "version": "3.8.0",
-            "version_normalized": "3.8.0.0",
+            "version": "3.12.0",
+            "version_normalized": "3.12.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-php.git",
-                "reference": "dc599ef4ac5459fef95cc0414d26ac47e300e1dc"
+                "reference": "4902f43640963ed45517fd7c1da7fdd5511bb304"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/dc599ef4ac5459fef95cc0414d26ac47e300e1dc",
-                "reference": "dc599ef4ac5459fef95cc0414d26ac47e300e1dc",
+                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/4902f43640963ed45517fd7c1da7fdd5511bb304",
+                "reference": "4902f43640963ed45517fd7c1da7fdd5511bb304",
                 "shasum": ""
             },
             "require": {
@@ -3689,11 +3689,11 @@
             "suggest": {
                 "monolog/monolog": "Allow sending log messages to Sentry by using the included Monolog handler."
             },
-            "time": "2022-09-05T14:25:47+00:00",
+            "time": "2022-11-22T10:57:08+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.8.x-dev"
+                    "dev-master": "3.12.x-dev"
                 }
             },
             "installation-source": "dist",
@@ -3728,7 +3728,7 @@
             ],
             "support": {
                 "issues": "https://github.com/getsentry/sentry-php/issues",
-                "source": "https://github.com/getsentry/sentry-php/tree/3.8.0"
+                "source": "https://github.com/getsentry/sentry-php/tree/3.12.0"
             },
             "funding": [
                 {
@@ -3883,21 +3883,21 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v6.0.12",
-            "version_normalized": "6.0.12.0",
+            "version": "v6.1.8",
+            "version_normalized": "6.1.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "411f73ad1a797f327d100d27fa5d715b947a8272"
+                "reference": "b7374c1f95714b27aeae9e4e4f573274f77a7f37"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/411f73ad1a797f327d100d27fa5d715b947a8272",
-                "reference": "411f73ad1a797f327d100d27fa5d715b947a8272",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/b7374c1f95714b27aeae9e4e4f573274f77a7f37",
+                "reference": "b7374c1f95714b27aeae9e4e4f573274f77a7f37",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.0.2",
+                "php": ">=8.1",
                 "psr/log": "^1|^2|^3",
                 "symfony/http-client-contracts": "^3",
                 "symfony/service-contracts": "^1.0|^2|^3"
@@ -3922,7 +3922,7 @@
                 "symfony/process": "^5.4|^6.0",
                 "symfony/stopwatch": "^5.4|^6.0"
             },
-            "time": "2022-08-02T16:01:06+00:00",
+            "time": "2022-11-14T10:13:26+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -3950,7 +3950,7 @@
             "description": "Provides powerful methods to fetch HTTP resources synchronously or asynchronously",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v6.0.12"
+                "source": "https://github.com/symfony/http-client/tree/v6.1.8"
             },
             "funding": [
                 {
@@ -3970,30 +3970,30 @@
         },
         {
             "name": "symfony/http-client-contracts",
-            "version": "v3.0.2",
-            "version_normalized": "3.0.2.0",
+            "version": "v3.1.1",
+            "version_normalized": "3.1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client-contracts.git",
-                "reference": "4184b9b63af1edaf35b6a7974c6f1f9f33294129"
+                "reference": "fd038f08c623ab5d22b26e9ba35afe8c79071800"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client-contracts/zipball/4184b9b63af1edaf35b6a7974c6f1f9f33294129",
-                "reference": "4184b9b63af1edaf35b6a7974c6f1f9f33294129",
+                "url": "https://api.github.com/repos/symfony/http-client-contracts/zipball/fd038f08c623ab5d22b26e9ba35afe8c79071800",
+                "reference": "fd038f08c623ab5d22b26e9ba35afe8c79071800",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.0.2"
+                "php": ">=8.1"
             },
             "suggest": {
                 "symfony/http-client-implementation": ""
             },
-            "time": "2022-04-12T16:11:42+00:00",
+            "time": "2022-04-22T07:30:54+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "3.0-dev"
+                    "dev-main": "3.1-dev"
                 },
                 "thanks": {
                     "name": "symfony/contracts",
@@ -4004,7 +4004,10 @@
             "autoload": {
                 "psr-4": {
                     "Symfony\\Contracts\\HttpClient\\": ""
-                }
+                },
+                "exclude-from-classmap": [
+                    "/Test/"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -4031,7 +4034,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client-contracts/tree/v3.0.2"
+                "source": "https://github.com/symfony/http-client-contracts/tree/v3.1.1"
             },
             "funding": [
                 {
@@ -4051,24 +4054,24 @@
         },
         {
             "name": "symfony/options-resolver",
-            "version": "v6.0.3",
-            "version_normalized": "6.0.3.0",
+            "version": "v6.1.0",
+            "version_normalized": "6.1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/options-resolver.git",
-                "reference": "51f7006670febe4cbcbae177cbffe93ff833250d"
+                "reference": "a3016f5442e28386ded73c43a32a5b68586dd1c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/51f7006670febe4cbcbae177cbffe93ff833250d",
-                "reference": "51f7006670febe4cbcbae177cbffe93ff833250d",
+                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/a3016f5442e28386ded73c43a32a5b68586dd1c4",
+                "reference": "a3016f5442e28386ded73c43a32a5b68586dd1c4",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.0.2",
+                "php": ">=8.1",
                 "symfony/deprecation-contracts": "^2.1|^3"
             },
-            "time": "2022-01-02T09:55:41+00:00",
+            "time": "2022-02-25T11:15:52+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -4101,7 +4104,7 @@
                 "options"
             ],
             "support": {
-                "source": "https://github.com/symfony/options-resolver/tree/v6.0.3"
+                "source": "https://github.com/symfony/options-resolver/tree/v6.1.0"
             },
             "funding": [
                 {
@@ -4207,27 +4210,27 @@
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.26.0",
-            "version_normalized": "1.26.0.0",
+            "version": "v1.27.0",
+            "version_normalized": "1.27.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
-                "reference": "cfa0ae98841b9e461207c13ab093d76b0fa7bace"
+                "reference": "7a6ff3f1959bb01aefccb463a0f2cd3d3d2fd936"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/cfa0ae98841b9e461207c13ab093d76b0fa7bace",
-                "reference": "cfa0ae98841b9e461207c13ab093d76b0fa7bace",
+                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/7a6ff3f1959bb01aefccb463a0f2cd3d3d2fd936",
+                "reference": "7a6ff3f1959bb01aefccb463a0f2cd3d3d2fd936",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.1"
             },
-            "time": "2022-05-10T07:21:04+00:00",
+            "time": "2022-11-03T14:55:06+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.26-dev"
+                    "dev-main": "1.27-dev"
                 },
                 "thanks": {
                     "name": "symfony/polyfill",
@@ -4273,7 +4276,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php80/tree/v1.26.0"
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.27.0"
             },
             "funding": [
                 {
@@ -4358,21 +4361,21 @@
         },
         {
             "name": "symfony/service-contracts",
-            "version": "v3.0.2",
-            "version_normalized": "3.0.2.0",
+            "version": "v3.1.1",
+            "version_normalized": "3.1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/service-contracts.git",
-                "reference": "d78d39c1599bd1188b8e26bb341da52c3c6d8a66"
+                "reference": "925e713fe8fcacf6bc05e936edd8dd5441a21239"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/d78d39c1599bd1188b8e26bb341da52c3c6d8a66",
-                "reference": "d78d39c1599bd1188b8e26bb341da52c3c6d8a66",
+                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/925e713fe8fcacf6bc05e936edd8dd5441a21239",
+                "reference": "925e713fe8fcacf6bc05e936edd8dd5441a21239",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.0.2",
+                "php": ">=8.1",
                 "psr/container": "^2.0"
             },
             "conflict": {
@@ -4381,11 +4384,11 @@
             "suggest": {
                 "symfony/service-implementation": ""
             },
-            "time": "2022-05-30T19:17:58+00:00",
+            "time": "2022-05-30T19:18:58+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "3.0-dev"
+                    "dev-main": "3.1-dev"
                 },
                 "thanks": {
                     "name": "symfony/contracts",
@@ -4396,7 +4399,10 @@
             "autoload": {
                 "psr-4": {
                     "Symfony\\Contracts\\Service\\": ""
-                }
+                },
+                "exclude-from-classmap": [
+                    "/Test/"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -4423,7 +4429,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/service-contracts/tree/v3.0.2"
+                "source": "https://github.com/symfony/service-contracts/tree/v3.1.1"
             },
             "funding": [
                 {

@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+## 3.12.0 (2022-11-22)
+
+- feat: Add `before_send_transaction` option (#1424)
+- fix: Set `traces_sample_rate` to `null` by default (#1428)
+
+## 3.11.0 (2022-10-25)
+
+- fix: Only include the transaction name to the DSC if it has good quality (#1410)
+- ref: Enable the ModulesIntegration by default (#1415)
+- ref: Expose the ExceptionMechanism through the event hint (#1416)
+
+## 3.10.0 (2022-10-19)
+
+- ref: Add correct `never` option for `max_request_body_size` (#1397)
+  - Deprecate `max_request_body_size.none` in favour of `max_request_body_size.never`
+- fix: Sampling now correctly takes in account the parent sampling decision if available instead of always being `false` when tracing is disabled (#1407)
+
+## 3.9.1 (2022-10-11)
+
+- fix: Suppress errors on is_callable (#1401)
+
+## 3.9.0 (2022-10-05)
+
+- feat: Add `trace_propagation_targets` option (#1396)
+- feat: Expose a function to retrieve the URL of the CSP endpoint (#1378)
+- feat: Add support for Dynamic Sampling (#1360)
+  - Add `segment` to `UserDataBag`
+  - Add `TransactionSource`, to set information about the transaction name via `TransactionContext::setSource()` (#1382)
+  - Deprecate `TransactionContext::fromSentryTrace()` in favor of `TransactionContext::fromHeaders()`
+
+## 3.8.1 (2022-09-21)
+
+- fix: Use constant for the SDK version (#1374)
+- fix: Do not throw an TypeError on numeric HTTP headers (#1370)
+
 ## 3.8.0 (2022-09-05)
 
 - Add `Sentry\Monolog\BreadcrumbHandler`, a Monolog handler to allow registration of logs as breadcrumbs (#1199)
