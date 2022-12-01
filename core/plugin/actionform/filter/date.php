@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 日付(YYYY-MM-DD)
  *
@@ -6,8 +7,8 @@
  *
  * @return string
  */
-return function ($value){
-	$time = strtotime($value);
-	
-	return $time ? date('Y-m-d', $time) : null;
+return function ($value) {
+    $time = strtotime($value);
+
+    return $time ? date('Y-m-d', $time) : null;
 };

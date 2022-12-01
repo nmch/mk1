@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 正負の整数 (0-9, -)
  *
@@ -6,22 +7,21 @@
  * integerにキャストされるので、"-012a-345"は-12になります。<br>
  * is_scalar()がFALSEとなる値を渡された場合はNULLを返します<br>
  *
- * @param string
+ * @param  string
  *
  * @return integer
  */
 return function ($value) {
-	if( ! is_scalar($value) ){
-		return null;
-	}
+    if (!is_scalar($value)) {
+        return null;
+    }
 
-	$value = preg_replace('/[^-0-9]/', '', $value);
-	if( strlen($value) == 0 ){
-		$value = null;
-	}
-	else{
-		$value = (int)$value;
-	}
+    $value = preg_replace('/[^-0-9]/', '', $value);
+    if (strlen($value) == 0) {
+        $value = null;
+    } else {
+        $value = (int) $value;
+    }
 
-	return $value;
+    return $value;
 };

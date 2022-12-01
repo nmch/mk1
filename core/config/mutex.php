@@ -1,4 +1,5 @@
 <?php
+
 return [
-	'pid_dir' => '/tmp',
+    'pid_dir' => '/tmp',
 ];

@@ -1,4 +1,5 @@
 <?
+
 return [
-	'pid_dir' => PROJECTPATH . 'pid/'
+    'pid_dir' => PROJECTPATH.'pid/'
 ];

@@ -1,4 +1,5 @@
 <?
+
 return [
-	'route' => 'Route',
+    'route' => 'Route',
 ];

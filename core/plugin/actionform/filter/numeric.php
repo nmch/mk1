@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 正負の実数 (0-9, -, .)
  *
@@ -10,11 +11,11 @@
  * @return string
  */
 return function ($value) {
-	if( ! is_scalar($value) ){
-		return null;
-	}
+    if (!is_scalar($value)) {
+        return null;
+    }
 
-	$value = preg_replace('/[^-0-9\.]/', '', $value);
+    $value = preg_replace('/[^-0-9\.]/', '', $value);
 
-	return $value;
+    return $value;
 };

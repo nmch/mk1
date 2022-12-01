@@ -1,4 +1,5 @@
 <?php
+
 /**
  * integerへキャスト
  *
@@ -7,11 +8,11 @@
  * @return integer
  */
 return function ($value) {
-	if( ! is_scalar($value) ){
-		return null;
-	}
+    if (!is_scalar($value)) {
+        return null;
+    }
 
-	$value = (int)$value;
+    $value = (int) $value;
 
-	return $value;
+    return $value;
 };

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * array_unique
  *
@@ -7,9 +8,9 @@
  * @return array
  */
 return function ($value) {
-	if( ! is_array($value) ){
-		return null;
-	}
+    if (!is_array($value)) {
+        return null;
+    }
 
-	return array_unique($value);
+    return array_unique($value);
 };

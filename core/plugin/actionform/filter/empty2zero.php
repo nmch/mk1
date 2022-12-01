@@ -1,4 +1,5 @@
 <?php
+
 /**
  * empty2zero
  *
@@ -7,5 +8,5 @@
  * @return string|int
  */
 return function ($value) {
-	return empty($value) ? 0 : $value;
+    return empty($value) ? 0 : $value;
 };

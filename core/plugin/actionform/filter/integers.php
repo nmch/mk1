@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 複数行の正負の整数 (0-9, -, \n)
  *
@@ -9,13 +10,13 @@
  * @return string
  */
 return function ($value) {
-	if( ! is_scalar($value) ){
-		return null;
-	}
-	$integer = include './integer.php';
+    if (!is_scalar($value)) {
+        return null;
+    }
+    $integer = include './integer.php';
 
-	$integers = explode("\n", $value);
-	$integers = array_map($integer, $integers);
+    $integers = explode("\n", $value);
+    $integers = array_map($integer, $integers);
 
-	return implode("\n", $integers);
+    return implode("\n", $integers);
 };

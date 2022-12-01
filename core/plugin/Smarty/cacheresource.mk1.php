@@ -29,68 +29,68 @@
  */
 class Smarty_CacheResource_Mk1 extends Smarty_CacheResource_KeyValueStore
 {
-	protected $cache_group = 'smarty';
-	
-	/**
-	 * Read values for a set of keys from cache
-	 *
-	 * @param array $keys list of keys to fetch
-	 *
-	 * @return array   list of values with the given keys used as indexes
-	 * @return boolean true on success, false on failure
-	 */
-	protected function read(array $keys)
-	{
-		$res = [];
-		foreach($keys as $key){
-			$res[$key] = Cache::get($key, $this->cache_group);
-		}
-		
-		return $res;
-	}
-	
-	/**
-	 * Save values for a set of keys to cache
-	 *
-	 * @param array $keys   list of values to save
-	 * @param int   $expire expiration time
-	 *
-	 * @return boolean true on success, false on failure
-	 */
-	protected function write(array $keys, $expire = null)
-	{
-		foreach($keys as $k => $v){
-			Cache::set_with_ttl($k, $this->cache_group, $v, $expire);
-		}
-		
-		return true;
-	}
-	
-	/**
-	 * Remove values from cache
-	 *
-	 * @param array $keys list of keys to delete
-	 *
-	 * @return boolean true on success, false on failure
-	 */
-	protected function delete(array $keys)
-	{
-		foreach($keys as $k){
-			Cache::clear($k, $this->cache_group);
-		}
-		
-		return true;
-	}
-	
-	/**
-	 * Remove *all* values from cache
-	 *
-	 * @return boolean true on success, false on failure
-	 */
-	protected function purge()
-	{
-		Cache::clear(null, $this->cache_group);
-		
-		return true;
-	}
+    protected $cache_group = 'smarty';
+
+    /**
+     * Read values for a set of keys from cache
+     *
+     * @param  array  $keys  list of keys to fetch
+     *
+     * @return array   list of values with the given keys used as indexes
+     * @return boolean true on success, false on failure
+     */
+    protected function read(array $keys)
+    {
+        $res = [];
+        foreach ($keys as $key) {
+            $res[$key] = Cache::get($key, $this->cache_group);
+        }
+
+        return $res;
+    }
+
+    /**
+     * Save values for a set of keys to cache
+     *
+     * @param  array  $keys  list of values to save
+     * @param  int  $expire  expiration time
+     *
+     * @return boolean true on success, false on failure
+     */
+    protected function write(array $keys, $expire = null)
+    {
+        foreach ($keys as $k => $v) {
+            Cache::set_with_ttl($k, $this->cache_group, $v, $expire);
+        }
+
+        return true;
+    }
+
+    /**
+     * Remove values from cache
+     *
+     * @param  array  $keys  list of keys to delete
+     *
+     * @return boolean true on success, false on failure
+     */
+    protected function delete(array $keys)
+    {
+        foreach ($keys as $k) {
+            Cache::clear($k, $this->cache_group);
+        }
+
+        return true;
+    }
+
+    /**
+     * Remove *all* values from cache
+     *
+     * @return boolean true on success, false on failure
+     */
+    protected function purge()
+    {
+        Cache::clear(null, $this->cache_group);
+
+        return true;
+    }
 }
