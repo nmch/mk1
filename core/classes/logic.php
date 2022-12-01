@@ -9,8 +9,8 @@
 
 class Logic
 {
-	protected static function af()
-	{
-		return Actionform::instance();
-	}
+    protected static function af()
+    {
+        return Actionform::instance();
+    }
 }

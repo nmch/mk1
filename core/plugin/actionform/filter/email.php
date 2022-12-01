@@ -1,4 +1,5 @@
 <?php
+
 /**
  * emailでよく間違える文字を正しく変換
  *
@@ -7,19 +8,19 @@
  * @return string
  */
 return function ($value) {
-	if( ! is_scalar($value) ){
-		return null;
-	}
+    if (!is_scalar($value)) {
+        return null;
+    }
 
-	$value = preg_replace(
-		[
-			'/,/'
-		],
-		[
-			'.'
-		]
-		, $value
-	);
+    $value = preg_replace(
+        [
+            '/,/'
+        ],
+        [
+            '.'
+        ]
+        , $value
+    );
 
-	return $value;
+    return $value;
 };

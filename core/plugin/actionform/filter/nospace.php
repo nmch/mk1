@@ -1,4 +1,5 @@
 <?php
+
 /**
  * スペースを削除
  *
@@ -7,11 +8,11 @@
  * @return string
  */
 return function ($value) {
-	if( ! is_scalar($value) ){
-		return null;
-	}
+    if (!is_scalar($value)) {
+        return null;
+    }
 
-	$value = str_replace(' ', '', $value);
+    $value = str_replace(' ', '', $value);
 
-	return $value;
+    return $value;
 };

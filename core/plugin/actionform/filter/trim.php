@@ -1,4 +1,5 @@
 <?php
+
 /**
  * trim
  *
@@ -7,9 +8,9 @@
  * @return string
  */
 return function ($value) {
-	if( ! is_scalar($value) ){
-		return null;
-	}
+    if (!is_scalar($value)) {
+        return null;
+    }
 
-	return trim($value);
+    return trim($value);
 };

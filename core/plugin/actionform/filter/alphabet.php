@@ -1,4 +1,5 @@
 <?php
+
 /**
  * アルファベットのみ(A-Z, a-z)
  *
@@ -7,11 +8,11 @@
  * @return string
  */
 return function ($value) {
-	if( ! is_scalar($value) ){
-		return null;
-	}
+    if (!is_scalar($value)) {
+        return null;
+    }
 
-	$value = preg_replace('/[^a-zA-Z]/', '', $value);
+    $value = preg_replace('/[^a-zA-Z]/', '', $value);
 
-	return $value;
+    return $value;
 };

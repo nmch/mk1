@@ -14,5 +14,5 @@
  */
 trait Logic_Masterdetail_View_Index
 {
-	use Logic_Masterdetail_Common, Logic_View_Pager;
+    use Logic_Masterdetail_Common, Logic_View_Pager;
 }
