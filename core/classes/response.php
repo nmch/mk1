@@ -160,7 +160,7 @@ class Response
 
                 return false;
             }
-            http_response_code($this->status);
+            http_response_code($this->status ?? 0);
             foreach ($this->headers as $key => $header) {
                 if ($header === null) {
                     continue;

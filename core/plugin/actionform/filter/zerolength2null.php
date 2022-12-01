@@ -8,5 +8,5 @@
  * @return string
  */
 return function ($value) {
-    return strlen($value) === 0 ? null : $value;
+    return strlen($value ?? '') === 0 ? null : $value;
 };
