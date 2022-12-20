@@ -7,6 +7,7 @@ use Facebook\WebDriver\Exception\UnsupportedOperationException;
 use Facebook\WebDriver\Exception\WebDriverException;
 use Facebook\WebDriver\Interactions\Internal\WebDriverCoordinates;
 use Facebook\WebDriver\Internal\WebDriverLocatable;
+use Facebook\WebDriver\Support\ScreenshotHelper;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverElement;
@@ -89,6 +90,10 @@ class RemoteWebElement implements WebDriverElement, WebDriverLocatable
     /**
      * Find the first WebDriverElement within this element using the given mechanism.
      *
+     * When using xpath be aware that webdriver follows standard conventions: a search prefixed with "//" will
+     * search the entire document from the root, not just the children (relative context) of this current node.
+     * Use ".//" to limit your search to the children of this element.
+     *
      * @param WebDriverBy $by
      * @return RemoteWebElement NoSuchElementException is thrown in HttpCommandExecutor if no element is found.
      * @see WebDriverBy
@@ -108,6 +113,10 @@ class RemoteWebElement implements WebDriverElement, WebDriverLocatable
 
     /**
      * Find all WebDriverElements within this element using the given mechanism.
+     *
+     * When using xpath be aware that webdriver follows standard conventions: a search prefixed with "//" will
+     * search the entire document from the root, not just the children (relative context) of this current node.
+     * Use ".//" to limit your search to the children of this element.
      *
      * @param WebDriverBy $by
      * @return RemoteWebElement[] A list of all WebDriverElements, or an empty
@@ -137,7 +146,8 @@ class RemoteWebElement implements WebDriverElement, WebDriverLocatable
      * To read a value of a IDL "JavaScript" property (like `innerHTML`), use `getDomProperty()` method.
      *
      * @param string $attribute_name The name of the attribute.
-     * @return string|null The value of the attribute.
+     * @return string|true|null The value of the attribute. If this is boolean attribute, return true if the element
+     *      has it, otherwise return null.
      */
     public function getAttribute($attribute_name)
     {
@@ -171,7 +181,7 @@ class RemoteWebElement implements WebDriverElement, WebDriverLocatable
      * @see https://developer.mozilla.org/en-US/docs/Glossary/IDL
      * @see https://developer.mozilla.org/en-US/docs/Web/API/Element#properties
      * @param string $propertyName
-     * @return string|null The property's current value or null if the value is not set or the property does not exist.
+     * @return mixed|null The property's current value or null if the value is not set or the property does not exist.
      */
     public function getDomProperty($propertyName)
     {
@@ -499,24 +509,7 @@ HTXT;
      */
     public function takeElementScreenshot($save_as = null)
     {
-        $screenshot = base64_decode(
-            $this->executor->execute(
-                DriverCommand::TAKE_ELEMENT_SCREENSHOT,
-                [':id' => $this->id]
-            ),
-            true
-        );
-
-        if ($save_as !== null) {
-            $directoryPath = dirname($save_as);
-            if (!file_exists($directoryPath)) {
-                mkdir($directoryPath, 0777, true);
-            }
-
-            file_put_contents($save_as, $screenshot);
-        }
-
-        return $screenshot;
+        return (new ScreenshotHelper($this->executor))->takeElementScreenshot($this->id, $save_as);
     }
 
     /**
@@ -535,6 +528,27 @@ HTXT;
             ':id' => $this->id,
             ':other' => $other->getID(),
         ]);
+    }
+
+    /**
+     * Get representation of an element's shadow root for accessing the shadow DOM of a web component.
+     *
+     * @return ShadowRoot
+     */
+    public function getShadowRoot()
+    {
+        if (!$this->isW3cCompliant) {
+            throw new UnsupportedOperationException('This method is only supported in W3C mode');
+        }
+
+        $response = $this->executor->execute(
+            DriverCommand::GET_ELEMENT_SHADOW_ROOT,
+            [
+                ':id' => $this->id,
+            ]
+        );
+
+        return ShadowRoot::createFromResponse($this->executor, $response);
     }
 
     /**
