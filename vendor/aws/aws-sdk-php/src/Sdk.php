@@ -124,6 +124,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionCodeArtifact(array $args = [])
  * @method \Aws\CodeBuild\CodeBuildClient createCodeBuild(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionCodeBuild(array $args = [])
+ * @method \Aws\CodeCatalyst\CodeCatalystClient createCodeCatalyst(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionCodeCatalyst(array $args = [])
  * @method \Aws\CodeCommit\CodeCommitClient createCodeCommit(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionCodeCommit(array $args = [])
  * @method \Aws\CodeDeploy\CodeDeployClient createCodeDeploy(array $args = [])
@@ -198,6 +200,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionDirectoryService(array $args = [])
  * @method \Aws\DocDB\DocDBClient createDocDB(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionDocDB(array $args = [])
+ * @method \Aws\DocDBElastic\DocDBElasticClient createDocDBElastic(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionDocDBElastic(array $args = [])
  * @method \Aws\DynamoDb\DynamoDbClient createDynamoDb(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionDynamoDb(array $args = [])
  * @method \Aws\DynamoDbStreams\DynamoDbStreamsClient createDynamoDbStreams(array $args = [])
@@ -348,6 +352,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionKinesisVideoMedia(array $args = [])
  * @method \Aws\KinesisVideoSignalingChannels\KinesisVideoSignalingChannelsClient createKinesisVideoSignalingChannels(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionKinesisVideoSignalingChannels(array $args = [])
+ * @method \Aws\KinesisVideoWebRTCStorage\KinesisVideoWebRTCStorageClient createKinesisVideoWebRTCStorage(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionKinesisVideoWebRTCStorage(array $args = [])
  * @method \Aws\Kms\KmsClient createKms(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionKms(array $args = [])
  * @method \Aws\LakeFormation\LakeFormationClient createLakeFormation(array $args = [])
@@ -442,6 +448,10 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionNimbleStudio(array $args = [])
  * @method \Aws\OAM\OAMClient createOAM(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionOAM(array $args = [])
+ * @method \Aws\Omics\OmicsClient createOmics(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionOmics(array $args = [])
+ * @method \Aws\OpenSearchServerless\OpenSearchServerlessClient createOpenSearchServerless(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionOpenSearchServerless(array $args = [])
  * @method \Aws\OpenSearchService\OpenSearchServiceClient createOpenSearchService(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionOpenSearchService(array $args = [])
  * @method \Aws\OpsWorks\OpsWorksClient createOpsWorks(array $args = [])
@@ -470,6 +480,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionPinpointSMSVoice(array $args = [])
  * @method \Aws\PinpointSMSVoiceV2\PinpointSMSVoiceV2Client createPinpointSMSVoiceV2(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionPinpointSMSVoiceV2(array $args = [])
+ * @method \Aws\Pipes\PipesClient createPipes(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionPipes(array $args = [])
  * @method \Aws\Polly\PollyClient createPolly(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionPolly(array $args = [])
  * @method \Aws\Pricing\PricingClient createPricing(array $args = [])
@@ -546,6 +558,10 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionSageMaker(array $args = [])
  * @method \Aws\SageMakerFeatureStoreRuntime\SageMakerFeatureStoreRuntimeClient createSageMakerFeatureStoreRuntime(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionSageMakerFeatureStoreRuntime(array $args = [])
+ * @method \Aws\SageMakerGeospatial\SageMakerGeospatialClient createSageMakerGeospatial(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionSageMakerGeospatial(array $args = [])
+ * @method \Aws\SageMakerMetrics\SageMakerMetricsClient createSageMakerMetrics(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionSageMakerMetrics(array $args = [])
  * @method \Aws\SageMakerRuntime\SageMakerRuntimeClient createSageMakerRuntime(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionSageMakerRuntime(array $args = [])
  * @method \Aws\SagemakerEdgeManager\SagemakerEdgeManagerClient createSagemakerEdgeManager(array $args = [])
@@ -560,6 +576,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionSecretsManager(array $args = [])
  * @method \Aws\SecurityHub\SecurityHubClient createSecurityHub(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionSecurityHub(array $args = [])
+ * @method \Aws\SecurityLake\SecurityLakeClient createSecurityLake(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionSecurityLake(array $args = [])
  * @method \Aws\ServerlessApplicationRepository\ServerlessApplicationRepositoryClient createServerlessApplicationRepository(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionServerlessApplicationRepository(array $args = [])
  * @method \Aws\ServiceCatalog\ServiceCatalogClient createServiceCatalog(array $args = [])
@@ -576,6 +594,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionSfn(array $args = [])
  * @method \Aws\Shield\ShieldClient createShield(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionShield(array $args = [])
+ * @method \Aws\SimSpaceWeaver\SimSpaceWeaverClient createSimSpaceWeaver(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionSimSpaceWeaver(array $args = [])
  * @method \Aws\Sms\SmsClient createSms(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionSms(array $args = [])
  * @method \Aws\SnowBall\SnowBallClient createSnowBall(array $args = [])
@@ -655,7 +675,7 @@ namespace Aws;
  */
 class Sdk
 {
-    const VERSION = '3.249.0';
+    const VERSION = '3.254.0';
 
     /** @var array Arguments for creating clients */
     private $args;

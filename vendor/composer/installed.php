@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => '202209.x-dev',
-        'version' => '202209.9999999.9999999.9999999-dev',
-        'reference' => '46f0d85abb241152fd4f25d11e55044423f8637d',
+        'pretty_version' => '1.0.0+no-version-set',
+        'version' => '1.0.0.0',
+        'reference' => NULL,
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => '202209.x-dev',
-            'version' => '202209.9999999.9999999.9999999-dev',
-            'reference' => '46f0d85abb241152fd4f25d11e55044423f8637d',
+            'pretty_version' => '1.0.0+no-version-set',
+            'version' => '1.0.0.0',
+            'reference' => NULL,
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -29,9 +29,9 @@
             'dev_requirement' => false,
         ),
         'aws/aws-sdk-php' => array(
-            'pretty_version' => '3.249.0',
-            'version' => '3.249.0.0',
-            'reference' => 'ec9108e2540167cbd7a524031a4b31b6fc0d857d',
+            'pretty_version' => '3.254.0',
+            'version' => '3.254.0.0',
+            'reference' => '9e07cddf9be6ab241c241344ca2e9cf33e32a22e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../aws/aws-sdk-php',
             'aliases' => array(),
@@ -567,9 +567,9 @@
             'dev_requirement' => false,
         ),
         'symfony/deprecation-contracts' => array(
-            'pretty_version' => 'v3.1.1',
-            'version' => '3.1.1.0',
-            'reference' => '07f1b9cc2ffee6aaafcf4b710fbc38ff736bd918',
+            'pretty_version' => 'v3.2.0',
+            'version' => '3.2.0.0',
+            'reference' => '1ee04c65529dea5d8744774d474e7cbd2f1206d3',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/deprecation-contracts',
             'aliases' => array(),
