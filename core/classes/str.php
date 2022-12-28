@@ -95,9 +95,7 @@ class Str
     {
         $encoding or $encoding = Mk::$encoding;
 
-        return function_exists('mb_strlen')
-            ? mb_strlen($str, $encoding)
-            : strlen($str);
+        return is_null($str) ? null : (function_exists('mb_strlen') ? mb_strlen($str, $encoding) : strlen($str));
     }
 
     /**
