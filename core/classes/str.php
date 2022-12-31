@@ -18,6 +18,12 @@
  */
 class Str
 {
+    public static function trim($value) { return (is_null($value) ? null : trim($value)); }
+
+    public static function strimwidth($value, int $start, int $width, string $trim_marker = '')
+    {
+        return (is_null($value) ? null : mb_strimwidth($value, $start, $width, $trim_marker));
+    }
 
     /**
      * Truncates a string to the given length.  It will optionally preserve
