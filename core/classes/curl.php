@@ -434,8 +434,8 @@ class Curl
         $response_header = [];
         foreach (explode("\n", $response_header_str) as $line) {
             $line = explode(':', $line, 2);
-            $key = trim(Arr::get($line, 0));
-            $value = trim(Arr::get($line, 1));
+            $key = Str::trim(Arr::get($line, 0));
+            $value = Str::trim(Arr::get($line, 1));
             $response_header[$key] = $value;
         }
         $this->response_header = $response_header;
