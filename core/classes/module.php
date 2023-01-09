@@ -9,7 +9,7 @@
 
 class Module
 {
-	static function find($name)
-	{
-	}
+    static function find($name)
+    {
+    }
 }

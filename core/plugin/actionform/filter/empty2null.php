@@ -1,4 +1,5 @@
 <?php
+
 /**
  * empty2null
  *
@@ -7,5 +8,5 @@
  * @return string
  */
 return function ($value) {
-	return empty($value) ? null : $value;
+    return empty($value) ? null : $value;
 };

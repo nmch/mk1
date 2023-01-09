@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 半角カナを全角へ変換
  *
@@ -7,9 +8,9 @@
  * @return string
  */
 return function ($value) {
-	if( ! is_scalar($value) ){
-		return null;
-	}
+    if (!is_scalar($value)) {
+        return null;
+    }
 
-	return mb_convert_kana($value, 'KV');
+    return mb_convert_kana($value, 'KV');
 };

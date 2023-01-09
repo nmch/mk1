@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ASCIIのみ (0x00 - 0x7F)
  *
@@ -7,11 +8,11 @@
  * @return string
  */
 return function ($value) {
-	if( ! is_scalar($value) ){
-		return null;
-	}
+    if (!is_scalar($value)) {
+        return null;
+    }
 
-	$value = preg_replace('/[^\x00-\x7F]/', '', $value);
+    $value = preg_replace('/[^\x00-\x7F]/', '', $value);
 
-	return $value;
+    return $value;
 };
