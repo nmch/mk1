@@ -91,6 +91,9 @@ set_include_path(get_include_path()
     .PATH_SEPARATOR.FWPATH.'vendor'
 );
 
+// ヘルパ
+require_once FWPATH.'helpers.php';
+
 // オートローダー + コアbootstrap
 require COREPATH.'classes/autoloader.php';
 require COREPATH.'bootstrap.php';
