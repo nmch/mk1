@@ -291,7 +291,7 @@ class Curl
         }
 
         // 送信するデータの処理
-        if (strlen($this->request_raw_data)) {
+        if (strlen($this->request_raw_data ?? '')) {
             if ($this->method === static::METHOD_POST) {
                 $curl_options[CURLOPT_POSTFIELDS] = $this->request_raw_data;
             } else {
