@@ -303,7 +303,7 @@ class File
 
         $fp = fopen($this->filepath, "rt");
 
-        $tmp_filepath = tempnam(null, "CSV");
+        $tmp_filepath = tempnam(sys_get_temp_dir(), "CSV");
         $fw = fopen($tmp_filepath, "w+t");
 
         while ($line = fgets($fp)) {
