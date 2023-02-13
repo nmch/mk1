@@ -41,7 +41,10 @@ class ImageErrorException extends MkException { }
 set_error_handler(function ($errno, $errstr, $errfile, $errline) {
 //    echo "errno=$errno / ".error_reporting()."<HR>";
     if ($errno & (E_DEPRECATED | E_USER_DEPRECATED)) {
-        \Log::error("DEPRECATION ERROR (at {$errfile}:{$errline})", $errstr);
+        // ベンダーパッケージで発生するDEPRECATION ERRORは無視する
+        if (!str_starts_with($errfile, FWPATH.'vendor/')) {
+            \Log::error("DEPRECATION ERROR (at {$errfile}:{$errline})", $errstr);
+        }
     } elseif (error_reporting() & $errno) {    // ←ここを無効にするとSmartyが新規にコンパイルした中間コードを保存する際にエラーが起きる
         throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
     }
