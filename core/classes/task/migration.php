@@ -25,7 +25,7 @@ class Task_Migration extends Task
         $this->migration = (new Migration())->set_db_connection();
     }
 
-    function run($argv = null)
+    function run(...$argv)
     {
         Log::coredebug("[db migration] データベースマイグレーションを実行します");
         DB::clear_schema_cache();
