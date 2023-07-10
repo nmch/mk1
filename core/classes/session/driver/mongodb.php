@@ -9,7 +9,7 @@
 
 class Session_Driver_Mongodb extends Session_Driver
 {
-    function gc($maxlifetime)
+    function gc($maxlifetime): int|false
     {
         $threashold = (new DateTime())->modify("-{$maxlifetime} sec");
         $threashold_msec = intval($threashold->format("U.u") * 1000);
@@ -23,7 +23,7 @@ class Session_Driver_Mongodb extends Session_Driver
         return true;
     }
 
-    function destroy($id)
+    function destroy($id): bool
     {
         $collection = static::get_collection();
         $collection->deleteOne(['id' => $id]);
@@ -47,7 +47,7 @@ class Session_Driver_Mongodb extends Session_Driver
         return $collection;
     }
 
-    function write($id, $data)
+    function write($id, $data): bool
     {
         list($encoded_data, $hash, $original_data) = $this->encode_data($data);
 
@@ -73,7 +73,7 @@ class Session_Driver_Mongodb extends Session_Driver
         return true;
     }
 
-    function read($id)
+    function read($id): string|false
     {
         $collection = static::get_collection();
         $r = $collection->findOne(['id' => $id]);
@@ -83,12 +83,12 @@ class Session_Driver_Mongodb extends Session_Driver
         return strval($data);
     }
 
-    function close()
+    function close(): bool
     {
         return true;
     }
 
-    function open($savePath, $sessionName)
+    function open($savePath, $sessionName): bool
     {
         $collection = $this->get_collection();
 
