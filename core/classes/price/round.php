@@ -10,7 +10,7 @@
 /**
  * 端数処理
  */
-class Price_Round
+class Price_Round implements JsonSerializable
 {
     const TYPE_FLOOR = 1;
     const TYPE_FLOOR_CODE = 'floor';
@@ -50,6 +50,14 @@ class Price_Round
         }
 
         $this->scale = $scale;
+    }
+
+    function jsonSerialize()
+    {
+        return [
+            'rounding_type' => $this->rounding_type,
+            'scale' => $this->scale,
+        ];
     }
 
     /**

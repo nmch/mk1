@@ -10,7 +10,7 @@
 /**
  * 消費税計算区分
  */
-class Price_Tax_Calc_Type
+class Price_Tax_Calc_Type implements JsonSerializable
 {
     const TYPE_NOTAX = 0;
     const TYPE_NOTAX_CODE = 'notax';
@@ -45,6 +45,11 @@ class Price_Tax_Calc_Type
         if (!in_array($this->tax_calc_type, $this->permitted_tax_calc_types)) {
             throw new UnexpectedValueException();
         }
+    }
+
+    function jsonSerialize()
+    {
+        return $this->tax_calc_type;
     }
 
     function get_tax_calc_type(): int

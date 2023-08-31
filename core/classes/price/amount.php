@@ -10,7 +10,7 @@
 /**
  * 金額
  */
-class Price_Amount
+class Price_Amount implements JsonSerializable
 {
     protected $unit_price;
     protected $qty;
@@ -26,6 +26,17 @@ class Price_Amount
         $this->qty = $qty;
 
         $this->set_rounding_type($round);
+    }
+
+    function jsonSerialize()
+    {
+        return [
+            'unit_price' => $this->unit_price,
+            'qty' => $this->qty,
+            'rounding_type' => $this->rounding_type,
+            'raw_amount' => $this->raw_amount,
+            'rounded_amount' => $this->rounded_amount,
+        ];
     }
 
     function set_raw_amount($value)

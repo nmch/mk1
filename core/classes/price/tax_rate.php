@@ -10,7 +10,7 @@
 /**
  * 消費税率
  */
-class Price_Tax_Rate
+class Price_Tax_Rate implements JsonSerializable
 {
     /** @var string */
     protected $tax_rate;
@@ -18,6 +18,11 @@ class Price_Tax_Rate
     function __construct($tax_rate = '0')
     {
         $this->tax_rate = strval($tax_rate);
+    }
+
+    function jsonSerialize()
+    {
+        return $this->tax_rate;
     }
 
     function get_rate(): string

@@ -10,7 +10,7 @@
 /**
  * 税込区分
  */
-class Price_Tax_Class
+class Price_Tax_Class implements JsonSerializable
 {
     const TAX_EXCLUDING = 1;
     const TAX_INCLUDING = 2;
@@ -28,6 +28,11 @@ class Price_Tax_Class
         if (!in_array($this->tax_class, $this->permitted_tax_classes)) {
             throw new UnexpectedValueException();
         }
+    }
+
+    function jsonSerialize()
+    {
+        return $this->tax_class;
     }
 
     function get_tax_class(): int
