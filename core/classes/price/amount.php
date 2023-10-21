@@ -25,7 +25,7 @@ class Price_Amount implements JsonSerializable
         $this->unit_price = $unit_price;
         $this->qty = $qty;
 
-        $this->set_rounding_type($round);
+        $this->set_rounding_type($round ?? new Price_Round(\Price_Round::TYPE_ROUND));
     }
 
     function jsonSerialize()
