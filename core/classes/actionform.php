@@ -787,7 +787,8 @@ class Actionform implements ArrayAccess
 
     function is_ajax_request()
     {
-        return strtolower($this->server_vars('HTTP_X_REQUESTED_WITH')) == 'xmlhttprequest';
+		return strtolower($this->server_vars('HTTP_X_REQUESTED_WITH')) === 'xmlhttprequest'
+               || str_contains(strtolower($this->server_vars('HTTP_ACCEPT')), 'application/json');
     }
 
     function set_messages(array $messages)
